@@ -11,14 +11,14 @@
 
     <style>
         :root {
-            --bg-dark: #060913;
-            --bg-surface: rgba(15, 23, 42, 0.72);
-            --glass-bg: rgba(17, 24, 39, 0.68);
-            --glass-border: rgba(148, 163, 184, 0.2);
-            --glass-input: rgba(15, 23, 42, 0.62);
-            --primary-accent: #38bdf8;
-            --secondary-accent: #6366f1;
-            --cyan-glow: #22d3ee;
+            --bg-dark: #05070d;
+            --surface-card: rgba(12, 17, 29, 0.86);
+            --surface-input: rgba(17, 24, 39, 0.82);
+            --border-subtle: rgba(148, 163, 184, 0.18);
+            --border-focus: #22d3ee;
+            --accent-cyan: #22d3ee;
+            --accent-blue: #38bdf8;
+            --accent-indigo: #6366f1;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -37,17 +37,17 @@
             overflow-x: hidden;
         }
 
-        /* Fundo persistente estilo plataforma americana (camadas fixas + grid técnico) */
+        /* Fundo persistente estilo plataforma americana */
         .persistent-backdrop {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
             background:
-                radial-gradient(circle at 18% 16%, rgba(56, 189, 248, 0.18), transparent 42%),
-                radial-gradient(circle at 84% 22%, rgba(99, 102, 241, 0.18), transparent 45%),
-                radial-gradient(circle at 50% 88%, rgba(34, 211, 238, 0.12), transparent 50%),
-                linear-gradient(180deg, #060913 0%, #090f1f 55%, #050811 100%);
+                radial-gradient(circle at 50% 14%, rgba(34, 211, 238, 0.14), transparent 42%),
+                radial-gradient(circle at 82% 24%, rgba(99, 102, 241, 0.12), transparent 45%),
+                radial-gradient(circle at 18% 82%, rgba(56, 189, 248, 0.1), transparent 45%),
+                linear-gradient(180deg, #05070d 0%, #070b14 55%, #04060b 100%);
         }
 
         .persistent-grid {
@@ -56,9 +56,9 @@
             z-index: 0;
             pointer-events: none;
             background-image:
-                linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
-            background-size: 44px 44px;
+                linear-gradient(to right, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+            background-size: 46px 46px;
             mask-image: radial-gradient(ellipse at center, black 35%, transparent 82%);
             -webkit-mask-image: radial-gradient(ellipse at center, black 35%, transparent 82%);
         }
@@ -71,56 +71,98 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px 16px 36px;
+            padding: 20px 16px 36px;
         }
 
         .main-wrapper {
             width: 100%;
-            max-width: 430px;
+            max-width: 420px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Barra superior de idioma (alinhada aos países da plataforma) */
+        /* Barra superior: apenas o botão circular com ícone de idioma ao lado direito */
         .top-bar {
             width: 100%;
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 14px;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
         }
 
-        .lang-selector-box {
+        .lang-trigger-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border-subtle);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-main);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(15, 23, 42, 0.78);
-            border: 1px solid var(--glass-border);
-            border-radius: 999px;
-            padding: 6px 12px;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
         }
 
-        .lang-selector-box i {
-            color: var(--primary-accent);
-            font-size: 13px;
+        .lang-trigger-btn:hover,
+        .lang-trigger-btn[aria-expanded="true"] {
+            border-color: var(--border-focus);
+            color: var(--accent-cyan);
+            transform: translateY(-1px);
         }
 
-        .lang-select {
+        .lang-popover {
+            position: absolute;
+            top: 48px;
+            right: 0;
+            min-width: 175px;
+            background: #0b1120;
+            border: 1px solid rgba(148, 163, 184, 0.24);
+            border-radius: 14px;
+            padding: 6px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.72);
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 50;
+        }
+
+        .lang-popover.open {
+            display: flex;
+        }
+
+        .lang-option-btn {
+            width: 100%;
             background: transparent;
             border: none;
-            color: var(--text-main);
+            border-radius: 10px;
+            padding: 9px 12px;
+            color: #e2e8f0;
             font-family: inherit;
-            font-size: 12.5px;
-            font-weight: 600;
-            outline: none;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.18s ease, color 0.18s ease;
         }
 
-        .lang-select option {
-            background: #0f172a;
-            color: #f8fafc;
+        .lang-option-btn:hover {
+            background: rgba(34, 211, 238, 0.12);
+            color: #ffffff;
+        }
+
+        .lang-option-btn.active {
+            background: rgba(34, 211, 238, 0.16);
+            color: var(--accent-cyan);
+            font-weight: 700;
         }
 
         /* Marca e Logotipo Profissional STADA */
@@ -130,141 +172,185 @@
         }
 
         .logo-mark-box {
-            width: 72px;
-            height: 72px;
+            width: 74px;
+            height: 74px;
             margin: 0 auto 12px;
-            border-radius: 20px;
-            background: linear-gradient(145deg, rgba(56, 189, 248, 0.16), rgba(99, 102, 241, 0.16));
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            box-shadow: 0 12px 30px rgba(2, 6, 23, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(34, 211, 238, 0.14), rgba(99, 102, 241, 0.14));
+            border: 1px solid rgba(34, 211, 238, 0.32);
+            box-shadow: 0 14px 34px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.14);
             display: flex;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(12px);
         }
 
         .logo-area h1 {
-            font-size: 30px;
+            font-size: 28px;
             font-weight: 800;
             letter-spacing: 3px;
             text-transform: uppercase;
-            background: linear-gradient(90deg, #ffffff 0%, #7dd3fc 55%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #ffffff;
         }
 
         .logo-area p {
-            margin-top: 5px;
-            font-size: 13.5px;
+            margin-top: 4px;
+            font-size: 13px;
             color: var(--text-muted);
             font-weight: 500;
         }
 
-        /* Card principal estilo americano */
+        /* Card do formulário */
         .register-card {
             width: 100%;
-            background: var(--glass-bg);
-            backdrop-filter: blur(22px);
-            -webkit-backdrop-filter: blur(22px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 28px 24px;
-            box-shadow:
-                0 24px 60px rgba(0, 0, 0, 0.55),
-                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 22px;
+            padding: 24px 20px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
         }
 
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
             display: block;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 600;
-            color: #e2e8f0;
-            margin-bottom: 8px;
-            letter-spacing: 0.2px;
+            color: #cbd5e1;
+            margin-bottom: 7px;
         }
 
-        /* Linha de País + Telefone */
-        .phone-row {
-            display: grid;
-            grid-template-columns: 126px 1fr;
-            gap: 10px;
-        }
-
-        .country-select-wrapper {
+        /* Campo combinado: apenas indicador numérico (+244, +351...) + número */
+        .phone-combined-box {
             position: relative;
             display: flex;
             align-items: center;
-            background: var(--glass-input);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 0 10px;
-            transition: all 0.25s ease;
+            background: var(--surface-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 13px;
+            padding: 0 14px;
+            min-height: 50px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .country-select-wrapper:focus-within {
-            border-color: var(--primary-accent);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+        .phone-combined-box:focus-within {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14);
         }
 
-        .country-flag-preview {
-            font-size: 18px;
-            margin-right: 6px;
-            line-height: 1;
+        .dial-pill-trigger {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding-right: 11px;
+            margin-right: 11px;
+            border-right: 1px solid rgba(148, 163, 184, 0.22);
+            cursor: pointer;
+            user-select: none;
+            flex-shrink: 0;
         }
 
-        .country-select {
+        .dial-code-text {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            letter-spacing: 0.2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .dial-chevron {
+            font-size: 11px;
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .dial-pill-trigger[aria-expanded="true"] .dial-chevron {
+            transform: rotate(180deg);
+            color: var(--accent-cyan);
+        }
+
+        /* Menu suspenso exibindo exclusivamente os indicadores numéricos */
+        .dial-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 112px;
+            max-height: 230px;
+            overflow-y: auto;
+            background: #0b1120;
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 14px;
+            padding: 6px;
+            box-shadow: 0 20px 44px rgba(0, 0, 0, 0.78);
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            z-index: 60;
+        }
+
+        .dial-dropdown-menu.open {
+            display: flex;
+        }
+
+        .dial-item-btn {
             width: 100%;
             background: transparent;
             border: none;
-            color: var(--text-main);
+            border-radius: 9px;
+            padding: 8px 10px;
+            color: #f1f5f9;
             font-family: inherit;
             font-size: 13px;
-            font-weight: 600;
-            padding: 13px 0;
-            outline: none;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: background 0.16s ease, color 0.16s ease;
         }
 
-        .country-select option {
-            background: #0f172a;
-            color: #f8fafc;
+        .dial-item-btn:hover {
+            background: rgba(34, 211, 238, 0.12);
+            color: #ffffff;
+        }
+
+        .dial-item-btn.selected {
+            background: rgba(34, 211, 238, 0.18);
+            color: var(--accent-cyan);
         }
 
         .input-wrapper {
             position: relative;
             display: flex;
             align-items: center;
-            background: var(--glass-input);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
+            background: var(--surface-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 13px;
             padding: 0 14px;
-            transition: all 0.25s ease;
+            min-height: 50px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         .input-wrapper:focus-within {
-            border-color: var(--primary-accent);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
-            background: rgba(15, 23, 42, 0.85);
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.14);
         }
 
-        .prefix-code {
-            color: var(--primary-accent);
-            font-weight: 700;
-            font-size: 13.5px;
-            margin-right: 10px;
-            padding-right: 10px;
-            border-right: 1px solid rgba(148, 163, 184, 0.22);
-            white-space: nowrap;
-            user-select: none;
+        .input-icon-left {
+            color: #64748b;
+            font-size: 14px;
+            margin-right: 11px;
+            flex-shrink: 0;
         }
 
         .auth-input {
             width: 100%;
-            padding: 13.5px 0;
+            padding: 13px 0;
             border: none;
             background: transparent;
             color: var(--text-main);
@@ -277,22 +363,16 @@
             color: #64748b;
         }
 
-        .input-icon-left {
-            color: #94a3b8;
-            font-size: 14px;
-            margin-right: 10px;
-        }
-
         .toggle-password {
             cursor: pointer;
-            color: #94a3b8;
+            color: #64748b;
             margin-left: 10px;
             font-size: 14px;
             transition: color 0.2s ease;
         }
 
         .toggle-password:hover {
-            color: var(--primary-accent);
+            color: var(--accent-cyan);
         }
 
         .btn-register {
@@ -300,23 +380,22 @@
             padding: 15px 18px;
             margin-top: 8px;
             border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
-            color: #ffffff;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 55%, #6366f1 100%);
+            color: #041019;
             font-family: inherit;
             font-size: 14.5px;
-            font-weight: 700;
-            letter-spacing: 0.6px;
-            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.5px;
             cursor: pointer;
-            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.28);
+            box-shadow: 0 10px 28px rgba(34, 211, 238, 0.26);
             transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
 
         .btn-register:hover {
             transform: translateY(-1.5px);
-            box-shadow: 0 14px 30px rgba(99, 102, 241, 0.36);
-            filter: brightness(1.05);
+            box-shadow: 0 14px 34px rgba(56, 189, 248, 0.36);
+            filter: brightness(1.04);
         }
 
         .btn-register:active {
@@ -332,9 +411,10 @@
         }
 
         .login-footer a {
-            color: var(--primary-accent);
+            color: var(--accent-cyan);
             font-weight: 700;
             text-decoration: none;
+            margin-left: 4px;
         }
 
         .login-footer a:hover {
@@ -350,7 +430,7 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: rgba(5, 8, 17, 0.92);
+            background: rgba(4, 6, 11, 0.94);
             backdrop-filter: blur(18px);
             -webkit-backdrop-filter: blur(18px);
         }
@@ -361,24 +441,24 @@
 
         .stada-loader-card {
             width: 100%;
-            max-width: 360px;
+            max-width: 350px;
             text-align: center;
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.28);
+            background: rgba(11, 17, 32, 0.9);
+            border: 1px solid rgba(34, 211, 238, 0.28);
             border-radius: 22px;
-            padding: 30px 24px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+            padding: 28px 22px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
         }
 
         .loader-ring {
-            width: 58px;
-            height: 58px;
-            margin: 0 auto 16px;
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 14px;
             border-radius: 50%;
-            border: 3px solid rgba(148, 163, 184, 0.18);
-            border-top-color: var(--primary-accent);
-            border-right-color: var(--secondary-accent);
-            animation: spinRing 0.9s linear infinite;
+            border: 3px solid rgba(148, 163, 184, 0.16);
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-indigo);
+            animation: spinRing 0.85s linear infinite;
         }
 
         @keyframes spinRing {
@@ -386,16 +466,16 @@
         }
 
         .loader-brand {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 2.5px;
-            color: var(--primary-accent);
+            color: var(--accent-cyan);
             text-transform: uppercase;
             margin-bottom: 6px;
         }
 
         .loader-percent {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
             color: #ffffff;
             line-height: 1.1;
@@ -411,9 +491,9 @@
 
         .progress-track {
             width: 100%;
-            height: 8px;
+            height: 7px;
             border-radius: 999px;
-            background: rgba(148, 163, 184, 0.16);
+            background: rgba(148, 163, 184, 0.14);
             overflow: hidden;
         }
 
@@ -421,18 +501,8 @@
             width: 1%;
             height: 100%;
             border-radius: 999px;
-            background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+            background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
             transition: width 0.04s linear;
-        }
-
-        @media (max-width: 400px) {
-            .phone-row {
-                grid-template-columns: 114px 1fr;
-            }
-
-            .register-card {
-                padding: 22px 18px;
-            }
         }
     </style>
 </head>
@@ -447,7 +517,7 @@
             <div class="loader-ring"></div>
             <div class="loader-brand">STADA</div>
             <div class="loader-percent" id="loaderPercent">1%</div>
-            <div class="loader-status" id="loaderStatus" data-i18n="loadingText">{% trans "Preparando o acesso ao menu..." %}</div>
+            <div class="loader-status" data-i18n="loadingText">{% trans "Preparando o acesso ao menu..." %}</div>
             <div class="progress-track">
                 <div class="progress-fill" id="loaderProgressBar"></div>
             </div>
@@ -456,17 +526,33 @@
 
     <div class="page-container">
         <div class="main-wrapper">
-            <!-- Seletor de idioma correspondente aos países da plataforma -->
+            <!-- Botão de idioma: exibe apenas o ícone até ser clicado -->
             <div class="top-bar">
-                <div class="lang-selector-box">
+                <button type="button" class="lang-trigger-btn" id="langTriggerBtn" aria-expanded="false" aria-label="Language">
                     <i class="fa-solid fa-globe"></i>
-                    <select id="languageSelect" class="lang-select" aria-label="Language">
-                        <option value="pt">Português (AO / PT / BR / MZ)</option>
-                        <option value="en">English (CA / NG)</option>
-                        <option value="ar">العربية (EG)</option>
-                        <option value="hi">हिन्दी (IN)</option>
-                        <option value="es">Español (ES)</option>
-                    </select>
+                </button>
+
+                <div class="lang-popover" id="langPopover" role="menu">
+                    <button type="button" class="lang-option-btn active" data-lang="pt">
+                        <span>Português</span>
+                        <span style="opacity:0.65;font-size:11px;">PT</span>
+                    </button>
+                    <button type="button" class="lang-option-btn" data-lang="en">
+                        <span>English</span>
+                        <span style="opacity:0.65;font-size:11px;">EN</span>
+                    </button>
+                    <button type="button" class="lang-option-btn" data-lang="ar">
+                        <span>العربية</span>
+                        <span style="opacity:0.65;font-size:11px;">AR</span>
+                    </button>
+                    <button type="button" class="lang-option-btn" data-lang="hi">
+                        <span>हिन्दी</span>
+                        <span style="opacity:0.65;font-size:11px;">HI</span>
+                    </button>
+                    <button type="button" class="lang-option-btn" data-lang="es">
+                        <span>Español</span>
+                        <span style="opacity:0.65;font-size:11px;">ES</span>
+                    </button>
                 </div>
             </div>
 
@@ -475,14 +561,14 @@
                 <div class="logo-mark-box">
                     <svg width="42" height="42" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <defs>
-                            <linearGradient id="stadaGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
-                                <stop offset="0%" stop-color="#38bdf8"/>
+                            <linearGradient id="stadaLogoGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#22d3ee"/>
                                 <stop offset="100%" stop-color="#818cf8"/>
                             </linearGradient>
                         </defs>
-                        <rect x="4" y="4" width="40" height="40" rx="11" stroke="url(#stadaGrad)" stroke-width="2.5"/>
-                        <path d="M15 31L22 23L27 27L34 17" stroke="url(#stadaGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="34" cy="17" r="3" fill="#38bdf8"/>
+                        <rect x="5" y="5" width="38" height="38" rx="11" stroke="url(#stadaLogoGrad)" stroke-width="2.4"/>
+                        <path d="M15 30L21.5 22.5L26.5 26.8L33.5 17.5" stroke="url(#stadaLogoGrad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="33.5" cy="17.5" r="2.8" fill="#22d3ee"/>
                     </svg>
                 </div>
                 <h1>STADA</h1>
@@ -493,41 +579,43 @@
                 <form method="post" class="auth-form" id="registerForm">
                     {% csrf_token %}
 
+                    <!-- Campo 1: Apenas indicador numérico (+244, +351, +55, +1, +20, +91, +234, +258, +34) + número -->
                     <div class="form-group">
-                        <label data-i18n="labelPhone">1. {% trans "Número de Telefone (Celular)" %}</label>
-                        <div class="phone-row">
-                            <div class="country-select-wrapper">
-                                <span class="country-flag-preview" id="selectedFlag">🇦🇴</span>
-                                <select id="countrySelect" class="country-select" aria-label="Country">
-                                    <option value="AO" data-dial="+244" data-flag="🇦🇴" data-lang="pt" data-placeholder="923 000 000" data-max="12">Angola (+244)</option>
-                                    <option value="PT" data-dial="+351" data-flag="🇵🇹" data-lang="pt" data-placeholder="912 345 678" data-max="12">Portugal (+351)</option>
-                                    <option value="BR" data-dial="+55" data-flag="🇧🇷" data-lang="pt" data-placeholder="11987654321" data-max="12">Brasil (+55)</option>
-                                    <option value="CA" data-dial="+1" data-flag="🇨🇦" data-lang="en" data-placeholder="4165550199" data-max="12">Canadá (+1)</option>
-                                    <option value="EG" data-dial="+20" data-flag="🇪🇬" data-lang="ar" data-placeholder="1001234567" data-max="12">Egito (+20)</option>
-                                    <option value="IN" data-dial="+91" data-flag="🇮🇳" data-lang="hi" data-placeholder="9876543210" data-max="12">Índia (+91)</option>
-                                    <option value="NG" data-dial="+234" data-flag="🇳🇬" data-lang="en" data-placeholder="8031234567" data-max="12">Nigéria (+234)</option>
-                                    <option value="MZ" data-dial="+258" data-flag="🇲🇿" data-lang="pt" data-placeholder="841234567" data-max="12">Moçambique (+258)</option>
-                                    <option value="ES" data-dial="+34" data-flag="🇪🇸" data-lang="es" data-placeholder="612345678" data-max="12">Espanha (+34)</option>
-                                </select>
+                        <label data-i18n="labelPhone">{% trans "Número de Telefone" %}</label>
+                        <div class="phone-combined-box">
+                            <button type="button" class="dial-pill-trigger" id="dialTriggerBtn" aria-expanded="false" aria-label="Dial code">
+                                <span class="dial-code-text" id="dialCodeDisplay">+244</span>
+                                <i class="fa-solid fa-chevron-down dial-chevron"></i>
+                            </button>
+
+                            <div class="dial-dropdown-menu" id="dialDropdown" role="listbox">
+                                <button type="button" class="dial-item-btn selected" data-country="AO" data-dial="+244" data-lang="pt">+244</button>
+                                <button type="button" class="dial-item-btn" data-country="PT" data-dial="+351" data-lang="pt">+351</button>
+                                <button type="button" class="dial-item-btn" data-country="BR" data-dial="+55" data-lang="pt">+55</button>
+                                <button type="button" class="dial-item-btn" data-country="CA" data-dial="+1" data-lang="en">+1</button>
+                                <button type="button" class="dial-item-btn" data-country="EG" data-dial="+20" data-lang="ar">+20</button>
+                                <button type="button" class="dial-item-btn" data-country="IN" data-dial="+91" data-lang="hi">+91</button>
+                                <button type="button" class="dial-item-btn" data-country="NG" data-dial="+234" data-lang="en">+234</button>
+                                <button type="button" class="dial-item-btn" data-country="MZ" data-dial="+258" data-lang="pt">+258</button>
+                                <button type="button" class="dial-item-btn" data-country="ES" data-dial="+34" data-lang="es">+34</button>
                             </div>
 
-                            <div class="input-wrapper">
-                                <span class="prefix-code" id="dialCodeDisplay">+244</span>
-                                <input type="text"
-                                       name="phone_number"
-                                       id="phone_input"
-                                       class="auth-input"
-                                       placeholder="923 000 000"
-                                       maxlength="12"
-                                       inputmode="numeric"
-                                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12)"
-                                       required>
-                            </div>
+                            <input type="text"
+                                   name="phone_number"
+                                   id="phone_input"
+                                   class="auth-input"
+                                   data-i18n-placeholder="phPhone"
+                                   placeholder="Digite seu número de telefone"
+                                   maxlength="12"
+                                   inputmode="numeric"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12)"
+                                   required>
                         </div>
                     </div>
 
+                    <!-- Campo 2: Senha -->
                     <div class="form-group">
-                        <label data-i18n="labelPass1">2. {% trans "Criar Senha" %}</label>
+                        <label data-i18n="labelPass1">{% trans "Criar Senha" %}</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock input-icon-left"></i>
                             <input type="password"
@@ -535,15 +623,16 @@
                                    id="pass1"
                                    class="auth-input"
                                    data-i18n-placeholder="phPass1"
-                                   placeholder="Mínimo de 8 caracteres"
+                                   placeholder="Digite sua senha"
                                    oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')"
                                    required>
                             <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePass('pass1', this)"></i>
                         </div>
                     </div>
 
+                    <!-- Campo 3: Confirmar Senha -->
                     <div class="form-group">
-                        <label data-i18n="labelPass2">3. {% trans "Confirmar Senha" %}</label>
+                        <label data-i18n="labelPass2">{% trans "Confirmar Senha" %}</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-lock input-icon-left"></i>
                             <input type="password"
@@ -551,36 +640,37 @@
                                    id="pass2"
                                    class="auth-input"
                                    data-i18n-placeholder="phPass2"
-                                   placeholder="Repita sua senha"
+                                   placeholder="Confirme sua senha"
                                    oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')"
                                    required>
                             <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePass('pass2', this)"></i>
                         </div>
                     </div>
 
+                    <!-- Campo 4: Código de Convite -->
                     <div class="form-group">
-                        <label data-i18n="labelInvite">4. {% trans "Código de Convite" %}</label>
+                        <label data-i18n="labelInvite">{% trans "Código de Convite" %}</label>
                         <div class="input-wrapper">
                             <i class="fa-solid fa-user-plus input-icon-left"></i>
                             <input type="text"
                                    name="invited_by_code"
                                    class="auth-input"
                                    data-i18n-placeholder="phInvite"
-                                   placeholder="Insira o código (Opcional)"
+                                   placeholder="Código de convite (opcional)"
                                    value="{{ request.GET.invite|default:'' }}"
                                    oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')">
                         </div>
                     </div>
 
                     <button type="submit" class="btn-register" id="submitBtn" data-i18n="btnRegister">
-                        {% trans "CADASTRAR" %}
+                        {% trans "Cadastrar" %}
                     </button>
                 </form>
             </div>
 
             <div class="login-footer">
-                <span data-i18n="hasAccount">{% trans "Já tem uma conta?" %}</span><br>
-                <a href="{% url 'login' %}" data-i18n="loginLink">{% trans "Fazer Login" %}</a>
+                <span data-i18n="hasAccount">{% trans "Já tem uma conta?" %}</span>
+                <a href="{% url 'login' %}" data-i18n="loginLink">{% trans "Entrar" %}</a>
             </div>
         </div>
     </div>
@@ -589,41 +679,44 @@
         const TRANSLATIONS = {
             pt: {
                 subtitle: "Plataforma Global de Educação Financeira",
-                labelPhone: "1. Número de Telefone (Celular)",
-                labelPass1: "2. Criar Senha",
-                phPass1: "Mínimo de 8 caracteres",
-                labelPass2: "3. Confirmar Senha",
-                phPass2: "Repita sua senha",
-                labelInvite: "4. Código de Convite",
-                phInvite: "Insira o código (Opcional)",
-                btnRegister: "CADASTRAR",
+                labelPhone: "Número de Telefone",
+                phPhone: "Digite seu número de telefone",
+                labelPass1: "Criar Senha",
+                phPass1: "Digite sua senha",
+                labelPass2: "Confirmar Senha",
+                phPass2: "Confirme sua senha",
+                labelInvite: "Código de Convite",
+                phInvite: "Código de convite (opcional)",
+                btnRegister: "Cadastrar",
                 hasAccount: "Já tem uma conta?",
-                loginLink: "Fazer Login",
+                loginLink: "Entrar",
                 loadingText: "Preparando o acesso ao menu..."
             },
             en: {
                 subtitle: "Global Financial Education Platform",
-                labelPhone: "1. Phone Number (Mobile)",
-                labelPass1: "2. Create Password",
-                phPass1: "Minimum 8 characters",
-                labelPass2: "3. Confirm Password",
-                phPass2: "Repeat your password",
-                labelInvite: "4. Invite Code",
-                phInvite: "Enter code (Optional)",
-                btnRegister: "SIGN UP",
+                labelPhone: "Phone Number",
+                phPhone: "Enter your phone number",
+                labelPass1: "Create Password",
+                phPass1: "Enter your password",
+                labelPass2: "Confirm Password",
+                phPass2: "Confirm your password",
+                labelInvite: "Invite Code",
+                phInvite: "Invite code (optional)",
+                btnRegister: "Sign Up",
                 hasAccount: "Already have an account?",
                 loginLink: "Sign In",
                 loadingText: "Preparing menu access..."
             },
             ar: {
                 subtitle: "منصة عالمية للتثقيف المالي",
-                labelPhone: "1. رقم الهاتف المحمول",
-                labelPass1: "2. إنشاء كلمة المرور",
-                phPass1: "8 أحرف كحد أدنى",
-                labelPass2: "3. تأكيد كلمة المرور",
-                phPass2: "أعد إدخال كلمة المرور",
-                labelInvite: "4. رمز الدعوة",
-                phInvite: "أدخل الرمز (اختياري)",
+                labelPhone: "رقم الهاتف",
+                phPhone: "أدخل رقم هاتفك",
+                labelPass1: "إنشاء كلمة المرور",
+                phPass1: "أدخل كلمة المرور",
+                labelPass2: "تأكيد كلمة المرور",
+                phPass2: "أكد كلمة المرور",
+                labelInvite: "رمز الدعوة",
+                phInvite: "رمز الدعوة (اختياري)",
                 btnRegister: "تسجيل",
                 hasAccount: "هل لديك حساب بالفعل؟",
                 loginLink: "تسجيل الدخول",
@@ -631,13 +724,14 @@
             },
             hi: {
                 subtitle: "वैश्विक वित्तीय शिक्षा मंच",
-                labelPhone: "1. मोबाइल फ़ोन नंबर",
-                labelPass1: "2. पासवर्ड बनाएं",
-                phPass1: "न्यूनतम 8 अक्षर",
-                labelPass2: "3. पासवर्ड की पुष्टि करें",
-                phPass2: "अपना पासवर्ड दोहराएं",
-                labelInvite: "4. आमंत्रण कोड",
-                phInvite: "कोड दर्ज करें (वैकल्पिक)",
+                labelPhone: "फ़ोन नंबर",
+                phPhone: "अपना फ़ोन नंबर दर्ज करें",
+                labelPass1: "पासवर्ड बनाएं",
+                phPass1: "अपना पासवर्ड दर्ज करें",
+                labelPass2: "पासवर्ड की पुष्टि करें",
+                phPass2: "पासवर्ड की पुष्टि करें",
+                labelInvite: "आमंत्रण कोड",
+                phInvite: "आमंत्रण कोड (वैकल्पिक)",
                 btnRegister: "पंजीकरण करें",
                 hasAccount: "क्या आपके पास पहले से खाता है?",
                 loginLink: "लॉग इन करें",
@@ -645,16 +739,17 @@
             },
             es: {
                 subtitle: "Plataforma Global de Educación Financiera",
-                labelPhone: "1. Número de Teléfono (Móvil)",
-                labelPass1: "2. Crear Contraseña",
-                phPass1: "Mínimo de 8 caracteres",
-                labelPass2: "3. Confirmar Contraseña",
-                phPass2: "Repite tu contraseña",
-                labelInvite: "4. Código de Invitación",
-                phInvite: "Ingresa el código (Opcional)",
-                btnRegister: "REGISTRARSE",
+                labelPhone: "Número de Teléfono",
+                phPhone: "Ingresa tu número de teléfono",
+                labelPass1: "Crear Contraseña",
+                phPass1: "Ingresa tu contraseña",
+                labelPass2: "Confirmar Contraseña",
+                phPass2: "Confirma tu contraseña",
+                labelInvite: "Código de Invitación",
+                phInvite: "Código de invitación (opcional)",
+                btnRegister: "Registrarse",
                 hasAccount: "¿Ya tienes una cuenta?",
-                loginLink: "Iniciar Sesión",
+                loginLink: "Entrar",
                 loadingText: "Preparando el acceso al menú..."
             }
         };
@@ -662,11 +757,47 @@
         const STORAGE_COUNTRY_KEY = "stada_selected_country";
         const STORAGE_LANG_KEY = "stada_selected_lang";
 
-        const countrySelect = document.getElementById("countrySelect");
-        const languageSelect = document.getElementById("languageSelect");
-        const selectedFlag = document.getElementById("selectedFlag");
+        const langTriggerBtn = document.getElementById("langTriggerBtn");
+        const langPopover = document.getElementById("langPopover");
+        const langOptionBtns = document.querySelectorAll(".lang-option-btn");
+
+        const dialTriggerBtn = document.getElementById("dialTriggerBtn");
+        const dialDropdown = document.getElementById("dialDropdown");
+        const dialItemBtns = document.querySelectorAll(".dial-item-btn");
+
         const dialCodeDisplay = document.getElementById("dialCodeDisplay");
         const phoneInput = document.getElementById("phone_input");
+
+        function closeMenus() {
+            langPopover.classList.remove("open");
+            langTriggerBtn.setAttribute("aria-expanded", "false");
+            dialDropdown.classList.remove("open");
+            dialTriggerBtn.setAttribute("aria-expanded", "false");
+        }
+
+        langTriggerBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const isOpen = langPopover.classList.contains("open");
+            closeMenus();
+            if (!isOpen) {
+                langPopover.classList.add("open");
+                langTriggerBtn.setAttribute("aria-expanded", "true");
+            }
+        });
+
+        dialTriggerBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const isOpen = dialDropdown.classList.contains("open");
+            closeMenus();
+            if (!isOpen) {
+                dialDropdown.classList.add("open");
+                dialTriggerBtn.setAttribute("aria-expanded", "true");
+            }
+        });
+
+        document.addEventListener("click", function () {
+            closeMenus();
+        });
 
         function applyLanguage(langCode) {
             const validLang = TRANSLATIONS[langCode] ? langCode : "pt";
@@ -674,7 +805,10 @@
 
             document.documentElement.lang = validLang;
             document.documentElement.dir = validLang === "ar" ? "rtl" : "ltr";
-            languageSelect.value = validLang;
+
+            langOptionBtns.forEach((btn) => {
+                btn.classList.toggle("active", btn.getAttribute("data-lang") === validLang);
+            });
 
             document.querySelectorAll("[data-i18n]").forEach((el) => {
                 const key = el.getAttribute("data-i18n");
@@ -693,35 +827,40 @@
             localStorage.setItem(STORAGE_LANG_KEY, validLang);
         }
 
+        langOptionBtns.forEach((btn) => {
+            btn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                applyLanguage(this.getAttribute("data-lang"));
+                closeMenus();
+            });
+        });
+
         function applyCountry(countryCode, syncLanguage = true) {
-            const option = Array.from(countrySelect.options).find((opt) => opt.value === countryCode) || countrySelect.options[0];
-            countrySelect.value = option.value;
+            const targetBtn = Array.from(dialItemBtns).find((b) => b.getAttribute("data-country") === countryCode) || dialItemBtns[0];
 
-            const flag = option.getAttribute("data-flag") || "🇦🇴";
-            const dial = option.getAttribute("data-dial") || "+244";
-            const placeholder = option.getAttribute("data-placeholder") || "923 000 000";
-            const countryLang = option.getAttribute("data-lang") || "pt";
+            dialItemBtns.forEach((b) => b.classList.remove("selected"));
+            targetBtn.classList.add("selected");
 
-            selectedFlag.textContent = flag;
+            const dial = targetBtn.getAttribute("data-dial") || "+244";
+            const countryLang = targetBtn.getAttribute("data-lang") || "pt";
+
             dialCodeDisplay.textContent = dial;
-            phoneInput.placeholder = placeholder;
 
-            localStorage.setItem(STORAGE_COUNTRY_KEY, option.value);
+            localStorage.setItem(STORAGE_COUNTRY_KEY, targetBtn.getAttribute("data-country"));
 
             if (syncLanguage) {
                 applyLanguage(countryLang);
             }
         }
 
-        countrySelect.addEventListener("change", function () {
-            applyCountry(this.value, true);
+        dialItemBtns.forEach((btn) => {
+            btn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                applyCountry(this.getAttribute("data-country"), true);
+                closeMenus();
+            });
         });
 
-        languageSelect.addEventListener("change", function () {
-            applyLanguage(this.value);
-        });
-
-        // Garantia estrita de apenas números no campo de telefone
         phoneInput.addEventListener("input", function () {
             this.value = this.value.replace(/[^0-9]/g, "").slice(0, 12);
         });
