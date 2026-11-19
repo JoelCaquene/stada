@@ -1,166 +1,237 @@
 {% load static %}
 {% load i18n %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="{{ LANGUAGE_CODE|default:'pt' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>stada | {% trans "Cadastro" %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>STADA | {% trans "Cadastro" %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <style>
         :root {
-            --primary-accent: #00f2fe;
-            --secondary-accent: #4facfe;
-            --glass-bg: rgba(255, 255, 255, 0.12);
-            --glass-border: rgba(255, 255, 255, 0.22);
-            --glass-input: rgba(255, 255, 255, 0.08);
-            --text-main: #ffffff;
-            --text-muted: #cbd5e1;
+            --bg-dark: #060913;
+            --bg-surface: rgba(15, 23, 42, 0.72);
+            --glass-bg: rgba(17, 24, 39, 0.68);
+            --glass-border: rgba(148, 163, 184, 0.2);
+            --glass-input: rgba(15, 23, 42, 0.62);
+            --primary-accent: #38bdf8;
+            --secondary-accent: #6366f1;
+            --cyan-glow: #22d3ee;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
 
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
+        html, body {
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             overflow-x: hidden;
-            position: relative;
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #0f2027, #203a43);
-            background-size: 400% 400%;
-            animation: gradientBg 15s ease infinite;
         }
 
-        @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Ambient glowing lights for glassmorphism background depth */
-        body::before, body::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            filter: blur(90px);
+        /* Fundo persistente estilo plataforma americana (camadas fixas + grid técnico) */
+        .persistent-backdrop {
+            position: fixed;
+            inset: 0;
             z-index: 0;
             pointer-events: none;
-        }
-        body::before {
-            background: rgba(79, 172, 254, 0.35);
-            top: 10%;
-            left: 15%;
-            animation: floatGlow 8s ease-in-out infinite alternate;
-        }
-        body::after {
-            background: rgba(0, 242, 254, 0.25);
-            bottom: 10%;
-            right: 15%;
-            animation: floatGlow 10s ease-in-out infinite alternate-reverse;
+            background:
+                radial-gradient(circle at 18% 16%, rgba(56, 189, 248, 0.18), transparent 42%),
+                radial-gradient(circle at 84% 22%, rgba(99, 102, 241, 0.18), transparent 45%),
+                radial-gradient(circle at 50% 88%, rgba(34, 211, 238, 0.12), transparent 50%),
+                linear-gradient(180deg, #060913 0%, #090f1f 55%, #050811 100%);
         }
 
-        @keyframes floatGlow {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(30px, -40px) scale(1.15); }
+        .persistent-grid {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: radial-gradient(ellipse at center, black 35%, transparent 82%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 35%, transparent 82%);
+        }
+
+        .page-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px 36px;
         }
 
         .main-wrapper {
             width: 100%;
-            max-width: 400px;
+            max-width: 430px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-            z-index: 1;
         }
 
-        .logo-area { 
-            text-align: center; 
-            margin-bottom: 25px; 
-            color: var(--text-main); 
+        /* Barra superior de idioma (alinhada aos países da plataforma) */
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 14px;
         }
 
-        .logo-icon-wrapper {
-            width: 70px;
-            height: 70px;
+        .lang-selector-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid var(--glass-border);
+            border-radius: 999px;
+            padding: 6px 12px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+        }
+
+        .lang-selector-box i {
+            color: var(--primary-accent);
+            font-size: 13px;
+        }
+
+        .lang-select {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .lang-select option {
+            background: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* Marca e Logotipo Profissional STADA */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .logo-mark-box {
+            width: 72px;
+            height: 72px;
             margin: 0 auto 12px;
-            background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.2));
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(56, 189, 248, 0.16), rgba(99, 102, 241, 0.16));
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            box-shadow: 0 12px 30px rgba(2, 6, 23, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
         }
 
-        .logo-area i { 
-            font-size: 32px; 
-            background: linear-gradient(135deg, #00f2fe, #4facfe);
+        .logo-area h1 {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #ffffff 0%, #7dd3fc 55%, #a5b4fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .logo-area h1 { 
-            font-size: 28px; 
-            font-weight: 700; 
-            letter-spacing: 1px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .logo-area p { 
-            font-size: 14px; 
+        .logo-area p {
+            margin-top: 5px;
+            font-size: 13.5px;
             color: var(--text-muted);
-            margin-top: 4px;
             font-weight: 500;
         }
 
+        /* Card principal estilo americano */
         .register-card {
+            width: 100%;
             background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            width: 100%;
-            border-radius: 24px;
-            padding: 30px;
+            backdrop-filter: blur(22px);
+            -webkit-backdrop-filter: blur(22px);
             border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 
-                        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            position: relative;
-            overflow: hidden;
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow:
+                0 24px 60px rgba(0, 0, 0, 0.55),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
         }
 
-        /* Glass shimmer effect line */
-        .register-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-            transition: 0.5s;
-            pointer-events: none;
+        .form-group {
+            margin-bottom: 18px;
         }
 
-        .form-group { margin-bottom: 18px; }
         .form-group label {
             display: block;
             font-size: 13px;
             font-weight: 600;
             color: #e2e8f0;
             margin-bottom: 8px;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
+        }
+
+        /* Linha de País + Telefone */
+        .phone-row {
+            display: grid;
+            grid-template-columns: 126px 1fr;
+            gap: 10px;
+        }
+
+        .country-select-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--glass-input);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0 10px;
+            transition: all 0.25s ease;
+        }
+
+        .country-select-wrapper:focus-within {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+        }
+
+        .country-flag-preview {
+            font-size: 18px;
+            margin-right: 6px;
+            line-height: 1;
+        }
+
+        .country-select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 13px 0;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .country-select option {
+            background: #0f172a;
+            color: #f8fafc;
         }
 
         .input-wrapper {
@@ -170,38 +241,54 @@
             background: var(--glass-input);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
-            padding: 0 15px;
-            transition: all 0.3s ease;
+            padding: 0 14px;
+            transition: all 0.25s ease;
         }
 
         .input-wrapper:focus-within {
             border-color: var(--primary-accent);
-            box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
-            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+            background: rgba(15, 23, 42, 0.85);
         }
 
-        .flag-icon { margin-right: 8px; font-size: 18px; }
-        .prefix-code { color: var(--text-main); margin-right: 10px; font-weight: 600; font-size: 14px; }
-        
-        .auth-input { 
-            width: 100%; 
-            padding: 14px 0; 
-            border: none; 
-            background: transparent; 
-            font-size: 14px; 
+        .prefix-code {
+            color: var(--primary-accent);
+            font-weight: 700;
+            font-size: 13.5px;
+            margin-right: 10px;
+            padding-right: 10px;
+            border-right: 1px solid rgba(148, 163, 184, 0.22);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 13.5px 0;
+            border: none;
+            background: transparent;
             color: var(--text-main);
-            outline: none; 
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
         }
 
         .auth-input::placeholder {
-            color: #94a3b8;
+            color: #64748b;
         }
 
-        .toggle-password { 
-            cursor: pointer; 
-            color: #94a3b8; 
-            margin-left: 10px; 
-            transition: color 0.2s;
+        .input-icon-left {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .toggle-password {
+            cursor: pointer;
+            color: #94a3b8;
+            margin-left: 10px;
+            font-size: 14px;
+            transition: color 0.2s ease;
         }
 
         .toggle-password:hover {
@@ -210,141 +297,495 @@
 
         .btn-register {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-            color: #0f172a;
+            padding: 15px 18px;
+            margin-top: 8px;
             border: none;
             border-radius: 12px;
-            font-size: 15px;
+            background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14.5px;
             font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
             cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 242, 254, 0.3);
-            letter-spacing: 0.5px;
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.28);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
 
         .btn-register:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(0, 242, 254, 0.45);
+            transform: translateY(-1.5px);
+            box-shadow: 0 14px 30px rgba(99, 102, 241, 0.36);
             filter: brightness(1.05);
         }
 
-        .login-footer { 
-            text-align: center; 
-            margin-top: 22px; 
-            color: var(--text-muted); 
-            font-size: 14px; 
-            line-height: 1.5;
+        .btn-register:active {
+            transform: translateY(0);
         }
 
-        .login-footer a { 
-            color: var(--primary-accent); 
-            font-weight: 700; 
-            text-decoration: none; 
-            transition: opacity 0.2s;
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .login-footer a {
+            color: var(--primary-accent);
+            font-weight: 700;
+            text-decoration: none;
         }
 
         .login-footer a:hover {
             text-decoration: underline;
         }
+
+        /* Tela de Loading Profissional (1% a 100%) antes do acesso ao menu */
+        .stada-loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(5, 8, 17, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .stada-loader-overlay.active {
+            display: flex;
+        }
+
+        .stada-loader-card {
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.28);
+            border-radius: 22px;
+            padding: 30px 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+        }
+
+        .loader-ring {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            border: 3px solid rgba(148, 163, 184, 0.18);
+            border-top-color: var(--primary-accent);
+            border-right-color: var(--secondary-accent);
+            animation: spinRing 0.9s linear infinite;
+        }
+
+        @keyframes spinRing {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-brand {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 2.5px;
+            color: var(--primary-accent);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .loader-percent {
+            font-size: 38px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .loader-status {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 18px;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.16);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 1%;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #38bdf8 0%, #6366f1 100%);
+            transition: width 0.04s linear;
+        }
+
+        @media (max-width: 400px) {
+            .phone-row {
+                grid-template-columns: 114px 1fr;
+            }
+
+            .register-card {
+                padding: 22px 18px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Fundo persistente -->
+    <div class="persistent-backdrop"></div>
+    <div class="persistent-grid"></div>
 
-    <div class="main-wrapper">
-        <div class="logo-area">
-            <div class="logo-icon-wrapper">
-                <i class="fa-solid fa-chart-line"></i>
+    <!-- Overlay de carregamento de 1% a 100% antes de avançar para o menu -->
+    <div class="stada-loader-overlay" id="stadaLoader" aria-live="polite">
+        <div class="stada-loader-card">
+            <div class="loader-ring"></div>
+            <div class="loader-brand">STADA</div>
+            <div class="loader-percent" id="loaderPercent">1%</div>
+            <div class="loader-status" id="loaderStatus" data-i18n="loadingText">{% trans "Preparando o acesso ao menu..." %}</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="loaderProgressBar"></div>
             </div>
-            <h1>stada</h1>
-            <p>{% trans "Plataforma de Educação Financeira" %}</p>
         </div>
+    </div>
 
-        <div class="register-card">
-            <form method="post" class="auth-form">
-                {% csrf_token %}
-
-                <div class="form-group">
-                    <label>1. {% trans "Número de Telefone (Celular)" %}</label>
-                    <div class="input-wrapper">
-                        <span class="flag-icon">🇦🇴</span>
-                        <span class="prefix-code">+244</span>
-                        <input type="text" 
-                               name="phone_number" 
-                               id="phone_input"
-                               class="auth-input" 
-                               placeholder="940 000 000" 
-                               maxlength="12" 
-                               inputmode="numeric"
-                               oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12)" 
-                               required>
-                    </div>
+    <div class="page-container">
+        <div class="main-wrapper">
+            <!-- Seletor de idioma correspondente aos países da plataforma -->
+            <div class="top-bar">
+                <div class="lang-selector-box">
+                    <i class="fa-solid fa-globe"></i>
+                    <select id="languageSelect" class="lang-select" aria-label="Language">
+                        <option value="pt">Português (AO / PT / BR / MZ)</option>
+                        <option value="en">English (CA / NG)</option>
+                        <option value="ar">العربية (EG)</option>
+                        <option value="hi">हिन्दी (IN)</option>
+                        <option value="es">Español (ES)</option>
+                    </select>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label>2. {% trans "Criar Senha" %}</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-lock" style="color: #94a3b8;"></i>
-                        <input type="password" 
-                               name="password" 
-                               id="pass1" 
-                               class="auth-input" 
-                               style="margin-left:10px;" 
-                               placeholder="Mínimo de 8 caracteres" 
-                               oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')"
-                               required>
-                        <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePass('pass1', this)"></i>
-                    </div>
+            <!-- Logotipo Profissional STADA -->
+            <div class="logo-area">
+                <div class="logo-mark-box">
+                    <svg width="42" height="42" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <defs>
+                            <linearGradient id="stadaGrad" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#38bdf8"/>
+                                <stop offset="100%" stop-color="#818cf8"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="4" y="4" width="40" height="40" rx="11" stroke="url(#stadaGrad)" stroke-width="2.5"/>
+                        <path d="M15 31L22 23L27 27L34 17" stroke="url(#stadaGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="34" cy="17" r="3" fill="#38bdf8"/>
+                    </svg>
                 </div>
+                <h1>STADA</h1>
+                <p data-i18n="subtitle">{% trans "Plataforma Global de Educação Financeira" %}</p>
+            </div>
 
-                <div class="form-group">
-                    <label>3. {% trans "Confirmar Senha" %}</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-lock" style="color: #94a3b8;"></i>
-                        <input type="password" 
-                               name="confirm_password" 
-                               id="pass2" 
-                               class="auth-input" 
-                               style="margin-left:10px;" 
-                               placeholder="Repita sua senha" 
-                               oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')"
-                               required>
-                        <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePass('pass2', this)"></i>
+            <div class="register-card">
+                <form method="post" class="auth-form" id="registerForm">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label data-i18n="labelPhone">1. {% trans "Número de Telefone (Celular)" %}</label>
+                        <div class="phone-row">
+                            <div class="country-select-wrapper">
+                                <span class="country-flag-preview" id="selectedFlag">🇦🇴</span>
+                                <select id="countrySelect" class="country-select" aria-label="Country">
+                                    <option value="AO" data-dial="+244" data-flag="🇦🇴" data-lang="pt" data-placeholder="923 000 000" data-max="12">Angola (+244)</option>
+                                    <option value="PT" data-dial="+351" data-flag="🇵🇹" data-lang="pt" data-placeholder="912 345 678" data-max="12">Portugal (+351)</option>
+                                    <option value="BR" data-dial="+55" data-flag="🇧🇷" data-lang="pt" data-placeholder="11987654321" data-max="12">Brasil (+55)</option>
+                                    <option value="CA" data-dial="+1" data-flag="🇨🇦" data-lang="en" data-placeholder="4165550199" data-max="12">Canadá (+1)</option>
+                                    <option value="EG" data-dial="+20" data-flag="🇪🇬" data-lang="ar" data-placeholder="1001234567" data-max="12">Egito (+20)</option>
+                                    <option value="IN" data-dial="+91" data-flag="🇮🇳" data-lang="hi" data-placeholder="9876543210" data-max="12">Índia (+91)</option>
+                                    <option value="NG" data-dial="+234" data-flag="🇳🇬" data-lang="en" data-placeholder="8031234567" data-max="12">Nigéria (+234)</option>
+                                    <option value="MZ" data-dial="+258" data-flag="🇲🇿" data-lang="pt" data-placeholder="841234567" data-max="12">Moçambique (+258)</option>
+                                    <option value="ES" data-dial="+34" data-flag="🇪🇸" data-lang="es" data-placeholder="612345678" data-max="12">Espanha (+34)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-wrapper">
+                                <span class="prefix-code" id="dialCodeDisplay">+244</span>
+                                <input type="text"
+                                       name="phone_number"
+                                       id="phone_input"
+                                       class="auth-input"
+                                       placeholder="923 000 000"
+                                       maxlength="12"
+                                       inputmode="numeric"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12)"
+                                       required>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>4. {% trans "Código de Convite" %}</label>
-                    <div class="input-wrapper">
-                        <i class="fa-solid fa-user-plus" style="color: #94a3b8;"></i>
-                        <input type="text" 
-                               name="invited_by_code" 
-                               class="auth-input" 
-                               style="margin-left:10px;" 
-                               placeholder="Insira o código (Opcional)" 
-                               value="{{ request.GET.invite|default:'' }}"
-                               oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')">
+                    <div class="form-group">
+                        <label data-i18n="labelPass1">2. {% trans "Criar Senha" %}</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon-left"></i>
+                            <input type="password"
+                                   name="password"
+                                   id="pass1"
+                                   class="auth-input"
+                                   data-i18n-placeholder="phPass1"
+                                   placeholder="Mínimo de 8 caracteres"
+                                   oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')"
+                                   required>
+                            <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePass('pass1', this)"></i>
+                        </div>
                     </div>
-                </div>
-                
-                <button type="submit" class="btn-register">{% trans "CADASTRAR" %}</button>
-            </form>
-        </div>
 
-        <div class="login-footer">
-            {% trans "Já tem uma conta?" %} <br>
-            <a href="{% url 'login' %}">{% trans "Fazer Login" %}</a>
+                    <div class="form-group">
+                        <label data-i18n="labelPass2">3. {% trans "Confirmar Senha" %}</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon-left"></i>
+                            <input type="password"
+                                   name="confirm_password"
+                                   id="pass2"
+                                   class="auth-input"
+                                   data-i18n-placeholder="phPass2"
+                                   placeholder="Repita sua senha"
+                                   oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')"
+                                   required>
+                            <i class="fa-solid fa-eye-slash toggle-password" onclick="togglePass('pass2', this)"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="labelInvite">4. {% trans "Código de Convite" %}</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-plus input-icon-left"></i>
+                            <input type="text"
+                                   name="invited_by_code"
+                                   class="auth-input"
+                                   data-i18n-placeholder="phInvite"
+                                   placeholder="Insira o código (Opcional)"
+                                   value="{{ request.GET.invite|default:'' }}"
+                                   oninput="this.value = this.value.replace(/[^a-zA-Z0-9]/g, '')">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-register" id="submitBtn" data-i18n="btnRegister">
+                        {% trans "CADASTRAR" %}
+                    </button>
+                </form>
+            </div>
+
+            <div class="login-footer">
+                <span data-i18n="hasAccount">{% trans "Já tem uma conta?" %}</span><br>
+                <a href="{% url 'login' %}" data-i18n="loginLink">{% trans "Fazer Login" %}</a>
+            </div>
         </div>
     </div>
 
     <script>
+        const TRANSLATIONS = {
+            pt: {
+                subtitle: "Plataforma Global de Educação Financeira",
+                labelPhone: "1. Número de Telefone (Celular)",
+                labelPass1: "2. Criar Senha",
+                phPass1: "Mínimo de 8 caracteres",
+                labelPass2: "3. Confirmar Senha",
+                phPass2: "Repita sua senha",
+                labelInvite: "4. Código de Convite",
+                phInvite: "Insira o código (Opcional)",
+                btnRegister: "CADASTRAR",
+                hasAccount: "Já tem uma conta?",
+                loginLink: "Fazer Login",
+                loadingText: "Preparando o acesso ao menu..."
+            },
+            en: {
+                subtitle: "Global Financial Education Platform",
+                labelPhone: "1. Phone Number (Mobile)",
+                labelPass1: "2. Create Password",
+                phPass1: "Minimum 8 characters",
+                labelPass2: "3. Confirm Password",
+                phPass2: "Repeat your password",
+                labelInvite: "4. Invite Code",
+                phInvite: "Enter code (Optional)",
+                btnRegister: "SIGN UP",
+                hasAccount: "Already have an account?",
+                loginLink: "Sign In",
+                loadingText: "Preparing menu access..."
+            },
+            ar: {
+                subtitle: "منصة عالمية للتثقيف المالي",
+                labelPhone: "1. رقم الهاتف المحمول",
+                labelPass1: "2. إنشاء كلمة المرور",
+                phPass1: "8 أحرف كحد أدنى",
+                labelPass2: "3. تأكيد كلمة المرور",
+                phPass2: "أعد إدخال كلمة المرور",
+                labelInvite: "4. رمز الدعوة",
+                phInvite: "أدخل الرمز (اختياري)",
+                btnRegister: "تسجيل",
+                hasAccount: "هل لديك حساب بالفعل؟",
+                loginLink: "تسجيل الدخول",
+                loadingText: "جارٍ تجهيز الدخول إلى القائمة..."
+            },
+            hi: {
+                subtitle: "वैश्विक वित्तीय शिक्षा मंच",
+                labelPhone: "1. मोबाइल फ़ोन नंबर",
+                labelPass1: "2. पासवर्ड बनाएं",
+                phPass1: "न्यूनतम 8 अक्षर",
+                labelPass2: "3. पासवर्ड की पुष्टि करें",
+                phPass2: "अपना पासवर्ड दोहराएं",
+                labelInvite: "4. आमंत्रण कोड",
+                phInvite: "कोड दर्ज करें (वैकल्पिक)",
+                btnRegister: "पंजीकरण करें",
+                hasAccount: "क्या आपके पास पहले से खाता है?",
+                loginLink: "लॉग इन करें",
+                loadingText: "मेनू खोलने की तैयारी हो रही है..."
+            },
+            es: {
+                subtitle: "Plataforma Global de Educación Financiera",
+                labelPhone: "1. Número de Teléfono (Móvil)",
+                labelPass1: "2. Crear Contraseña",
+                phPass1: "Mínimo de 8 caracteres",
+                labelPass2: "3. Confirmar Contraseña",
+                phPass2: "Repite tu contraseña",
+                labelInvite: "4. Código de Invitación",
+                phInvite: "Ingresa el código (Opcional)",
+                btnRegister: "REGISTRARSE",
+                hasAccount: "¿Ya tienes una cuenta?",
+                loginLink: "Iniciar Sesión",
+                loadingText: "Preparando el acceso al menú..."
+            }
+        };
+
+        const STORAGE_COUNTRY_KEY = "stada_selected_country";
+        const STORAGE_LANG_KEY = "stada_selected_lang";
+
+        const countrySelect = document.getElementById("countrySelect");
+        const languageSelect = document.getElementById("languageSelect");
+        const selectedFlag = document.getElementById("selectedFlag");
+        const dialCodeDisplay = document.getElementById("dialCodeDisplay");
+        const phoneInput = document.getElementById("phone_input");
+
+        function applyLanguage(langCode) {
+            const validLang = TRANSLATIONS[langCode] ? langCode : "pt";
+            const dict = TRANSLATIONS[validLang];
+
+            document.documentElement.lang = validLang;
+            document.documentElement.dir = validLang === "ar" ? "rtl" : "ltr";
+            languageSelect.value = validLang;
+
+            document.querySelectorAll("[data-i18n]").forEach((el) => {
+                const key = el.getAttribute("data-i18n");
+                if (dict[key]) {
+                    el.textContent = dict[key];
+                }
+            });
+
+            document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+                const key = el.getAttribute("data-i18n-placeholder");
+                if (dict[key]) {
+                    el.placeholder = dict[key];
+                }
+            });
+
+            localStorage.setItem(STORAGE_LANG_KEY, validLang);
+        }
+
+        function applyCountry(countryCode, syncLanguage = true) {
+            const option = Array.from(countrySelect.options).find((opt) => opt.value === countryCode) || countrySelect.options[0];
+            countrySelect.value = option.value;
+
+            const flag = option.getAttribute("data-flag") || "🇦🇴";
+            const dial = option.getAttribute("data-dial") || "+244";
+            const placeholder = option.getAttribute("data-placeholder") || "923 000 000";
+            const countryLang = option.getAttribute("data-lang") || "pt";
+
+            selectedFlag.textContent = flag;
+            dialCodeDisplay.textContent = dial;
+            phoneInput.placeholder = placeholder;
+
+            localStorage.setItem(STORAGE_COUNTRY_KEY, option.value);
+
+            if (syncLanguage) {
+                applyLanguage(countryLang);
+            }
+        }
+
+        countrySelect.addEventListener("change", function () {
+            applyCountry(this.value, true);
+        });
+
+        languageSelect.addEventListener("change", function () {
+            applyLanguage(this.value);
+        });
+
+        // Garantia estrita de apenas números no campo de telefone
+        phoneInput.addEventListener("input", function () {
+            this.value = this.value.replace(/[^0-9]/g, "").slice(0, 12);
+        });
+
         function togglePass(id, el) {
             const input = document.getElementById(id);
             input.type = (input.type === "password") ? "text" : "password";
             el.classList.toggle("fa-eye");
             el.classList.toggle("fa-eye-slash");
         }
+
+        // Loading profissional de 1% a 100% ao enviar o formulário antes de prosseguir para o menu
+        const registerForm = document.getElementById("registerForm");
+        const stadaLoader = document.getElementById("stadaLoader");
+        const loaderPercent = document.getElementById("loaderPercent");
+        const loaderProgressBar = document.getElementById("loaderProgressBar");
+
+        let isSubmittingWithLoader = false;
+
+        registerForm.addEventListener("submit", function (event) {
+            if (isSubmittingWithLoader) {
+                return;
+            }
+
+            if (!registerForm.checkValidity()) {
+                return;
+            }
+
+            event.preventDefault();
+            isSubmittingWithLoader = true;
+
+            stadaLoader.classList.add("active");
+            let current = 1;
+            loaderPercent.textContent = "1%";
+            loaderProgressBar.style.width = "1%";
+
+            const interval = setInterval(() => {
+                current += 1;
+                if (current > 100) {
+                    current = 100;
+                }
+
+                loaderPercent.textContent = current + "%";
+                loaderProgressBar.style.width = current + "%";
+
+                if (current >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        registerForm.submit();
+                    }, 180);
+                }
+            }, 22);
+        });
+
+        // Restaurar preferências persistidas do usuário
+        (function initPreferences() {
+            const savedCountry = localStorage.getItem(STORAGE_COUNTRY_KEY) || "AO";
+            const savedLang = localStorage.getItem(STORAGE_LANG_KEY);
+
+            applyCountry(savedCountry, !savedLang);
+            if (savedLang) {
+                applyLanguage(savedLang);
+            }
+        })();
     </script>
 </body>
 </html>
