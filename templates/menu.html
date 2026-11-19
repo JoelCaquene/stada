@@ -153,9 +153,9 @@
 
             <a href="{% url 'perfil' %}" class="quick-tile-item">
                 <div class="tile-3d tile-rose">
-                    <i class="fas fa-building-columns"></i>
+                    <i class="fas fa-ellipsis-h"></i>
                 </div>
-                <span class="tile-caption" data-i18n="btnCompany">Companhia</span>
+                <span class="tile-caption" data-i18n="btnMore">Mais</span>
             </a>
         </section>
 
@@ -205,7 +205,7 @@
                 </div>
 
                 <div class="chart-study-notes">
-                    <span id="chartStudyTrend" class="trend-tag up" data-i18n="studyTrendUp">Tendência de Estudo: Alta / Momentum</span>
+                    <span id="chartStudyTrend" class="trend-tag up" data-i18n="studyTrendUp">Estudo Cripto: Tendência de Alta</span>
                     <span id="chartVolInfo" class="vol-tag">Vol 24h (CAD): --</span>
                 </div>
             </div>
@@ -214,41 +214,38 @@
             <div class="crypto-list" id="cryptoListContainer"></div>
         </section>
 
-        <!-- Barra de navegação inferior -->
-        <nav class="stada-bottom-nav">
-            <a href="{% url 'home' %}" class="stada-nav-item active">
-                <i class="fas fa-house"></i>
-                <span data-i18n="navHome">Início</span>
-            </a>
-            <a href="{% url 'tarefa' %}" class="stada-nav-item">
-                <i class="fas fa-tasks"></i>
-                <span data-i18n="navTasks">Tarefas</span>
-            </a>
-            <a href="{% url 'nivel' %}" class="stada-nav-item">
-                <i class="fas fa-layer-group"></i>
-                <span data-i18n="navJoin">Unir-se</span>
-            </a>
-            <a href="{% url 'renda' %}" class="stada-nav-item">
-                <i class="fas fa-chart-line"></i>
-                <span data-i18n="navYield">Rendimento</span>
-            </a>
-            <a href="{% url 'perfil' %}" class="stada-nav-item">
-                <i class="fas fa-user-tie"></i>
-                <span data-i18n="navProfile">Perfil</span>
-            </a>
+        <!-- BARRA INFERIOR SEM ÍCONES: MOEDAS GLOBAIS RODANDO EM LUZES -->
+        <nav class="stada-bottom-nav" aria-label="Global Currencies Light Ticker">
+            <div class="light-marquee-track">
+                <div class="light-marquee-inner" id="globalLightCurrencies">
+                    <span class="light-coin-chip glow-cyan">USD $1.00</span>
+                    <span class="light-coin-chip glow-indigo">CAD C$1.39</span>
+                    <span class="light-coin-chip glow-emerald">EUR €0.92</span>
+                    <span class="light-coin-chip glow-amber">GBP £0.79</span>
+                    <span class="light-coin-chip glow-cyan">BRL R$5.78</span>
+                    <span class="light-coin-chip glow-indigo">AED 3.67 د.إ</span>
+                    <!-- Duplicado para giro contínuo sem falhas -->
+                    <span class="light-coin-chip glow-cyan">USD $1.00</span>
+                    <span class="light-coin-chip glow-indigo">CAD C$1.39</span>
+                    <span class="light-coin-chip glow-emerald">EUR €0.92</span>
+                    <span class="light-coin-chip glow-amber">GBP £0.79</span>
+                    <span class="light-coin-chip glow-cyan">BRL R$5.78</span>
+                    <span class="light-coin-chip glow-indigo">AED 3.67 د.إ</span>
+                </div>
+            </div>
         </nav>
     </div>
 
-    <!-- POP-UP DE BOAS-VINDAS COMPACTO E ROLÁVEL (ABRE AO LOGAR/ATUALIZAR OU CLICAR NO ÍCONE) -->
+    <!-- POP-UP COMPACTO DE BOAS-VINDAS (ALTURA REDUZIDA E ROLÁVEL) -->
     <div class="welcome-modal-backdrop" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeModalTitle">
         <div class="welcome-modal-card">
             <button type="button" class="welcome-close-btn" id="closeWelcomeModalBtn" aria-label="Close">
                 <i class="fas fa-times"></i>
             </button>
 
-            <!-- Seletor de idioma dentro do pop-up: Inglês, Português, Árabe, Índia e Espanhol -->
+            <!-- Seletor de idioma com ícone de globo dentro do pop-up -->
             <div class="modal-lang-bar">
-                <i class="fas fa-language"></i>
+                <i class="fas fa-globe"></i>
                 <select id="modalLangSelect" aria-label="Popup Language">
                     <option value="pt">Português</option>
                     <option value="en">English</option>
@@ -396,7 +393,7 @@
         max-width: 480px;
         margin: 0 auto;
         min-height: 100vh;
-        padding: 12px 12px 92px;
+        padding: 12px 12px 76px;
     }
 
     /* Topo */
@@ -960,7 +957,7 @@
         color: #f87171;
     }
 
-    /* Barra inferior */
+    /* BARRA INFERIOR SEM ÍCONES: MOEDAS GLOBAIS EM LUZES GIRATÓRIAS */
     .stada-bottom-nav {
         position: fixed;
         bottom: 0;
@@ -968,38 +965,79 @@
         transform: translateX(-50%);
         width: 100%;
         max-width: 480px;
-        background: rgba(8, 12, 22, 0.94);
+        height: 48px;
+        background: rgba(7, 11, 20, 0.96);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-top: 1px solid var(--stada-border);
+        border-top: 1px solid rgba(34, 211, 238, 0.22);
         display: flex;
-        justify-content: space-around;
-        padding: 9px 6px;
+        align-items: center;
+        overflow: hidden;
         z-index: 60;
     }
 
-    .stada-nav-item {
-        text-decoration: none;
-        color: #64748b;
-        display: flex;
-        flex-direction: column;
+    .light-marquee-track {
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .light-marquee-inner {
+        display: inline-flex;
         align-items: center;
-        gap: 3px;
-        width: 20%;
-        font-size: 10px;
-        font-weight: 600;
-        transition: color 0.2s ease;
+        gap: 10px;
+        animation: globalCurrencyOrbit 18s linear infinite;
     }
 
-    .stada-nav-item i {
-        font-size: 17px;
+    @keyframes globalCurrencyOrbit {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
     }
 
-    .stada-nav-item.active {
-        color: var(--stada-cyan);
+    .light-coin-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 11px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        font-variant-numeric: tabular-nums;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid transparent;
+        animation: lightPulse 2.6s ease-in-out infinite alternate;
     }
 
-    /* POP-UP COMPACTO, BEM ESTRUTURADO E ROLÁVEL */
+    .glow-cyan {
+        color: #67e8f9;
+        border-color: rgba(34, 211, 238, 0.45);
+        box-shadow: 0 0 12px rgba(34, 211, 238, 0.35);
+    }
+
+    .glow-indigo {
+        color: #c4b5fd;
+        border-color: rgba(129, 140, 248, 0.45);
+        box-shadow: 0 0 12px rgba(129, 140, 248, 0.35);
+    }
+
+    .glow-emerald {
+        color: #6ee7b7;
+        border-color: rgba(16, 185, 129, 0.45);
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+    }
+
+    .glow-amber {
+        color: #fcd34d;
+        border-color: rgba(245, 158, 11, 0.45);
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    }
+
+    @keyframes lightPulse {
+        0% { filter: brightness(0.92); }
+        100% { filter: brightness(1.25); }
+    }
+
+    /* POP-UP COM ALTURA REDUZIDA E ROLAGEM INTERNA */
     .welcome-modal-backdrop {
         position: fixed;
         inset: 0;
@@ -1020,14 +1058,14 @@
     .welcome-modal-card {
         position: relative;
         width: 100%;
-        max-width: 368px;
-        max-height: 82vh;
+        max-width: 364px;
+        max-height: 62vh;
         overflow-y: auto;
         background: #0b1120;
         border: 1px solid rgba(34, 211, 238, 0.34);
-        border-radius: 20px;
-        padding: 16px 16px 18px;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.82);
+        border-radius: 18px;
+        padding: 14px 14px 16px;
+        box-shadow: 0 22px 54px rgba(0, 0, 0, 0.84);
         text-align: center;
         scrollbar-width: thin;
         scrollbar-color: rgba(34, 211, 238, 0.35) transparent;
@@ -1037,11 +1075,11 @@
         position: sticky;
         top: 0;
         float: right;
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         border: 1px solid var(--stada-border);
-        background: rgba(15, 23, 42, 0.95);
+        background: rgba(15, 23, 42, 0.96);
         color: #cbd5e1;
         cursor: pointer;
         display: flex;
@@ -1054,13 +1092,13 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(15, 23, 42, 0.9);
+        background: rgba(15, 23, 42, 0.92);
         border: 1px solid rgba(34, 211, 238, 0.25);
         border-radius: 999px;
         padding: 4px 10px;
         color: var(--stada-cyan);
-        font-size: 12px;
-        margin-bottom: 8px;
+        font-size: 11.5px;
+        margin-bottom: 6px;
     }
 
     .modal-lang-bar select {
@@ -1068,7 +1106,7 @@
         border: none;
         color: #f8fafc;
         font-family: inherit;
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 600;
         outline: none;
         cursor: pointer;
@@ -1082,21 +1120,21 @@
     .welcome-badge {
         display: block;
         width: fit-content;
-        margin: 0 auto 10px;
-        font-size: 10.5px;
+        margin: 0 auto 8px;
+        font-size: 10px;
         font-weight: 800;
         letter-spacing: 2px;
         color: var(--stada-cyan);
         background: rgba(34, 211, 238, 0.12);
-        padding: 3px 10px;
+        padding: 3px 9px;
         border-radius: 999px;
     }
 
     .modal-slideshow-box {
         position: relative;
         width: 100%;
-        height: 142px;
-        border-radius: 14px;
+        height: 112px;
+        border-radius: 12px;
         overflow: hidden;
         border: 1px solid var(--stada-border);
         background: #060913;
@@ -1120,7 +1158,7 @@
         display: flex;
         justify-content: center;
         gap: 6px;
-        margin: 8px 0 10px;
+        margin: 6px 0 8px;
     }
 
     .m-dot {
@@ -1138,41 +1176,41 @@
     }
 
     .welcome-modal-title {
-        font-size: 16.5px;
+        font-size: 15.5px;
         font-weight: 800;
         color: #ffffff;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .welcome-info-box {
         text-align: left;
         background: rgba(15, 23, 42, 0.78);
         border: 1px solid rgba(148, 163, 184, 0.14);
-        border-radius: 14px;
-        padding: 12px;
-        font-size: 12px;
-        line-height: 1.48;
+        border-radius: 12px;
+        padding: 10px 11px;
+        font-size: 11.5px;
+        line-height: 1.45;
         color: #e2e8f0;
     }
 
     .welcome-highlight-rule {
         color: #34d399;
         font-weight: 700;
-        margin-bottom: 8px;
+        margin-bottom: 7px;
     }
 
     .welcome-sub-rule {
         color: #cbd5e1;
         font-weight: 600;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
     }
 
     .level-tiers-list {
         list-style: none;
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 10px;
+        gap: 5px;
+        margin-bottom: 8px;
     }
 
     .level-tiers-list li {
@@ -1180,15 +1218,15 @@
         border: 1px solid rgba(34, 211, 238, 0.25);
         color: #22d3ee;
         font-weight: 700;
-        font-size: 11px;
-        padding: 4px 8px;
-        border-radius: 8px;
+        font-size: 10.5px;
+        padding: 3px 7px;
+        border-radius: 7px;
     }
 
     .salary-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 6px;
+        gap: 5px;
     }
 
     .salary-pill {
@@ -1196,23 +1234,23 @@
         border: 1px solid rgba(129, 140, 248, 0.28);
         color: #f8fafc;
         font-weight: 700;
-        font-size: 11px;
-        padding: 6px 8px;
-        border-radius: 9px;
+        font-size: 10.5px;
+        padding: 5px 7px;
+        border-radius: 8px;
         text-align: center;
     }
 
     .modal-divider {
         border: none;
         border-top: 1px solid rgba(148, 163, 184, 0.2);
-        margin: 12px 0;
+        margin: 10px 0;
     }
 
     .modal-channels-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
     .channel-btn {
@@ -1220,10 +1258,10 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 9px 10px;
-        border-radius: 11px;
+        padding: 8px 10px;
+        border-radius: 10px;
         text-decoration: none;
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 700;
         color: #ffffff;
     }
@@ -1238,13 +1276,13 @@
 
     .welcome-confirm-btn {
         width: 100%;
-        padding: 12px 14px;
+        padding: 11px 14px;
         border: none;
         border-radius: 999px;
         background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 55%, #6366f1 100%);
         color: #041019;
         font-family: inherit;
-        font-size: 13px;
+        font-size: 12.5px;
         font-weight: 800;
         cursor: pointer;
     }
@@ -1261,15 +1299,10 @@
             btnYield: "Rendimento",
             btnInvite: "Convidar",
             btnJoin: "Unir-se",
-            btnCompany: "Companhia",
+            btnMore: "Mais",
             cryptoTitle: "Mercado Global • CAD",
             studyTrendUp: "Estudo Cripto: Tendência de Alta",
             studyTrendDown: "Estudo Cripto: Pressão Vendedora",
-            navHome: "Início",
-            navTasks: "Tarefas",
-            navJoin: "Unir-se",
-            navYield: "Rendimento",
-            navProfile: "Perfil",
             welcomeTitle: "Bem-vindo à STADA",
             ruleInternship: "Realiza estágio de dois dias gratuitamente sem investir nada.",
             ruleInvite: "Convite seus amigos e familiares a investirem e você ganha:",
@@ -1292,15 +1325,10 @@
             btnYield: "Earnings",
             btnInvite: "Invite",
             btnJoin: "Join",
-            btnCompany: "Company",
+            btnMore: "More",
             cryptoTitle: "Global Market • CAD",
             studyTrendUp: "Crypto Study: Bullish Momentum",
             studyTrendDown: "Crypto Study: Bearish Pressure",
-            navHome: "Home",
-            navTasks: "Tasks",
-            navJoin: "Join",
-            navYield: "Earnings",
-            navProfile: "Profile",
             welcomeTitle: "Welcome to STADA",
             ruleInternship: "Complete a two-day internship for free without investing anything.",
             ruleInvite: "Invite your friends and family to invest and earn:",
@@ -1323,15 +1351,10 @@
             btnYield: "العوائد",
             btnInvite: "دعوة",
             btnJoin: "انضمام",
-            btnCompany: "الشركة",
+            btnMore: "المزيد",
             cryptoTitle: "السوق العالمي • CAD",
             studyTrendUp: "دراسة العملات: اتجاه صاعد",
             studyTrendDown: "دراسة العملات: ضغط بيعي",
-            navHome: "الرئيسية",
-            navTasks: "المهام",
-            navJoin: "انضمام",
-            navYield: "العوائد",
-            navProfile: "الملف",
             welcomeTitle: "مرحبًا بك في STADA",
             ruleInternship: "أكمل فترة تدريب لمدة يومين مجانًا دون استثمار أي شيء.",
             ruleInvite: "ادعُ أصدقاءك وعائلتك للاستثمار واكسب:",
@@ -1354,15 +1377,10 @@
             btnYield: "प्रतिफल",
             btnInvite: "आमंत्रण",
             btnJoin: "जुड़ें",
-            btnCompany: "कंपनी",
+            btnMore: "अधिक",
             cryptoTitle: "वैश्विक बाज़ार • CAD",
             studyTrendUp: "क्रिप्टो अध्ययन: तेज़ी का रुझान",
             studyTrendDown: "क्रिप्टो अध्ययन: बिक्री का दबाव",
-            navHome: "होम",
-            navTasks: "कार्य",
-            navJoin: "जुड़ें",
-            navYield: "प्रतिफल",
-            navProfile: "प्रोफ़ाइल",
             welcomeTitle: "STADA में स्वागत है",
             ruleInternship: "बिना कुछ निवेश किए दो दिन की इंटर्नशिप निःशुल्क पूरी करें।",
             ruleInvite: "अपने मित्रों और परिवार को निवेश के लिए आमंत्रित करें और कमाएँ:",
@@ -1385,15 +1403,10 @@
             btnYield: "Rendimiento",
             btnInvite: "Invitar",
             btnJoin: "Unirse",
-            btnCompany: "Compañía",
+            btnMore: "Más",
             cryptoTitle: "Mercado Global • CAD",
             studyTrendUp: "Estudio Cripto: Tendencia Alcista",
             studyTrendDown: "Estudio Cripto: Presión Bajista",
-            navHome: "Inicio",
-            navTasks: "Tareas",
-            navJoin: "Unirse",
-            navYield: "Rendimiento",
-            navProfile: "Perfil",
             welcomeTitle: "Bienvenido a STADA",
             ruleInternship: "Realiza una pasantía de dos días gratis sin invertir nada.",
             ruleInvite: "Invita a tus amigos y familiares a invertir y gana:",
@@ -1423,20 +1436,23 @@
     }
 
     function triggerBrowserAutoTranslate(targetLang) {
-        const cookieVal = "/pt/" + targetLang;
-        document.cookie = "googtrans=" + cookieVal + "; path=/";
-        document.cookie = "googtrans=" + cookieVal + "; path=/; domain=" + window.location.hostname;
-
-        const gtCombo = document.querySelector(".goog-te-combo");
-        if (gtCombo) {
-            gtCombo.value = targetLang;
-            gtCombo.dispatchEvent(new Event("change"));
-        }
+        try {
+            const cookieVal = "/pt/" + targetLang;
+            document.cookie = "googtrans=" + cookieVal + "; path=/";
+            if (window.location.hostname) {
+                document.cookie = "googtrans=" + cookieVal + "; path=/; domain=" + window.location.hostname;
+            }
+            const gtCombo = document.querySelector(".goog-te-combo");
+            if (gtCombo) {
+                gtCombo.value = targetLang;
+                gtCombo.dispatchEvent(new Event("change"));
+            }
+        } catch (err) {}
     }
 
     function applyMenuLanguage(langCode, syncGoogleTranslate = true) {
         const code = SUPPORTED_LANGS.includes(langCode) ? langCode : "pt";
-        const dict = STADA_TEXTS[code];
+        const dict = STADA_TEXTS[code] || STADA_TEXTS.pt;
 
         document.documentElement.lang = code;
         document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
@@ -1452,63 +1468,76 @@
 
         document.querySelectorAll("[data-i18n]").forEach((el) => {
             const key = el.getAttribute("data-i18n");
-            if (dict && dict[key]) {
+            if (dict[key]) {
                 el.textContent = dict[key];
             }
         });
 
-        localStorage.setItem(LANG_STORAGE_KEY, code);
+        try {
+            localStorage.setItem(LANG_STORAGE_KEY, code);
+        } catch (err) {}
 
         if (syncGoogleTranslate) {
             triggerBrowserAutoTranslate(code);
         }
     }
 
-    function googleTranslateElementInit() {
-        if (window.google && window.google.translate) {
-            new window.google.translate.TranslateElement(
-                {
-                    pageLanguage: "pt",
-                    includedLanguages: "pt,en,ar,hi,es",
-                    autoDisplay: false
-                },
-                "google_translate_element"
-            );
-            const saved = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
-            setTimeout(() => triggerBrowserAutoTranslate(saved), 400);
-        }
-    }
+    window.googleTranslateElementInit = function () {
+        try {
+            if (window.google && window.google.translate) {
+                new window.google.translate.TranslateElement(
+                    {
+                        pageLanguage: "pt",
+                        includedLanguages: "pt,en,ar,hi,es",
+                        autoDisplay: false
+                    },
+                    "google_translate_element"
+                );
+                const saved = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
+                setTimeout(() => triggerBrowserAutoTranslate(saved), 400);
+            }
+        } catch (err) {}
+    };
 
     document.addEventListener("DOMContentLoaded", function () {
         const topLangBtn = document.getElementById("topLangBtn");
         const topLangMenu = document.getElementById("topLangMenu");
         const modalLangSelect = document.getElementById("modalLangSelect");
 
-        topLangBtn.addEventListener("click", function (e) {
-            e.stopPropagation();
-            const open = topLangMenu.classList.toggle("open");
-            topLangBtn.setAttribute("aria-expanded", String(open));
-        });
-
-        document.addEventListener("click", function () {
-            topLangMenu.classList.remove("open");
-            topLangBtn.setAttribute("aria-expanded", "false");
-        });
-
-        document.querySelectorAll(".top-menu-item").forEach((btn) => {
-            btn.addEventListener("click", function (e) {
+        if (topLangBtn && topLangMenu) {
+            topLangBtn.addEventListener("click", function (e) {
                 e.stopPropagation();
-                applyMenuLanguage(this.getAttribute("data-lang"), true);
+                const open = topLangMenu.classList.toggle("open");
+                topLangBtn.setAttribute("aria-expanded", String(open));
+            });
+
+            document.addEventListener("click", function () {
                 topLangMenu.classList.remove("open");
                 topLangBtn.setAttribute("aria-expanded", "false");
             });
-        });
 
-        modalLangSelect.addEventListener("change", function () {
-            applyMenuLanguage(this.value, true);
-        });
+            document.querySelectorAll(".top-menu-item").forEach((btn) => {
+                btn.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    applyMenuLanguage(this.getAttribute("data-lang"), true);
+                    topLangMenu.classList.remove("open");
+                    topLangBtn.setAttribute("aria-expanded", "false");
+                });
+            });
+        }
 
-        const initialLang = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
+        if (modalLangSelect) {
+            modalLangSelect.addEventListener("change", function () {
+                applyMenuLanguage(this.value, true);
+            });
+        }
+
+        let initialLang = "pt";
+        try {
+            initialLang = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
+        } catch (err) {
+            initialLang = detectBrowserLanguage();
+        }
         applyMenuLanguage(initialLang, false);
 
         const gtScript = document.createElement("script");
@@ -1522,11 +1551,17 @@
         const closeWelcomeModalBtn = document.getElementById("closeWelcomeModalBtn");
         const confirmWelcomeBtn = document.getElementById("confirmWelcomeBtn");
 
-        const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY) === "1";
-        if (!hasSeenWelcome) {
-            welcomeMsgBtn.classList.add("msg-unread-alert");
-        } else {
-            welcomeMsgBtn.classList.remove("msg-unread-alert");
+        let hasSeenWelcome = false;
+        try {
+            hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY) === "1";
+        } catch (err) {}
+
+        if (welcomeMsgBtn) {
+            if (!hasSeenWelcome) {
+                welcomeMsgBtn.classList.add("msg-unread-alert");
+            } else {
+                welcomeMsgBtn.classList.remove("msg-unread-alert");
+            }
         }
 
         // Slideshow dentro do pop-up: 3 imagens de 5 em 5 segundos
@@ -1536,20 +1571,11 @@
         let modalTimer = null;
 
         function renderModalSlide(i) {
+            if (!modalSlides.length) return;
             modalSlides.forEach((s) => s.classList.remove("active"));
             modalDots.forEach((d) => d.classList.remove("active"));
-            modalSlides[i].classList.add("active");
-            modalDots[i].classList.add("active");
-        }
-
-        function startModalSlideshow() {
-            stopModalSlideshow();
-            modalIdx = 0;
-            renderModalSlide(0);
-            modalTimer = setInterval(() => {
-                modalIdx = (modalIdx + 1) % modalSlides.length;
-                renderModalSlide(modalIdx);
-            }, 5000);
+            if (modalSlides[i]) modalSlides[i].classList.add("active");
+            if (modalDots[i]) modalDots[i].classList.add("active");
         }
 
         function stopModalSlideshow() {
@@ -1559,23 +1585,42 @@
             }
         }
 
+        function startModalSlideshow() {
+            stopModalSlideshow();
+            if (!modalSlides.length) return;
+            modalIdx = 0;
+            renderModalSlide(0);
+            modalTimer = setInterval(() => {
+                modalIdx = (modalIdx + 1) % modalSlides.length;
+                renderModalSlide(modalIdx);
+            }, 5000);
+        }
+
         function openWelcomePopup() {
-            welcomeMsgBtn.classList.remove("msg-unread-alert");
-            localStorage.setItem(WELCOME_SEEN_KEY, "1");
-            welcomeModal.classList.add("open");
-            startModalSlideshow();
+            if (welcomeMsgBtn) welcomeMsgBtn.classList.remove("msg-unread-alert");
+            try {
+                localStorage.setItem(WELCOME_SEEN_KEY, "1");
+            } catch (err) {}
+            if (welcomeModal) {
+                welcomeModal.classList.add("open");
+                startModalSlideshow();
+            }
         }
 
         function closeWelcomePopup() {
-            welcomeModal.classList.remove("open");
+            if (welcomeModal) welcomeModal.classList.remove("open");
             stopModalSlideshow();
         }
 
-        welcomeMsgBtn.addEventListener("click", openWelcomePopup);
-        closeWelcomeModalBtn.addEventListener("click", closeWelcomePopup);
-        confirmWelcomeBtn.addEventListener("click", closeWelcomePopup);
+        if (welcomeMsgBtn) welcomeMsgBtn.addEventListener("click", openWelcomePopup);
+        if (closeWelcomeModalBtn) closeWelcomeModalBtn.addEventListener("click", closeWelcomePopup);
+        if (confirmWelcomeBtn) confirmWelcomeBtn.addEventListener("click", closeWelcomePopup);
+        if (welcomeModal) {
+            welcomeModal.addEventListener("click", function (e) {
+                if (e.target === welcomeModal) closeWelcomePopup();
+            });
+        }
 
-        // Abre automaticamente ao entrar no menu ou atualizar a página
         setTimeout(openWelcomePopup, 260);
 
         // Banner principal (3 imagens)
@@ -1583,13 +1628,15 @@
         const bannerDots = document.querySelectorAll("#bannerIndicators .b-dot");
         let bannerIdx = 0;
 
-        setInterval(() => {
-            bannerSlides[bannerIdx].classList.remove("active");
-            bannerDots[bannerIdx].classList.remove("active");
-            bannerIdx = (bannerIdx + 1) % bannerSlides.length;
-            bannerSlides[bannerIdx].classList.add("active");
-            bannerDots[bannerIdx].classList.add("active");
-        }, 5000);
+        if (bannerSlides.length > 1) {
+            setInterval(() => {
+                bannerSlides[bannerIdx].classList.remove("active");
+                if (bannerDots[bannerIdx]) bannerDots[bannerIdx].classList.remove("active");
+                bannerIdx = (bannerIdx + 1) % bannerSlides.length;
+                bannerSlides[bannerIdx].classList.add("active");
+                if (bannerDots[bannerIdx]) bannerDots[bannerIdx].classList.add("active");
+            }, 5000);
+        }
 
         // Mercado Global Canadense (CAD) + Gráfico de Estudo Dinâmico de Criptomoedas
         const BINANCE_COINS = [
@@ -1614,6 +1661,7 @@
 
         const cryptoListContainer = document.getElementById("cryptoListContainer");
         const cadFxTicker = document.getElementById("cadFxTicker");
+        const globalLightCurrencies = document.getElementById("globalLightCurrencies");
 
         function formatUsdPrice(num) {
             if (num >= 100) {
@@ -1628,6 +1676,25 @@
                 return "C$" + cadNum.toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
             return "C$" + cadNum.toLocaleString("en-CA", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+        }
+
+        function updateBottomLightCurrencies(rates) {
+            if (!globalLightCurrencies) return;
+            const cad = (rates && rates.CAD) ? rates.CAD.toFixed(2) : usdToCadRate.toFixed(2);
+            const eur = (rates && rates.EUR) ? rates.EUR.toFixed(2) : "0.92";
+            const gbp = (rates && rates.GBP) ? rates.GBP.toFixed(2) : "0.79";
+            const brl = (rates && rates.BRL) ? rates.BRL.toFixed(2) : "5.78";
+            const aed = (rates && rates.AED) ? rates.AED.toFixed(2) : "3.67";
+
+            const chipsHtml = `
+                <span class="light-coin-chip glow-cyan">USD $1.00</span>
+                <span class="light-coin-chip glow-indigo">CAD C$${cad}</span>
+                <span class="light-coin-chip glow-emerald">EUR €${eur}</span>
+                <span class="light-coin-chip glow-amber">GBP £${gbp}</span>
+                <span class="light-coin-chip glow-cyan">BRL R$${brl}</span>
+                <span class="light-coin-chip glow-indigo">AED ${aed}</span>
+            `;
+            globalLightCurrencies.innerHTML = chipsHtml + chipsHtml;
         }
 
         function updateStudyChart(coin) {
@@ -1660,31 +1727,50 @@
             const isUp = coin.pct >= 0;
             const strokeColor = isUp ? "#22d3ee" : "#f87171";
 
-            lineEl.setAttribute("stroke", strokeColor);
-            lineEl.setAttribute("points", pts.join(" "));
+            if (lineEl) {
+                lineEl.setAttribute("stroke", strokeColor);
+                lineEl.setAttribute("points", pts.join(" "));
+            }
 
-            const firstPt = pts[0].split(",");
-            const lastPt = pts[pts.length - 1].split(",");
-            areaEl.setAttribute("points", `${firstPt[0]},${height} ${pts.join(" ")} ${lastPt[0]},${height}`);
-            dotEl.setAttribute("cx", lastPt[0]);
-            dotEl.setAttribute("cy", lastPt[1]);
-            dotEl.setAttribute("fill", isUp ? "#34d399" : "#f87171");
+            if (areaEl && pts.length) {
+                const firstPt = pts[0].split(",");
+                const lastPt = pts[pts.length - 1].split(",");
+                areaEl.setAttribute("points", `${firstPt[0]},${height} ${pts.join(" ")} ${lastPt[0]},${height}`);
+            }
 
-            priceEl.textContent = formatUsdPrice(coin.price);
-            cadEl.textContent = formatCadPrice(coin.price);
+            if (dotEl && pts.length) {
+                const lastPt = pts[pts.length - 1].split(",");
+                dotEl.setAttribute("cx", lastPt[0]);
+                dotEl.setAttribute("cy", lastPt[1]);
+                dotEl.setAttribute("fill", isUp ? "#34d399" : "#f87171");
+            }
 
-            const lang = localStorage.getItem(LANG_STORAGE_KEY) || "pt";
+            if (priceEl) priceEl.textContent = formatUsdPrice(coin.price);
+            if (cadEl) cadEl.textContent = formatCadPrice(coin.price);
+
+            let lang = "pt";
+            try {
+                lang = localStorage.getItem(LANG_STORAGE_KEY) || "pt";
+            } catch (err) {}
             const dict = STADA_TEXTS[lang] || STADA_TEXTS.pt;
-            trendEl.textContent = isUp ? dict.studyTrendUp : dict.studyTrendDown;
-            trendEl.className = "trend-tag " + (isUp ? "up" : "down");
 
-            const cadVolM = ((coin.volUsd || coin.fallbackVol) * usdToCadRate) / 1000000;
-            volEl.textContent = `Vol 24h (CAD): C$${cadVolM.toLocaleString("en-CA", { maximumFractionDigits: 0 })}M`;
+            if (trendEl) {
+                trendEl.textContent = isUp ? dict.studyTrendUp : dict.studyTrendDown;
+                trendEl.className = "trend-tag " + (isUp ? "up" : "down");
+            }
+
+            if (volEl) {
+                const cadVolM = ((coin.volUsd || coin.fallbackVol) * usdToCadRate) / 1000000;
+                volEl.textContent = `Vol 24h (CAD): C$${cadVolM.toLocaleString("en-CA", { maximumFractionDigits: 0 })}M`;
+            }
         }
 
         function renderCryptoRows(items) {
+            if (!cryptoListContainer) return;
             latestMarketItems = items;
-            cadFxTicker.textContent = `USD/CAD: ${usdToCadRate.toFixed(4)} CAD`;
+            if (cadFxTicker) {
+                cadFxTicker.textContent = `USD/CAD: ${usdToCadRate.toFixed(4)} CAD`;
+            }
 
             cryptoListContainer.innerHTML = items.map((coin) => {
                 const prev = previousPrices[coin.symbol];
@@ -1735,21 +1821,30 @@
             });
         });
 
-        async function fetchCadRate() {
+        async function fetchFxRates() {
             try {
                 const res = await fetch("https://open.er-api.com/v6/latest/USD");
                 if (!res.ok) throw new Error("FX response not OK");
                 const data = await res.json();
-                if (data && data.rates && typeof data.rates.CAD === "number") {
-                    usdToCadRate = data.rates.CAD;
+                if (data && data.rates) {
+                    if (typeof data.rates.CAD === "number") usdToCadRate = data.rates.CAD;
+                    updateBottomLightCurrencies(data.rates);
+                    return;
                 }
             } catch (e) {
-                usdToCadRate = Number((1.3940 + (Math.random() - 0.5) * 0.004).toFixed(4));
+                usdToCadRate = Number((1.3940 + (Math.random() - 0.5) * 0.003).toFixed(4));
             }
+            updateBottomLightCurrencies({
+                CAD: usdToCadRate,
+                EUR: 0.92,
+                GBP: 0.79,
+                BRL: 5.78,
+                AED: 3.67
+            });
         }
 
         async function fetchBinanceTickers() {
-            await fetchCadRate();
+            await fetchFxRates();
             try {
                 const symbolsParam = encodeURIComponent(JSON.stringify(BINANCE_COINS.map((c) => c.symbol)));
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${symbolsParam}`);
