@@ -36,7 +36,7 @@
                     <i class="fas fa-download"></i>
                 </a>
 
-                <!-- Seletor de Idioma (6 idiomas: Português, Índia, Árabe, Chinês, Inglês, Espanhol) -->
+                <!-- Seletor de Idioma Superior -->
                 <div class="top-dropdown-wrap">
                     <button type="button" class="top-icon-btn" id="topLangBtn" aria-expanded="false" aria-label="Language">
                         <i class="fas fa-globe"></i>
@@ -46,21 +46,17 @@
                             <span>Português</span>
                             <small>PT</small>
                         </button>
-                        <button type="button" class="top-menu-item" data-lang="hi">
-                            <span>हिन्दी</span>
-                            <small>IN</small>
+                        <button type="button" class="top-menu-item" data-lang="en">
+                            <span>English</span>
+                            <small>EN</small>
                         </button>
                         <button type="button" class="top-menu-item" data-lang="ar">
                             <span>العربية</span>
                             <small>AR</small>
                         </button>
-                        <button type="button" class="top-menu-item" data-lang="zh-CN">
-                            <span>中文</span>
-                            <small>ZH</small>
-                        </button>
-                        <button type="button" class="top-menu-item" data-lang="en">
-                            <span>English</span>
-                            <small>EN</small>
+                        <button type="button" class="top-menu-item" data-lang="hi">
+                            <span>हिन्दी</span>
+                            <small>IN</small>
                         </button>
                         <button type="button" class="top-menu-item" data-lang="es">
                             <span>Español</span>
@@ -69,7 +65,7 @@
                     </div>
                 </div>
 
-                <!-- Mensagem de Boas-Vindas (fica vermelha até o primeiro clique do novo usuário) -->
+                <!-- Mensagem de Boas-Vindas (vermelho até o primeiro clique do novo usuário) -->
                 <button type="button" class="top-icon-btn msg-unread-alert" id="welcomeMsgBtn" aria-label="Welcome Message">
                     <i class="fas fa-envelope"></i>
                     <span class="msg-alert-dot" id="msgAlertDot"></span>
@@ -77,7 +73,7 @@
             </div>
         </header>
 
-        <!-- Container oculto do Google Translate para tradução automática da base/navegador -->
+        <!-- Container oculto do Google Translate -->
         <div id="google_translate_element" style="display:none;"></div>
 
         <!-- Banner principal com as 3 imagens de static/images/ -->
@@ -104,7 +100,7 @@
             </div>
         </div>
 
-        <!-- GRID DE ÍCONES ESTILO BLOCO 3D (4 POR LINHA, SEM QUEBRAR EM TELA PEQUENA) -->
+        <!-- GRID DE 8 BOTÕES (4 POR LINHA, SEM QUEBRAR EM TELA PEQUENA) -->
         <section class="quick-tiles-grid" aria-label="Quick Actions">
             <a href="{% url 'deposito' %}" class="quick-tile-item">
                 <div class="tile-3d tile-lime">
@@ -163,31 +159,59 @@
             </a>
         </section>
 
-        <!-- Botões duplos em destaque -->
-        <div class="dual-cta-row">
-            <a href="{% url 'deposito' %}" class="cta-action-card">
-                <div class="cta-card-icon"><i class="fas fa-coins"></i></div>
-                <span class="cta-card-label" data-i18n="btnDeposit">Depósito</span>
-            </a>
-            <a href="{% url 'saque' %}" class="cta-action-card">
-                <div class="cta-card-icon"><i class="fas fa-hand-holding-dollar"></i></div>
-                <span class="cta-card-label" data-i18n="btnWithdraw">Retiradas</span>
-            </a>
-        </div>
-
-        <!-- Criptomoedas estilo Binance em tempo real na parte inferior -->
-        <section class="crypto-market-section" aria-label="Crypto Market">
+        <!-- MERCADO PROFISSIONAL COM DINÂMICA DO MERCADO GLOBAL CANADENSE + GRÁFICOS DE ESTUDO CRIPTO -->
+        <section class="crypto-market-section" aria-label="Canadian Global Crypto Market">
             <div class="crypto-header">
                 <div class="crypto-title-group">
                     <i class="fab fa-bitcoin crypto-main-icon"></i>
-                    <span data-i18n="cryptoTitle">Mercados</span>
+                    <div>
+                        <div data-i18n="cryptoTitle">Mercado Global • CAD</div>
+                        <div class="cad-fx-sub" id="cadFxTicker">USD/CAD: 1.3940 CAD</div>
+                    </div>
                 </div>
                 <span class="crypto-live-badge" id="cryptoSyncStatus">LIVE</span>
             </div>
 
-            <div class="crypto-list" id="cryptoListContainer">
-                <!-- Preenchido e atualizado em tempo real via JavaScript -->
+            <!-- Gráfico de estudo dinâmico de criptomoedas -->
+            <div class="crypto-chart-box">
+                <div class="chart-top-bar">
+                    <div class="chart-pair-tabs" id="chartPairTabs">
+                        <button type="button" class="chart-tab-btn active" data-symbol="BTCUSDT">BTC</button>
+                        <button type="button" class="chart-tab-btn" data-symbol="ETHUSDT">ETH</button>
+                        <button type="button" class="chart-tab-btn" data-symbol="BNBUSDT">BNB</button>
+                        <button type="button" class="chart-tab-btn" data-symbol="SOLUSDT">SOL</button>
+                    </div>
+                    <div class="chart-readout">
+                        <span class="chart-live-price" id="chartLivePrice">$0.00</span>
+                        <span class="chart-cad-price" id="chartCadPrice">C$0.00</span>
+                    </div>
+                </div>
+
+                <div class="chart-canvas-wrap">
+                    <svg id="cryptoStudySvg" viewBox="0 0 360 120" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="chartAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.35"/>
+                                <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.0"/>
+                            </linearGradient>
+                        </defs>
+                        <line x1="0" y1="30" x2="360" y2="30" class="chart-grid-line"/>
+                        <line x1="0" y1="60" x2="360" y2="60" class="chart-grid-line"/>
+                        <line x1="0" y1="90" x2="360" y2="90" class="chart-grid-line"/>
+                        <polygon id="cryptoAreaPath" fill="url(#chartAreaGrad)" points=""/>
+                        <polyline id="cryptoLinePath" fill="none" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" points=""/>
+                        <circle id="cryptoLastDot" cx="350" cy="60" r="4" fill="#34d399"/>
+                    </svg>
+                </div>
+
+                <div class="chart-study-notes">
+                    <span id="chartStudyTrend" class="trend-tag up" data-i18n="studyTrendUp">Tendência de Estudo: Alta / Momentum</span>
+                    <span id="chartVolInfo" class="vol-tag">Vol 24h (CAD): --</span>
+                </div>
             </div>
+
+            <!-- Lista dinâmica de cotações (USD + CAD + variação) -->
+            <div class="crypto-list" id="cryptoListContainer"></div>
         </section>
 
         <!-- Barra de navegação inferior -->
@@ -215,15 +239,28 @@
         </nav>
     </div>
 
-    <!-- POP-UP DE BOAS-VINDAS PERSONALIZADO (3 imagens de 5 em 5 segundos) -->
+    <!-- POP-UP DE BOAS-VINDAS COMPACTO E ROLÁVEL (ABRE AO LOGAR/ATUALIZAR OU CLICAR NO ÍCONE) -->
     <div class="welcome-modal-backdrop" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeModalTitle">
         <div class="welcome-modal-card">
             <button type="button" class="welcome-close-btn" id="closeWelcomeModalBtn" aria-label="Close">
                 <i class="fas fa-times"></i>
             </button>
 
+            <!-- Seletor de idioma dentro do pop-up: Inglês, Português, Árabe, Índia e Espanhol -->
+            <div class="modal-lang-bar">
+                <i class="fas fa-language"></i>
+                <select id="modalLangSelect" aria-label="Popup Language">
+                    <option value="pt">Português</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="es">Español</option>
+                </select>
+            </div>
+
             <div class="welcome-badge">STADA</div>
 
+            <!-- 3 imagens passando de 5 em 5 segundos -->
             <div class="modal-slideshow-box">
                 <img src="{% static 'images/stada_welcome_1.jpg' %}" class="modal-slide active" alt="STADA Boas-Vindas 1">
                 <img src="{% static 'images/stada_welcome_2.jpg' %}" class="modal-slide" alt="STADA Boas-Vindas 2">
@@ -237,12 +274,51 @@
             </div>
 
             <h3 class="welcome-modal-title" id="welcomeModalTitle" data-i18n="welcomeTitle">Bem-vindo à STADA</h3>
-            <p class="welcome-modal-text" data-i18n="welcomeMessage">
-                Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.
-            </p>
+
+            <div class="welcome-info-box">
+                <p class="welcome-highlight-rule" data-i18n="ruleInternship">
+                    Realiza estágio de dois dias gratuitamente sem investir nada.
+                </p>
+
+                <p class="welcome-sub-rule" data-i18n="ruleInvite">
+                    Convite seus amigos e familiares a investirem e você ganha:
+                </p>
+
+                <ul class="level-tiers-list">
+                    <li data-i18n="tierA">Nível A: 15%</li>
+                    <li data-i18n="tierB">Nível B: 3%</li>
+                    <li data-i18n="tierC">Nível C: 1%</li>
+                </ul>
+
+                <p class="welcome-sub-rule" data-i18n="ruleSalary">
+                    Completa 10 membros e se qualifica para ganhar salário fixo mensal:
+                </p>
+
+                <div class="salary-grid">
+                    <div class="salary-pill" data-i18n="sal10">10 Afiliados: 35 USDT</div>
+                    <div class="salary-pill" data-i18n="sal20">20 Afiliados: 70 USDT</div>
+                    <div class="salary-pill" data-i18n="sal50">50 Afiliados: 150 USDT</div>
+                    <div class="salary-pill" data-i18n="sal100">100 Afiliados: 500 USDT</div>
+                </div>
+            </div>
+
+            <!-- Separador dentro do pop-up -->
+            <hr class="modal-divider">
+
+            <!-- Canais WhatsApp e Telegram apenas dentro do pop-up (somem ao fechar o pop-up) -->
+            <div class="modal-channels-row">
+                <a href="{{ whatsapp_link|default:'https://whatsapp.com/channel/' }}" target="_blank" rel="noopener" class="channel-btn channel-wa">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>WhatsApp</span>
+                </a>
+                <a href="https://t.me/+Lj76VN8U1Uw5MjQ0" target="_blank" rel="noopener" class="channel-btn channel-tg">
+                    <i class="fab fa-telegram-plane"></i>
+                    <span>Telegram</span>
+                </a>
+            </div>
 
             <button type="button" class="welcome-confirm-btn" id="confirmWelcomeBtn" data-i18n="welcomeBtn">
-                Começar na STADA
+                Entrar no Menu
             </button>
         </div>
     </div>
@@ -416,7 +492,7 @@
         position: absolute;
         top: 46px;
         right: 0;
-        min-width: 175px;
+        min-width: 170px;
         background: #0b1120;
         border: 1px solid rgba(34, 211, 238, 0.28);
         border-radius: 14px;
@@ -540,7 +616,7 @@
         font-weight: 500;
     }
 
-    /* GRID DE 4 BOTÕES POR LINHA (RESPONSIVO SEM QUEBRAR EM TELA PEQUENA) */
+    /* GRID DE 8 BOTÕES (4 POR LINHA, SEM QUEBRAR EM TELA PEQUENA) */
     .quick-tiles-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -628,7 +704,6 @@
         white-space: nowrap;
     }
 
-    /* Garantia extra em telas muito estreitas (ex: 320px - 360px) */
     @media (max-width: 360px) {
         .quick-tiles-grid {
             gap: 12px 5px;
@@ -646,57 +721,9 @@
         }
     }
 
-    /* Botões duplos em destaque */
-    .dual-cta-row {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 18px;
-    }
-
-    .cta-action-card {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 13px 14px;
-        border-radius: 14px;
-        background: rgba(15, 23, 42, 0.88);
-        border: 1px solid var(--stada-border);
-        text-decoration: none;
-        color: #f8fafc;
-        min-width: 0;
-        transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-
-    .cta-action-card:hover {
-        border-color: var(--stada-cyan);
-        transform: translateY(-1px);
-    }
-
-    .cta-card-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: rgba(34, 211, 238, 0.14);
-        color: var(--stada-cyan);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        flex-shrink: 0;
-    }
-
-    .cta-card-label {
-        font-size: 13px;
-        font-weight: 700;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Seção de Criptomoedas estilo Binance na parte inferior */
+    /* Seção Profissional de Mercado Global Canadense + Gráfico de Estudo */
     .crypto-market-section {
-        margin-top: 16px;
+        margin-top: 18px;
         border-radius: 18px;
         background: var(--stada-card);
         border: 1px solid var(--stada-border);
@@ -707,31 +734,150 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .crypto-title-group {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 9px;
         font-size: 13.5px;
         font-weight: 700;
         color: #ffffff;
     }
 
+    .cad-fx-sub {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--stada-cyan);
+        margin-top: 2px;
+        font-variant-numeric: tabular-nums;
+    }
+
     .crypto-main-icon {
         color: #f59e0b;
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .crypto-live-badge {
         font-size: 10px;
         font-weight: 800;
         letter-spacing: 0.8px;
-        padding: 3px 8px;
+        padding: 4px 8px;
         border-radius: 999px;
         background: rgba(16, 185, 129, 0.16);
         color: #34d399;
+    }
+
+    .crypto-chart-box {
+        background: rgba(9, 14, 26, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 14px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+    }
+
+    .chart-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .chart-pair-tabs {
+        display: flex;
+        gap: 5px;
+    }
+
+    .chart-tab-btn {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(15, 23, 42, 0.8);
+        color: var(--stada-muted);
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.16s ease;
+    }
+
+    .chart-tab-btn.active {
+        background: rgba(34, 211, 238, 0.18);
+        border-color: var(--stada-cyan);
+        color: var(--stada-cyan);
+    }
+
+    .chart-readout {
+        display: flex;
+        align-items: baseline;
+        gap: 7px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .chart-live-price {
+        font-size: 13px;
+        font-weight: 800;
+        color: #ffffff;
+    }
+
+    .chart-cad-price {
+        font-size: 11px;
+        font-weight: 700;
+        color: #38bdf8;
+    }
+
+    .chart-canvas-wrap {
+        width: 100%;
+        height: 110px;
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(5, 8, 16, 0.7);
+    }
+
+    #cryptoStudySvg {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .chart-grid-line {
+        stroke: rgba(148, 163, 184, 0.09);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+    }
+
+    .chart-study-notes {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 8px;
+        font-size: 10.5px;
+        flex-wrap: wrap;
+    }
+
+    .trend-tag {
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .trend-tag.up {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+    }
+
+    .trend-tag.down {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+    }
+
+    .vol-tag {
+        color: var(--stada-muted);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
     }
 
     .crypto-list {
@@ -775,11 +921,23 @@
         flex-shrink: 0;
     }
 
+    .crypto-price-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-variant-numeric: tabular-nums;
+    }
+
     .crypto-price {
         font-size: 12.5px;
         font-weight: 700;
         color: #ffffff;
-        font-variant-numeric: tabular-nums;
+    }
+
+    .crypto-cad-val {
+        font-size: 10.5px;
+        font-weight: 600;
+        color: #38bdf8;
     }
 
     .crypto-change-pill {
@@ -841,7 +999,7 @@
         color: var(--stada-cyan);
     }
 
-    /* Pop-up de Boas-Vindas Personalizado */
+    /* POP-UP COMPACTO, BEM ESTRUTURADO E ROLÁVEL */
     .welcome-modal-backdrop {
         position: fixed;
         inset: 0;
@@ -849,8 +1007,8 @@
         display: none;
         align-items: center;
         justify-content: center;
-        padding: 18px;
-        background: rgba(3, 5, 10, 0.86);
+        padding: 16px;
+        background: rgba(3, 5, 10, 0.88);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
     }
@@ -862,48 +1020,83 @@
     .welcome-modal-card {
         position: relative;
         width: 100%;
-        max-width: 390px;
+        max-width: 368px;
+        max-height: 82vh;
+        overflow-y: auto;
         background: #0b1120;
-        border: 1px solid rgba(34, 211, 238, 0.32);
-        border-radius: 22px;
-        padding: 20px 18px 22px;
-        box-shadow: 0 25px 65px rgba(0, 0, 0, 0.8);
+        border: 1px solid rgba(34, 211, 238, 0.34);
+        border-radius: 20px;
+        padding: 16px 16px 18px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.82);
         text-align: center;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(34, 211, 238, 0.35) transparent;
     }
 
     .welcome-close-btn {
-        position: absolute;
-        top: 14px;
-        right: 14px;
-        width: 32px;
-        height: 32px;
+        position: sticky;
+        top: 0;
+        float: right;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         border: 1px solid var(--stada-border);
-        background: rgba(15, 23, 42, 0.9);
+        background: rgba(15, 23, 42, 0.95);
         color: #cbd5e1;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 5;
+    }
+
+    .modal-lang-bar {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        border-radius: 999px;
+        padding: 4px 10px;
+        color: var(--stada-cyan);
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .modal-lang-bar select {
+        background: transparent;
+        border: none;
+        color: #f8fafc;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .modal-lang-bar select option {
+        background: #0b1120;
+        color: #f8fafc;
     }
 
     .welcome-badge {
-        display: inline-block;
-        font-size: 11px;
+        display: block;
+        width: fit-content;
+        margin: 0 auto 10px;
+        font-size: 10.5px;
         font-weight: 800;
         letter-spacing: 2px;
         color: var(--stada-cyan);
         background: rgba(34, 211, 238, 0.12);
-        padding: 4px 10px;
+        padding: 3px 10px;
         border-radius: 999px;
-        margin-bottom: 12px;
     }
 
     .modal-slideshow-box {
         position: relative;
         width: 100%;
-        height: 175px;
-        border-radius: 15px;
+        height: 142px;
+        border-radius: 14px;
         overflow: hidden;
         border: 1px solid var(--stada-border);
         background: #060913;
@@ -927,46 +1120,131 @@
         display: flex;
         justify-content: center;
         gap: 6px;
-        margin: 10px 0 12px;
+        margin: 8px 0 10px;
     }
 
     .m-dot {
-        width: 7px;
-        height: 7px;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
         background: rgba(148, 163, 184, 0.35);
         transition: all 0.25s ease;
     }
 
     .m-dot.active {
-        width: 16px;
+        width: 14px;
         border-radius: 999px;
         background: var(--stada-cyan);
     }
 
     .welcome-modal-title {
-        font-size: 18px;
+        font-size: 16.5px;
         font-weight: 800;
         color: #ffffff;
+        margin-bottom: 10px;
+    }
+
+    .welcome-info-box {
+        text-align: left;
+        background: rgba(15, 23, 42, 0.78);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 12px;
+        line-height: 1.48;
+        color: #e2e8f0;
+    }
+
+    .welcome-highlight-rule {
+        color: #34d399;
+        font-weight: 700;
         margin-bottom: 8px;
     }
 
-    .welcome-modal-text {
-        font-size: 13.5px;
-        line-height: 1.55;
+    .welcome-sub-rule {
         color: #cbd5e1;
-        margin-bottom: 18px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .level-tiers-list {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .level-tiers-list li {
+        background: rgba(34, 211, 238, 0.12);
+        border: 1px solid rgba(34, 211, 238, 0.25);
+        color: #22d3ee;
+        font-weight: 700;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 8px;
+    }
+
+    .salary-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .salary-pill {
+        background: rgba(99, 102, 241, 0.14);
+        border: 1px solid rgba(129, 140, 248, 0.28);
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 11px;
+        padding: 6px 8px;
+        border-radius: 9px;
+        text-align: center;
+    }
+
+    .modal-divider {
+        border: none;
+        border-top: 1px solid rgba(148, 163, 184, 0.2);
+        margin: 12px 0;
+    }
+
+    .modal-channels-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .channel-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 9px 10px;
+        border-radius: 11px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .channel-wa {
+        background: #16a34a;
+    }
+
+    .channel-tg {
+        background: #0284c7;
     }
 
     .welcome-confirm-btn {
         width: 100%;
-        padding: 13px 16px;
+        padding: 12px 14px;
         border: none;
         border-radius: 999px;
         background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 55%, #6366f1 100%);
         color: #041019;
         font-family: inherit;
-        font-size: 13.5px;
+        font-size: 13px;
         font-weight: 800;
         cursor: pointer;
     }
@@ -984,35 +1262,57 @@
             btnInvite: "Convidar",
             btnJoin: "Unir-se",
             btnCompany: "Companhia",
-            cryptoTitle: "Mercados",
+            cryptoTitle: "Mercado Global • CAD",
+            studyTrendUp: "Estudo Cripto: Tendência de Alta",
+            studyTrendDown: "Estudo Cripto: Pressão Vendedora",
             navHome: "Início",
             navTasks: "Tarefas",
             navJoin: "Unir-se",
             navYield: "Rendimento",
             navProfile: "Perfil",
             welcomeTitle: "Bem-vindo à STADA",
-            welcomeMessage: "Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.",
-            welcomeBtn: "Começar na STADA"
+            ruleInternship: "Realiza estágio de dois dias gratuitamente sem investir nada.",
+            ruleInvite: "Convite seus amigos e familiares a investirem e você ganha:",
+            tierA: "Nível A: 15%",
+            tierB: "Nível B: 3%",
+            tierC: "Nível C: 1%",
+            ruleSalary: "Completa 10 membros e se qualifica para ganhar salário fixo mensal:",
+            sal10: "10 Afiliados: 35 USDT",
+            sal20: "20 Afiliados: 70 USDT",
+            sal50: "50 Afiliados: 150 USDT",
+            sal100: "100 Afiliados: 500 USDT",
+            welcomeBtn: "Entrar no Menu"
         },
-        hi: {
-            tickerText: "STADA में आपका स्वागत है — निवेश करके और दैनिक कार्य पूरे करके शानदार कमाई करें।",
-            btnDeposit: "जमा",
-            btnWithdraw: "निकासी",
-            btnTasks: "कार्य",
-            btnTeam: "टीम",
-            btnYield: "प्रतिफल",
-            btnInvite: "आमंत्रण",
-            btnJoin: "जुड़ें",
-            btnCompany: "कंपनी",
-            cryptoTitle: "बाज़ार",
-            navHome: "होम",
-            navTasks: "कार्य",
-            navJoin: "जुड़ें",
-            navYield: "प्रतिफल",
-            navProfile: "प्रोफ़ाइल",
-            welcomeTitle: "STADA में स्वागत है",
-            welcomeMessage: "STADA में आपका स्वागत है, आपका निवेश मंच जहाँ आप निवेश और दैनिक कार्यों से अच्छी कमाई करते हैं।",
-            welcomeBtn: "STADA शुरू करें"
+        en: {
+            tickerText: "Welcome to STADA, your investment platform where you earn great rewards by investing and completing daily tasks.",
+            btnDeposit: "Deposit",
+            btnWithdraw: "Withdraw",
+            btnTasks: "Tasks",
+            btnTeam: "Team",
+            btnYield: "Earnings",
+            btnInvite: "Invite",
+            btnJoin: "Join",
+            btnCompany: "Company",
+            cryptoTitle: "Global Market • CAD",
+            studyTrendUp: "Crypto Study: Bullish Momentum",
+            studyTrendDown: "Crypto Study: Bearish Pressure",
+            navHome: "Home",
+            navTasks: "Tasks",
+            navJoin: "Join",
+            navYield: "Earnings",
+            navProfile: "Profile",
+            welcomeTitle: "Welcome to STADA",
+            ruleInternship: "Complete a two-day internship for free without investing anything.",
+            ruleInvite: "Invite your friends and family to invest and earn:",
+            tierA: "Level A: 15%",
+            tierB: "Level B: 3%",
+            tierC: "Level C: 1%",
+            ruleSalary: "Complete 10 members and qualify for a fixed monthly salary:",
+            sal10: "10 Affiliates: 35 USDT",
+            sal20: "20 Affiliates: 70 USDT",
+            sal50: "50 Affiliates: 150 USDT",
+            sal100: "100 Affiliates: 500 USDT",
+            welcomeBtn: "Enter Menu"
         },
         ar: {
             tickerText: "مرحبًا بك في STADA، منصة الاستثمار الخاصة بك حيث تحقق أرباحًا كبيرة بالاستثمار وإنجاز المهام يوميًا.",
@@ -1024,55 +1324,57 @@
             btnInvite: "دعوة",
             btnJoin: "انضمام",
             btnCompany: "الشركة",
-            cryptoTitle: "الأسواق",
+            cryptoTitle: "السوق العالمي • CAD",
+            studyTrendUp: "دراسة العملات: اتجاه صاعد",
+            studyTrendDown: "دراسة العملات: ضغط بيعي",
             navHome: "الرئيسية",
             navTasks: "المهام",
             navJoin: "انضمام",
             navYield: "العوائد",
             navProfile: "الملف",
             welcomeTitle: "مرحبًا بك في STADA",
-            welcomeMessage: "مرحبًا بك في STADA، منصة الاستثمار الخاصة بك حيث تحقق أرباحًا كبيرة بالاستثمار وإنجاز المهام يوميًا.",
-            welcomeBtn: "ابدأ في STADA"
+            ruleInternship: "أكمل فترة تدريب لمدة يومين مجانًا دون استثمار أي شيء.",
+            ruleInvite: "ادعُ أصدقاءك وعائلتك للاستثمار واكسب:",
+            tierA: "المستوى A: 15%",
+            tierB: "المستوى B: 3%",
+            tierC: "المستوى C: 1%",
+            ruleSalary: "أكمل 10 أعضاء وتأهل للحصول على راتب شهري ثابت:",
+            sal10: "10 أعضاء: 35 USDT",
+            sal20: "20 عضوًا: 70 USDT",
+            sal50: "50 عضوًا: 150 USDT",
+            sal100: "100 عضو: 500 USDT",
+            welcomeBtn: "الدخول إلى القائمة"
         },
-        "zh-CN": {
-            tickerText: "欢迎来到 STADA——通过投资与每日完成任务持续赚取丰厚收益的投资平台。",
-            btnDeposit: "充值",
-            btnWithdraw: "提现",
-            btnTasks: "任务",
-            btnTeam: "团队",
-            btnYield: "收益",
-            btnInvite: "邀请",
-            btnJoin: "加入",
-            btnCompany: "公司",
-            cryptoTitle: "行情",
-            navHome: "首页",
-            navTasks: "任务",
-            navJoin: "加入",
-            navYield: "收益",
-            navProfile: "我的",
-            welcomeTitle: "欢迎来到 STADA",
-            welcomeMessage: "欢迎来到 STADA，您的投资平台，通过投资和每日完成任务赚取丰厚收益。",
-            welcomeBtn: "开始使用 STADA"
-        },
-        en: {
-            tickerText: "Welcome to STADA, your investment platform where you earn steadily by investing and completing daily tasks.",
-            btnDeposit: "Deposit",
-            btnWithdraw: "Withdraw",
-            btnTasks: "Tasks",
-            btnTeam: "Team",
-            btnYield: "Earnings",
-            btnInvite: "Invite",
-            btnJoin: "Join",
-            btnCompany: "Company",
-            cryptoTitle: "Markets",
-            navHome: "Home",
-            navTasks: "Tasks",
-            navJoin: "Join",
-            navYield: "Earnings",
-            navProfile: "Profile",
-            welcomeTitle: "Welcome to STADA",
-            welcomeMessage: "Welcome to STADA, your investment platform where you earn great rewards by investing and completing daily tasks.",
-            welcomeBtn: "Start on STADA"
+        hi: {
+            tickerText: "STADA में आपका स्वागत है — निवेश करके और दैनिक कार्य पूरे करके शानदार कमाई करें।",
+            btnDeposit: "जमा",
+            btnWithdraw: "निकासी",
+            btnTasks: "कार्य",
+            btnTeam: "टीम",
+            btnYield: "प्रतिफल",
+            btnInvite: "आमंत्रण",
+            btnJoin: "जुड़ें",
+            btnCompany: "कंपनी",
+            cryptoTitle: "वैश्विक बाज़ार • CAD",
+            studyTrendUp: "क्रिप्टो अध्ययन: तेज़ी का रुझान",
+            studyTrendDown: "क्रिप्टो अध्ययन: बिक्री का दबाव",
+            navHome: "होम",
+            navTasks: "कार्य",
+            navJoin: "जुड़ें",
+            navYield: "प्रतिफल",
+            navProfile: "प्रोफ़ाइल",
+            welcomeTitle: "STADA में स्वागत है",
+            ruleInternship: "बिना कुछ निवेश किए दो दिन की इंटर्नशिप निःशुल्क पूरी करें।",
+            ruleInvite: "अपने मित्रों और परिवार को निवेश के लिए आमंत्रित करें और कमाएँ:",
+            tierA: "स्तर A: 15%",
+            tierB: "स्तर B: 3%",
+            tierC: "स्तर C: 1%",
+            ruleSalary: "10 सदस्य पूरे करें और निश्चित मासिक वेतन के पात्र बनें:",
+            sal10: "10 सदस्य: 35 USDT",
+            sal20: "20 सदस्य: 70 USDT",
+            sal50: "50 सदस्य: 150 USDT",
+            sal100: "100 सदस्य: 500 USDT",
+            welcomeBtn: "मेनू में जाएं"
         },
         es: {
             tickerText: "Bienvenido a STADA, tu plataforma de inversión donde ganas mucho invirtiendo y realizando tareas a diario.",
@@ -1084,28 +1386,38 @@
             btnInvite: "Invitar",
             btnJoin: "Unirse",
             btnCompany: "Compañía",
-            cryptoTitle: "Mercados",
+            cryptoTitle: "Mercado Global • CAD",
+            studyTrendUp: "Estudio Cripto: Tendencia Alcista",
+            studyTrendDown: "Estudio Cripto: Presión Bajista",
             navHome: "Inicio",
             navTasks: "Tareas",
             navJoin: "Unirse",
             navYield: "Rendimiento",
             navProfile: "Perfil",
             welcomeTitle: "Bienvenido a STADA",
-            welcomeMessage: "Bienvenido a STADA, tu plataforma de inversión donde ganas mucho invirtiendo y realizando tareas a diario.",
-            welcomeBtn: "Comenzar en STADA"
+            ruleInternship: "Realiza una pasantía de dos días gratis sin invertir nada.",
+            ruleInvite: "Invita a tus amigos y familiares a invertir y gana:",
+            tierA: "Nivel A: 15%",
+            tierB: "Nivel B: 3%",
+            tierC: "Nivel C: 1%",
+            ruleSalary: "Completa 10 miembros y califica para un salario mensual fijo:",
+            sal10: "10 Afiliados: 35 USDT",
+            sal20: "20 Afiliados: 70 USDT",
+            sal50: "50 Afiliados: 150 USDT",
+            sal100: "100 Afiliados: 500 USDT",
+            welcomeBtn: "Entrar al Menú"
         }
     };
 
-    const SUPPORTED_SIX_LANGS = ["pt", "hi", "ar", "zh-CN", "en", "es"];
+    const SUPPORTED_LANGS = ["pt", "en", "ar", "hi", "es"];
     const LANG_STORAGE_KEY = "stada_menu_lang";
     const WELCOME_SEEN_KEY = "stada_first_welcome_seen";
 
     function detectBrowserLanguage() {
         const navLang = (navigator.language || "pt").toLowerCase();
-        if (navLang.startsWith("hi")) return "hi";
-        if (navLang.startsWith("ar")) return "ar";
-        if (navLang.startsWith("zh")) return "zh-CN";
         if (navLang.startsWith("en")) return "en";
+        if (navLang.startsWith("ar")) return "ar";
+        if (navLang.startsWith("hi")) return "hi";
         if (navLang.startsWith("es")) return "es";
         return "pt";
     }
@@ -1123,7 +1435,7 @@
     }
 
     function applyMenuLanguage(langCode, syncGoogleTranslate = true) {
-        const code = SUPPORTED_SIX_LANGS.includes(langCode) ? langCode : "pt";
+        const code = SUPPORTED_LANGS.includes(langCode) ? langCode : "pt";
         const dict = STADA_TEXTS[code];
 
         document.documentElement.lang = code;
@@ -1132,6 +1444,11 @@
         document.querySelectorAll(".top-menu-item").forEach((btn) => {
             btn.classList.toggle("active", btn.getAttribute("data-lang") === code);
         });
+
+        const modalLangSelect = document.getElementById("modalLangSelect");
+        if (modalLangSelect) {
+            modalLangSelect.value = code;
+        }
 
         document.querySelectorAll("[data-i18n]").forEach((el) => {
             const key = el.getAttribute("data-i18n");
@@ -1152,7 +1469,7 @@
             new window.google.translate.TranslateElement(
                 {
                     pageLanguage: "pt",
-                    includedLanguages: "pt,hi,ar,zh-CN,en,es",
+                    includedLanguages: "pt,en,ar,hi,es",
                     autoDisplay: false
                 },
                 "google_translate_element"
@@ -1165,6 +1482,7 @@
     document.addEventListener("DOMContentLoaded", function () {
         const topLangBtn = document.getElementById("topLangBtn");
         const topLangMenu = document.getElementById("topLangMenu");
+        const modalLangSelect = document.getElementById("modalLangSelect");
 
         topLangBtn.addEventListener("click", function (e) {
             e.stopPropagation();
@@ -1186,6 +1504,10 @@
             });
         });
 
+        modalLangSelect.addEventListener("change", function () {
+            applyMenuLanguage(this.value, true);
+        });
+
         const initialLang = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
         applyMenuLanguage(initialLang, false);
 
@@ -1194,6 +1516,7 @@
         gtScript.async = true;
         document.body.appendChild(gtScript);
 
+        // Ícone de mensagem: vermelho no 1º cadastro até clicar
         const welcomeMsgBtn = document.getElementById("welcomeMsgBtn");
         const welcomeModal = document.getElementById("welcomeModal");
         const closeWelcomeModalBtn = document.getElementById("closeWelcomeModalBtn");
@@ -1206,6 +1529,7 @@
             welcomeMsgBtn.classList.remove("msg-unread-alert");
         }
 
+        // Slideshow dentro do pop-up: 3 imagens de 5 em 5 segundos
         const modalSlides = document.querySelectorAll("#welcomeModal .modal-slide");
         const modalDots = document.querySelectorAll("#modalSlideDots .m-dot");
         let modalIdx = 0;
@@ -1251,6 +1575,10 @@
         closeWelcomeModalBtn.addEventListener("click", closeWelcomePopup);
         confirmWelcomeBtn.addEventListener("click", closeWelcomePopup);
 
+        // Abre automaticamente ao entrar no menu ou atualizar a página
+        setTimeout(openWelcomePopup, 260);
+
+        // Banner principal (3 imagens)
         const bannerSlides = document.querySelectorAll("#bannerSlides .banner-slide");
         const bannerDots = document.querySelectorAll("#bannerIndicators .b-dot");
         let bannerIdx = 0;
@@ -1263,16 +1591,29 @@
             bannerDots[bannerIdx].classList.add("active");
         }, 5000);
 
+        // Mercado Global Canadense (CAD) + Gráfico de Estudo Dinâmico de Criptomoedas
         const BINANCE_COINS = [
-            { symbol: "BTCUSDT", base: "BTC", name: "Bitcoin", fallbackPrice: 92450.00, fallbackPct: 2.34 },
-            { symbol: "ETHUSDT", base: "ETH", name: "Ethereum", fallbackPrice: 3380.50, fallbackPct: 1.85 },
-            { symbol: "BNBUSDT", base: "BNB", name: "BNB", fallbackPrice: 642.20, fallbackPct: 0.92 },
-            { symbol: "SOLUSDT", base: "SOL", name: "Solana", fallbackPrice: 214.80, fallbackPct: 4.18 },
-            { symbol: "XRPUSDT", base: "XRP", name: "Ripple", fallbackPrice: 1.48, fallbackPct: -0.64 }
+            { symbol: "BTCUSDT", base: "BTC", name: "Bitcoin", fallbackPrice: 92450.00, fallbackPct: 2.34, fallbackVol: 28500000000 },
+            { symbol: "ETHUSDT", base: "ETH", name: "Ethereum", fallbackPrice: 3380.50, fallbackPct: 1.85, fallbackVol: 14200000000 },
+            { symbol: "BNBUSDT", base: "BNB", name: "BNB", fallbackPrice: 642.20, fallbackPct: 0.92, fallbackVol: 2150000000 },
+            { symbol: "SOLUSDT", base: "SOL", name: "Solana", fallbackPrice: 214.80, fallbackPct: 4.18, fallbackVol: 4820000000 },
+            { symbol: "XRPUSDT", base: "XRP", name: "Ripple", fallbackPrice: 1.48, fallbackPct: -0.64, fallbackVol: 1960000000 }
         ];
 
-        const cryptoListContainer = document.getElementById("cryptoListContainer");
+        let usdToCadRate = 1.3940;
+        let selectedChartSymbol = "BTCUSDT";
+        let latestMarketItems = [];
         const previousPrices = {};
+        const seriesHistory = {
+            BTCUSDT: [91200, 91450, 91320, 91800, 92100, 91950, 92320, 92210, 92410, 92450],
+            ETHUSDT: [3310, 3325, 3340, 3328, 3355, 3368, 3360, 3375, 3372, 3380.5],
+            BNBUSDT: [635, 637, 636, 639, 641, 640, 642, 641.5, 643, 642.2],
+            SOLUSDT: [205, 207, 206.5, 209, 211, 210.2, 212.8, 213.5, 214.1, 214.8],
+            XRPUSDT: [1.51, 1.505, 1.498, 1.502, 1.492, 1.488, 1.49, 1.485, 1.482, 1.48]
+        };
+
+        const cryptoListContainer = document.getElementById("cryptoListContainer");
+        const cadFxTicker = document.getElementById("cadFxTicker");
 
         function formatUsdPrice(num) {
             if (num >= 100) {
@@ -1281,7 +1622,70 @@
             return "$" + num.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
         }
 
+        function formatCadPrice(usdNum) {
+            const cadNum = usdNum * usdToCadRate;
+            if (cadNum >= 100) {
+                return "C$" + cadNum.toLocaleString("en-CA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            return "C$" + cadNum.toLocaleString("en-CA", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+        }
+
+        function updateStudyChart(coin) {
+            if (!coin) return;
+            const hist = seriesHistory[coin.symbol] || [coin.price];
+            const minVal = Math.min(...hist);
+            const maxVal = Math.max(...hist);
+            const span = maxVal - minVal || 1;
+
+            const width = 360;
+            const height = 110;
+            const padX = 8;
+            const padY = 12;
+
+            const pts = hist.map((val, idx) => {
+                const x = padX + (idx / Math.max(1, hist.length - 1)) * (width - padX * 2);
+                const norm = (val - minVal) / span;
+                const y = height - padY - norm * (height - padY * 2);
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            });
+
+            const lineEl = document.getElementById("cryptoLinePath");
+            const areaEl = document.getElementById("cryptoAreaPath");
+            const dotEl = document.getElementById("cryptoLastDot");
+            const priceEl = document.getElementById("chartLivePrice");
+            const cadEl = document.getElementById("chartCadPrice");
+            const trendEl = document.getElementById("chartStudyTrend");
+            const volEl = document.getElementById("chartVolInfo");
+
+            const isUp = coin.pct >= 0;
+            const strokeColor = isUp ? "#22d3ee" : "#f87171";
+
+            lineEl.setAttribute("stroke", strokeColor);
+            lineEl.setAttribute("points", pts.join(" "));
+
+            const firstPt = pts[0].split(",");
+            const lastPt = pts[pts.length - 1].split(",");
+            areaEl.setAttribute("points", `${firstPt[0]},${height} ${pts.join(" ")} ${lastPt[0]},${height}`);
+            dotEl.setAttribute("cx", lastPt[0]);
+            dotEl.setAttribute("cy", lastPt[1]);
+            dotEl.setAttribute("fill", isUp ? "#34d399" : "#f87171");
+
+            priceEl.textContent = formatUsdPrice(coin.price);
+            cadEl.textContent = formatCadPrice(coin.price);
+
+            const lang = localStorage.getItem(LANG_STORAGE_KEY) || "pt";
+            const dict = STADA_TEXTS[lang] || STADA_TEXTS.pt;
+            trendEl.textContent = isUp ? dict.studyTrendUp : dict.studyTrendDown;
+            trendEl.className = "trend-tag " + (isUp ? "up" : "down");
+
+            const cadVolM = ((coin.volUsd || coin.fallbackVol) * usdToCadRate) / 1000000;
+            volEl.textContent = `Vol 24h (CAD): C$${cadVolM.toLocaleString("en-CA", { maximumFractionDigits: 0 })}M`;
+        }
+
         function renderCryptoRows(items) {
+            latestMarketItems = items;
+            cadFxTicker.textContent = `USD/CAD: ${usdToCadRate.toFixed(4)} CAD`;
+
             cryptoListContainer.innerHTML = items.map((coin) => {
                 const prev = previousPrices[coin.symbol];
                 let directionArrow = coin.pct >= 0 ? "▲" : "▼";
@@ -1291,6 +1695,11 @@
                 }
                 previousPrices[coin.symbol] = coin.price;
 
+                const hist = seriesHistory[coin.symbol] || [];
+                hist.push(coin.price);
+                if (hist.length > 16) hist.shift();
+                seriesHistory[coin.symbol] = hist;
+
                 const isPositive = coin.pct >= 0;
                 const sign = isPositive ? "+" : "";
                 const pillClass = isPositive ? "crypto-up" : "crypto-down";
@@ -1298,19 +1707,49 @@
                 return `
                     <div class="crypto-row">
                         <div class="crypto-pair-col">
-                            <span class="crypto-symbol">${coin.base}/USDT</span>
+                            <span class="crypto-symbol">${coin.base}/CAD</span>
                             <span class="crypto-name">${coin.name}</span>
                         </div>
                         <div class="crypto-right-col">
-                            <span class="crypto-price">${formatUsdPrice(coin.price)}</span>
+                            <div class="crypto-price-stack">
+                                <span class="crypto-price">${formatCadPrice(coin.price)}</span>
+                                <span class="crypto-cad-val">${formatUsdPrice(coin.price)}</span>
+                            </div>
                             <span class="crypto-change-pill ${pillClass}">${directionArrow} ${sign}${coin.pct.toFixed(2)}%</span>
                         </div>
                     </div>
                 `;
             }).join("");
+
+            const activeCoin = items.find((c) => c.symbol === selectedChartSymbol) || items[0];
+            updateStudyChart(activeCoin);
+        }
+
+        document.querySelectorAll(".chart-tab-btn").forEach((btn) => {
+            btn.addEventListener("click", function () {
+                document.querySelectorAll(".chart-tab-btn").forEach((b) => b.classList.remove("active"));
+                this.classList.add("active");
+                selectedChartSymbol = this.getAttribute("data-symbol");
+                const found = latestMarketItems.find((c) => c.symbol === selectedChartSymbol);
+                if (found) updateStudyChart(found);
+            });
+        });
+
+        async function fetchCadRate() {
+            try {
+                const res = await fetch("https://open.er-api.com/v6/latest/USD");
+                if (!res.ok) throw new Error("FX response not OK");
+                const data = await res.json();
+                if (data && data.rates && typeof data.rates.CAD === "number") {
+                    usdToCadRate = data.rates.CAD;
+                }
+            } catch (e) {
+                usdToCadRate = Number((1.3940 + (Math.random() - 0.5) * 0.004).toFixed(4));
+            }
         }
 
         async function fetchBinanceTickers() {
+            await fetchCadRate();
             try {
                 const symbolsParam = encodeURIComponent(JSON.stringify(BINANCE_COINS.map((c) => c.symbol)));
                 const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${symbolsParam}`);
@@ -1320,12 +1759,13 @@
                 const mapped = BINANCE_COINS.map((c) => {
                     const found = data.find((d) => d.symbol === c.symbol);
                     if (!found) {
-                        return { ...c, price: c.fallbackPrice, pct: c.fallbackPct };
+                        return { ...c, price: c.fallbackPrice, pct: c.fallbackPct, volUsd: c.fallbackVol };
                     }
                     return {
                         ...c,
                         price: parseFloat(found.lastPrice),
-                        pct: parseFloat(found.priceChangePercent)
+                        pct: parseFloat(found.priceChangePercent),
+                        volUsd: parseFloat(found.quoteVolume) || c.fallbackVol
                     };
                 });
 
@@ -1336,7 +1776,7 @@
                     const jitter = (Math.random() - 0.48) * 0.004;
                     const nextPrice = Math.max(0.01, prevPrice * (1 + jitter));
                     const nextPct = c.fallbackPct + (Math.random() - 0.5) * 0.15;
-                    return { ...c, price: nextPrice, pct: nextPct };
+                    return { ...c, price: nextPrice, pct: nextPct, volUsd: c.fallbackVol };
                 });
                 renderCryptoRows(mapped);
             }
