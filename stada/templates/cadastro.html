@@ -1,0 +1,1243 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'pt' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>STADA - {% trans "Cadastro" %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #060908;
+            --surface-dark: #0d1412;
+            --neon-cyan: #1ae6d6;
+            --neon-cyan-glow: rgba(26, 230, 214, 0.35);
+            --border-subtle: rgba(26, 230, 214, 0.25);
+            --text-main: #ffffff;
+            --text-muted: #7f9490;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 450px;
+            min-height: 100vh;
+            background: radial-gradient(circle at 50% 14%, rgba(26, 230, 214, 0.08), transparent 55%), var(--bg-dark);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 18px 20px 32px;
+            overflow-x: hidden;
+        }
+
+        /* BARRA SUPERIOR */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+            z-index: 5;
+        }
+
+        .back-btn, .globe-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.04);
+            color: #d6e4e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover, .globe-btn:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 12px var(--neon-cyan-glow);
+        }
+
+        .lang-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            letter-spacing: 0.5px;
+            margin-left: 6px;
+        }
+
+        .top-right-group {
+            display: flex;
+            align-items: center;
+        }
+
+        /* LOGOTIPO STADA */
+        .brand-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 6px 0 26px;
+        }
+
+        .stada-emblem {
+            width: 84px;
+            height: 84px;
+            filter: drop-shadow(0 0 14px rgba(26, 230, 214, 0.3));
+            margin-bottom: 8px;
+        }
+
+        .stada-wordmark {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-main);
+        }
+
+        .stada-wordmark span {
+            color: var(--neon-cyan);
+        }
+
+        /* FORMULÁRIO */
+        .auth-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-box {
+            position: relative;
+            width: 100%;
+            height: 54px;
+            border-radius: 27px;
+            background-color: var(--surface-dark);
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            padding: 0 18px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-box:focus-within {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 0 2px rgba(26, 230, 214, 0.14);
+        }
+
+        .input-box i.field-icon {
+            color: var(--text-muted);
+            font-size: 0.98rem;
+            width: 22px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .ddi-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px 4px 10px;
+            flex-shrink: 0;
+        }
+
+        .ddi-trigger i {
+            font-size: 0.72rem;
+            color: var(--neon-cyan);
+        }
+
+        .ddi-divider {
+            width: 1px;
+            height: 22px;
+            background-color: rgba(255, 255, 255, 0.14);
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .auth-form input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            padding-left: 12px;
+        }
+
+        .auth-form input.phone-input {
+            padding-left: 0;
+        }
+
+        .auth-form input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .toggle-eye {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+
+        .toggle-eye:hover {
+            color: var(--neon-cyan);
+        }
+
+        /* BOTÃO PRINCIPAL */
+        .btn-submit-stada {
+            width: 100%;
+            height: 54px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 27px;
+            background: linear-gradient(90deg, #12d8c8 0%, #3ef7e8 100%);
+            color: #041311;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 24px rgba(26, 230, 214, 0.42);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-submit-stada:active {
+            transform: scale(0.985);
+        }
+
+        .login-footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.84rem;
+            color: var(--text-muted);
+        }
+
+        .login-footer a {
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        /* MODAIS DE DDI E IDIOMAS */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 5, 4, 0.84);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 90;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-sheet {
+            width: 100%;
+            max-width: 450px;
+            height: 82vh;
+            background: #0c1311;
+            border-top: 1px solid var(--border-subtle);
+            border-radius: 24px 24px 0 0;
+            padding: 18px 16px 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.06);
+            border: none;
+            color: #d8e7e4;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neon-cyan);
+            font-size: 0.9rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 44px;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            background: #070b0a;
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.88rem;
+            padding: 0 14px 0 38px;
+            outline: none;
+        }
+
+        .picker-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 2px;
+        }
+
+        .picker-item {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 11px 12px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.86rem;
+        }
+
+        .picker-item:hover {
+            border-color: var(--border-subtle);
+            background: rgba(26, 230, 214, 0.07);
+        }
+
+        .picker-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .picker-code {
+            color: var(--neon-cyan);
+            font-weight: 700;
+            font-size: 0.86rem;
+        }
+
+        /* TELA DE LOADING 0% -> 100% */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 42%, rgba(26, 230, 214, 0.16), #050807 68%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+            padding: 28px;
+            text-align: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loader-ring-wrap {
+            position: relative;
+            width: 116px;
+            height: 116px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .loader-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid rgba(26, 230, 214, 0.16);
+            border-top-color: var(--neon-cyan);
+            animation: spinRing 0.95s linear infinite;
+        }
+
+        .loader-percent {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+        }
+
+        .loader-bar-track {
+            width: 240px;
+            height: 7px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.09);
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .loader-bar-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #12d8c8 0%, #48fff0 100%);
+            transition: width 0.06s linear;
+        }
+
+        .loader-status {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #b7ceca;
+        }
+
+        @keyframes spinRing {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper">
+        <!-- TOPO -->
+        <div class="top-bar">
+            <button type="button" class="back-btn" onclick="history.back()" aria-label="Voltar">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+
+            <div class="top-right-group">
+                <button type="button" class="globe-btn" id="openLangModal" aria-label="Selecionar idioma">
+                    <i class="fa-solid fa-globe"></i>
+                </button>
+                <span class="lang-badge" id="currentLangCode">PT</span>
+            </div>
+        </div>
+
+        <!-- LOGOTIPO STADA PERSONALIZADO -->
+        <div class="brand-header">
+            <svg class="stada-emblem" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="60" r="52" stroke="#1ae6d6" stroke-opacity="0.22" stroke-width="2"/>
+                <polygon points="60,18 96,40 96,80 60,102 24,80 24,40" stroke="#1ae6d6" stroke-width="3" fill="#0d1917"/>
+                <path d="M74 43C74 38.5 68.5 36 60 36C51.5 36 46 39.2 46 44.5C46 50.2 53.5 52.2 61.5 54.5C69.5 56.8 75 59.5 75 66.2C75 72.5 68.5 76.5 59.5 76.5C50 76.5 44 73 43.5 67.5" stroke="#1ae6d6" stroke-width="4.5" stroke-linecap="round"/>
+                <circle cx="60" cy="24" r="3" fill="#3ef7e8"/>
+                <circle cx="60" cy="96" r="3" fill="#3ef7e8"/>
+            </svg>
+            <div class="stada-wordmark">ST<span>A</span>DA</div>
+        </div>
+
+        <!-- FORMULÁRIO (APENAS NÚMERO DE TELEFONE) -->
+        <form method="post" class="auth-form" id="registerForm">
+            {% csrf_token %}
+
+            <div class="input-box">
+                <i class="fa-solid fa-phone field-icon"></i>
+                <button type="button" class="ddi-trigger" id="openDdiModal">
+                    <span id="selectedDdiFlag">🌐</span>
+                    <span id="selectedDdiText">+1</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <input type="hidden" name="country_code" id="countryCodeInput" value="+1">
+                <span class="ddi-divider"></span>
+                <input type="text" name="phone_number" id="phoneInput" class="phone-input" placeholder="Digite seu número de telefone" data-i18n-placeholder="phonePlaceholder" required>
+            </div>
+
+            <div class="input-box">
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input type="password" name="password" id="password" placeholder="Digite sua senha" data-i18n-placeholder="passwordPlaceholder" required>
+                <button type="button" class="toggle-eye" onclick="togglePass('password', this)" aria-label="Mostrar senha">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <div class="input-box">
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirme sua senha" data-i18n-placeholder="confirmPasswordPlaceholder" required>
+                <button type="button" class="toggle-eye" onclick="togglePass('confirm_password', this)" aria-label="Confirmar senha">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+
+            <div class="input-box">
+                <i class="fa-solid fa-user-plus field-icon"></i>
+                <input type="text" name="invited_by_code" id="inviteInput" placeholder="Código de convite (opcional)" data-i18n-placeholder="invitePlaceholder" value="{{ request.GET.invite|default:'' }}">
+            </div>
+
+            <button type="submit" class="btn-submit-stada" id="submitBtn" data-i18n="registerBtn">
+                Cadastrar
+            </button>
+
+            <div class="login-footer">
+                <span data-i18n="hasAccount">Já tem uma conta?</span>
+                <a href="{% url 'login' %}" data-i18n="loginLink">Entrar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- MODAL PESQUISÁVEL DE DDI DE TODOS OS PAÍSES DO MUNDO -->
+    <div class="modal-backdrop" id="ddiModal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title" data-i18n="selectDdiTitle">Selecionar código do país</div>
+                <button type="button" class="modal-close" id="closeDdiModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="ddiSearchInput" placeholder="Pesquisar país ou código (+...)" data-i18n-placeholder="searchCountryPlaceholder">
+            </div>
+            <div class="picker-list" id="ddiList"></div>
+        </div>
+    </div>
+
+    <!-- MODAL PESQUISÁVEL DE TODOS OS IDIOMAS NACIONAIS DO MUNDO -->
+    <div class="modal-backdrop" id="langModal">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <div class="modal-title" data-i18n="selectLangTitle">Selecionar idioma</div>
+                <button type="button" class="modal-close" id="closeLangModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="langSearchInput" placeholder="Pesquisar idioma..." data-i18n-placeholder="searchLangPlaceholder">
+            </div>
+            <div class="picker-list" id="langList"></div>
+        </div>
+    </div>
+
+    <!-- TELA DE LOADING PERSONALIZADA CONTANDO ATÉ 100% -->
+    <div class="loading-overlay" id="loadingScreen">
+        <div class="loader-ring-wrap">
+            <div class="loader-ring"></div>
+            <div class="loader-percent" id="loadingPercent">0%</div>
+        </div>
+        <div class="stada-wordmark" style="font-size: 1.05rem;">ST<span>A</span>DA</div>
+        <div class="loader-bar-track">
+            <div class="loader-bar-fill" id="loadingBar"></div>
+        </div>
+        <div class="loader-status" id="loadingStatus" data-i18n="loadingText">Carregando até 100% para o menu...</div>
+    </div>
+
+    <script>
+        // TODOS OS PAÍSES DO MUNDO E RESPECTIVOS CÓDIGOS DDI
+        const COUNTRIES_DDI = [
+            { name: "Afghanistan", code: "+93", flag: "🇦🇫" },
+            { name: "Albania", code: "+355", flag: "🇦🇱" },
+            { name: "Algeria", code: "+213", flag: "🇩🇿" },
+            { name: "Andorra", code: "+376", flag: "🇦🇩" },
+            { name: "Angola", code: "+244", flag: "🇦🇴" },
+            { name: "Antigua and Barbuda", code: "+1-268", flag: "🇦🇬" },
+            { name: "Argentina", code: "+54", flag: "🇦🇷" },
+            { name: "Armenia", code: "+374", flag: "🇦🇲" },
+            { name: "Australia", code: "+61", flag: "🇦🇺" },
+            { name: "Austria", code: "+43", flag: "🇦🇹" },
+            { name: "Azerbaijan", code: "+994", flag: "🇦🇿" },
+            { name: "Bahamas", code: "+1-242", flag: "🇧🇸" },
+            { name: "Bahrain", code: "+973", flag: "🇧🇭" },
+            { name: "Bangladesh", code: "+880", flag: "🇧🇩" },
+            { name: "Barbados", code: "+1-246", flag: "🇧🇧" },
+            { name: "Belarus", code: "+375", flag: "🇧🇾" },
+            { name: "Belgium", code: "+32", flag: "🇧🇪" },
+            { name: "Belize", code: "+501", flag: "🇧🇿" },
+            { name: "Benin", code: "+229", flag: "🇧🇯" },
+            { name: "Bhutan", code: "+975", flag: "🇧🇹" },
+            { name: "Bolivia", code: "+591", flag: "🇧🇴" },
+            { name: "Bosnia and Herzegovina", code: "+387", flag: "🇧🇦" },
+            { name: "Botswana", code: "+267", flag: "🇧🇼" },
+            { name: "Brazil", code: "+55", flag: "🇧🇷" },
+            { name: "Brunei", code: "+673", flag: "🇧🇳" },
+            { name: "Bulgaria", code: "+359", flag: "🇧🇬" },
+            { name: "Burkina Faso", code: "+226", flag: "🇧🇫" },
+            { name: "Burundi", code: "+257", flag: "🇧🇮" },
+            { name: "Cabo Verde", code: "+238", flag: "🇨🇻" },
+            { name: "Cambodia", code: "+855", flag: "🇰🇭" },
+            { name: "Cameroon", code: "+237", flag: "🇨🇲" },
+            { name: "Canada", code: "+1", flag: "🇨🇦" },
+            { name: "Central African Republic", code: "+236", flag: "🇨🇫" },
+            { name: "Chad", code: "+235", flag: "🇹🇩" },
+            { name: "Chile", code: "+56", flag: "🇨🇱" },
+            { name: "China", code: "+86", flag: "🇨🇳" },
+            { name: "Colombia", code: "+57", flag: "🇨🇴" },
+            { name: "Comoros", code: "+269", flag: "🇰🇲" },
+            { name: "Congo (Republic of the)", code: "+242", flag: "🇨🇬" },
+            { name: "Costa Rica", code: "+506", flag: "🇨🇷" },
+            { name: "Croatia", code: "+385", flag: "🇭🇷" },
+            { name: "Cuba", code: "+53", flag: "🇨🇺" },
+            { name: "Cyprus", code: "+357", flag: "🇨🇾" },
+            { name: "Czechia", code: "+420", flag: "🇨🇿" },
+            { name: "Democratic Republic of the Congo", code: "+243", flag: "🇨🇩" },
+            { name: "Denmark", code: "+45", flag: "🇩🇰" },
+            { name: "Djibouti", code: "+253", flag: "🇩🇯" },
+            { name: "Dominica", code: "+1-767", flag: "🇩🇲" },
+            { name: "Dominican Republic", code: "+1-809", flag: "🇩🇴" },
+            { name: "Ecuador", code: "+593", flag: "🇪🇨" },
+            { name: "Egypt", code: "+20", flag: "🇪🇬" },
+            { name: "El Salvador", code: "+503", flag: "🇸🇻" },
+            { name: "Equatorial Guinea", code: "+240", flag: "🇬🇶" },
+            { name: "Eritrea", code: "+291", flag: "🇪🇷" },
+            { name: "Estonia", code: "+372", flag: "🇪🇪" },
+            { name: "Eswatini", code: "+268", flag: "🇸🇿" },
+            { name: "Ethiopia", code: "+251", flag: "🇪🇹" },
+            { name: "Fiji", code: "+679", flag: "🇫🇯" },
+            { name: "Finland", code: "+358", flag: "🇫🇮" },
+            { name: "France", code: "+33", flag: "🇫🇷" },
+            { name: "Gabon", code: "+241", flag: "🇬🇦" },
+            { name: "Gambia", code: "+220", flag: "🇬🇲" },
+            { name: "Georgia", code: "+995", flag: "🇬🇪" },
+            { name: "Germany", code: "+49", flag: "🇩🇪" },
+            { name: "Ghana", code: "+233", flag: "🇬🇭" },
+            { name: "Greece", code: "+30", flag: "🇬🇷" },
+            { name: "Grenada", code: "+1-473", flag: "🇬🇩" },
+            { name: "Guatemala", code: "+502", flag: "🇬🇹" },
+            { name: "Guinea", code: "+224", flag: "🇬🇳" },
+            { name: "Guinea-Bissau", code: "+245", flag: "🇬🇼" },
+            { name: "Guyana", code: "+592", flag: "🇬🇾" },
+            { name: "Haiti", code: "+509", flag: "🇭🇹" },
+            { name: "Honduras", code: "+504", flag: "🇭🇳" },
+            { name: "Hungary", code: "+36", flag: "🇭🇺" },
+            { name: "Iceland", code: "+354", flag: "🇮🇸" },
+            { name: "India", code: "+91", flag: "🇮🇳" },
+            { name: "Indonesia", code: "+62", flag: "🇮🇩" },
+            { name: "Iran", code: "+98", flag: "🇮🇷" },
+            { name: "Iraq", code: "+964", flag: "🇮🇶" },
+            { name: "Ireland", code: "+353", flag: "🇮🇪" },
+            { name: "Israel", code: "+972", flag: "🇮🇱" },
+            { name: "Italy", code: "+39", flag: "🇮🇹" },
+            { name: "Jamaica", code: "+1-876", flag: "🇯🇲" },
+            { name: "Japan", code: "+81", flag: "🇯🇵" },
+            { name: "Jordan", code: "+962", flag: "🇯🇴" },
+            { name: "Kazakhstan", code: "+7", flag: "🇰🇿" },
+            { name: "Kenya", code: "+254", flag: "🇰🇪" },
+            { name: "Kiribati", code: "+686", flag: "🇰🇮" },
+            { name: "Kuwait", code: "+965", flag: "🇰🇼" },
+            { name: "Kyrgyzstan", code: "+996", flag: "🇰🇬" },
+            { name: "Laos", code: "+856", flag: "🇱🇦" },
+            { name: "Latvia", code: "+371", flag: "🇱🇻" },
+            { name: "Lebanon", code: "+961", flag: "🇱🇧" },
+            { name: "Lesotho", code: "+266", flag: "🇱🇸" },
+            { name: "Liberia", code: "+231", flag: "🇱🇷" },
+            { name: "Libya", code: "+218", flag: "🇱🇾" },
+            { name: "Liechtenstein", code: "+423", flag: "🇱🇮" },
+            { name: "Lithuania", code: "+370", flag: "🇱🇹" },
+            { name: "Luxembourg", code: "+352", flag: "🇱🇺" },
+            { name: "Madagascar", code: "+261", flag: "🇲🇬" },
+            { name: "Malawi", code: "+265", flag: "🇲🇼" },
+            { name: "Malaysia", code: "+60", flag: "🇲🇾" },
+            { name: "Maldives", code: "+960", flag: "🇲🇻" },
+            { name: "Mali", code: "+223", flag: "🇲🇱" },
+            { name: "Malta", code: "+356", flag: "🇲🇹" },
+            { name: "Marshall Islands", code: "+692", flag: "🇲🇭" },
+            { name: "Mauritania", code: "+222", flag: "🇲🇷" },
+            { name: "Mauritius", code: "+230", flag: "🇲🇺" },
+            { name: "Mexico", code: "+52", flag: "🇲🇽" },
+            { name: "Micronesia", code: "+691", flag: "🇫🇲" },
+            { name: "Moldova", code: "+373", flag: "🇲🇩" },
+            { name: "Monaco", code: "+377", flag: "🇲🇨" },
+            { name: "Mongolia", code: "+976", flag: "🇲🇳" },
+            { name: "Montenegro", code: "+382", flag: "🇲🇪" },
+            { name: "Morocco", code: "+212", flag: "🇲🇦" },
+            { name: "Mozambique", code: "+258", flag: "🇲🇿" },
+            { name: "Myanmar", code: "+95", flag: "🇲🇲" },
+            { name: "Namibia", code: "+264", flag: "🇳🇦" },
+            { name: "Nauru", code: "+674", flag: "🇳🇷" },
+            { name: "Nepal", code: "+977", flag: "🇳🇵" },
+            { name: "Netherlands", code: "+31", flag: "🇳🇱" },
+            { name: "New Zealand", code: "+64", flag: "🇳🇿" },
+            { name: "Nicaragua", code: "+505", flag: "🇳🇮" },
+            { name: "Niger", code: "+227", flag: "🇳🇪" },
+            { name: "Nigeria", code: "+234", flag: "🇳🇬" },
+            { name: "North Korea", code: "+850", flag: "🇰🇵" },
+            { name: "North Macedonia", code: "+389", flag: "🇲🇰" },
+            { name: "Norway", code: "+47", flag: "🇳🇴" },
+            { name: "Oman", code: "+968", flag: "🇴🇲" },
+            { name: "Pakistan", code: "+92", flag: "🇵🇰" },
+            { name: "Palau", code: "+680", flag: "🇵🇼" },
+            { name: "Palestine", code: "+970", flag: "🇵🇸" },
+            { name: "Panama", code: "+507", flag: "🇵🇦" },
+            { name: "Papua New Guinea", code: "+675", flag: "🇵🇬" },
+            { name: "Paraguay", code: "+595", flag: "🇵🇾" },
+            { name: "Peru", code: "+51", flag: "🇵🇪" },
+            { name: "Philippines", code: "+63", flag: "🇵🇭" },
+            { name: "Poland", code: "+48", flag: "🇵🇱" },
+            { name: "Portugal", code: "+351", flag: "🇵🇹" },
+            { name: "Qatar", code: "+974", flag: "🇶🇦" },
+            { name: "Romania", code: "+40", flag: "🇷🇴" },
+            { name: "Russia", code: "+7", flag: "🇷🇺" },
+            { name: "Rwanda", code: "+250", flag: "🇷🇼" },
+            { name: "Saint Kitts and Nevis", code: "+1-869", flag: "🇰🇳" },
+            { name: "Saint Lucia", code: "+1-758", flag: "🇱🇨" },
+            { name: "Saint Vincent and the Grenadines", code: "+1-784", flag: "🇻🇨" },
+            { name: "Samoa", code: "+685", flag: "🇼🇸" },
+            { name: "San Marino", code: "+378", flag: "🇸🇲" },
+            { name: "Sao Tome and Principe", code: "+239", flag: "🇸🇹" },
+            { name: "Saudi Arabia", code: "+966", flag: "🇸🇦" },
+            { name: "Senegal", code: "+221", flag: "🇸🇳" },
+            { name: "Serbia", code: "+381", flag: "🇷🇸" },
+            { name: "Seychelles", code: "+248", flag: "🇸🇨" },
+            { name: "Sierra Leone", code: "+232", flag: "🇸🇱" },
+            { name: "Singapore", code: "+65", flag: "🇸🇬" },
+            { name: "Slovakia", code: "+421", flag: "🇸🇰" },
+            { name: "Slovenia", code: "+386", flag: "🇸🇮" },
+            { name: "Solomon Islands", code: "+677", flag: "🇸🇧" },
+            { name: "Somalia", code: "+252", flag: "🇸🇴" },
+            { name: "South Africa", code: "+27", flag: "🇿🇦" },
+            { name: "South Korea", code: "+82", flag: "🇰🇷" },
+            { name: "South Sudan", code: "+211", flag: "🇸🇸" },
+            { name: "Spain", code: "+34", flag: "🇪🇸" },
+            { name: "Sri Lanka", code: "+94", flag: "🇱🇰" },
+            { name: "Sudan", code: "+249", flag: "🇸🇩" },
+            { name: "Suriname", code: "+597", flag: "🇸🇷" },
+            { name: "Sweden", code: "+46", flag: "🇸🇪" },
+            { name: "Switzerland", code: "+41", flag: "🇨🇭" },
+            { name: "Syria", code: "+963", flag: "🇸🇾" },
+            { name: "Tajikistan", code: "+992", flag: "🇹🇯" },
+            { name: "Tanzania", code: "+255", flag: "🇹🇿" },
+            { name: "Thailand", code: "+66", flag: "🇹🇭" },
+            { name: "Timor-Leste", code: "+670", flag: "🇹🇱" },
+            { name: "Togo", code: "+228", flag: "🇹🇬" },
+            { name: "Tonga", code: "+676", flag: "🇹🇴" },
+            { name: "Trinidad and Tobago", code: "+1-868", flag: "🇹🇹" },
+            { name: "Tunisia", code: "+216", flag: "🇹🇳" },
+            { name: "Turkey", code: "+90", flag: "🇹🇷" },
+            { name: "Turkmenistan", code: "+993", flag: "🇹🇲" },
+            { name: "Tuvalu", code: "+688", flag: "🇹🇻" },
+            { name: "Uganda", code: "+256", flag: "🇺🇬" },
+            { name: "Ukraine", code: "+380", flag: "🇺🇦" },
+            { name: "United Arab Emirates", code: "+971", flag: "🇦🇪" },
+            { name: "United Kingdom", code: "+44", flag: "🇬🇧" },
+            { name: "United States", code: "+1", flag: "🇺🇸" },
+            { name: "Uruguay", code: "+598", flag: "🇺🇾" },
+            { name: "Uzbekistan", code: "+998", flag: "🇺🇿" },
+            { name: "Vanuatu", code: "+678", flag: "🇻🇺" },
+            { name: "Vatican City", code: "+379", flag: "🇻🇦" },
+            { name: "Venezuela", code: "+58", flag: "🇻🇪" },
+            { name: "Vietnam", code: "+84", flag: "🇻🇳" },
+            { name: "Yemen", code: "+967", flag: "🇾🇪" },
+            { name: "Zambia", code: "+260", flag: "🇿🇲" },
+            { name: "Zimbabwe", code: "+263", flag: "🇿🇼" }
+        ];
+
+        // TODOS OS IDIOMAS NACIONAIS DO MUNDO
+        const WORLD_LANGUAGES = [
+            { code: "af", native: "Afrikaans", english: "Afrikaans" },
+            { code: "sq", native: "Shqip", english: "Albanian" },
+            { code: "am", native: "አማርኛ", english: "Amharic" },
+            { code: "ar", native: "العربية", english: "Arabic" },
+            { code: "hy", native: "Հայերեն", english: "Armenian" },
+            { code: "az", native: "Azərbaycan", english: "Azerbaijani" },
+            { code: "be", native: "Беларуская", english: "Belarusian" },
+            { code: "bn", native: "বাংলা", english: "Bengali" },
+            { code: "bi", native: "Bislama", english: "Bislama" },
+            { code: "bs", native: "Bosanski", english: "Bosnian" },
+            { code: "bg", native: "Български", english: "Bulgarian" },
+            { code: "my", native: "မြန်မာဘာသာ", english: "Burmese" },
+            { code: "ca", native: "Català", english: "Catalan" },
+            { code: "zh", native: "中文", english: "Chinese" },
+            { code: "hr", native: "Hrvatski", english: "Croatian" },
+            { code: "cs", native: "Čeština", english: "Czech" },
+            { code: "da", native: "Dansk", english: "Danish" },
+            { code: "dv", native: "ދިވެހި", english: "Divehi" },
+            { code: "nl", native: "Nederlands", english: "Dutch" },
+            { code: "dz", native: "རྫོང་ཁ", english: "Dzongkha" },
+            { code: "en", native: "English", english: "English" },
+            { code: "et", native: "Eesti", english: "Estonian" },
+            { code: "fj", native: "Vosa Vakaviti", english: "Fijian" },
+            { code: "fi", native: "Suomi", english: "Finnish" },
+            { code: "fr", native: "Français", english: "French" },
+            { code: "ka", native: "ქართული", english: "Georgian" },
+            { code: "de", native: "Deutsch", english: "German" },
+            { code: "el", native: "Ελληνικά", english: "Greek" },
+            { code: "gn", native: "Avañe'ẽ", english: "Guarani" },
+            { code: "ht", native: "Kreyòl Ayisyen", english: "Haitian Creole" },
+            { code: "he", native: "עברית", english: "Hebrew" },
+            { code: "hi", native: "हिन्दी", english: "Hindi" },
+            { code: "hu", native: "Magyar", english: "Hungarian" },
+            { code: "is", native: "Íslenska", english: "Icelandic" },
+            { code: "id", native: "Bahasa Indonesia", english: "Indonesian" },
+            { code: "ga", native: "Gaeilge", english: "Irish" },
+            { code: "it", native: "Italiano", english: "Italian" },
+            { code: "ja", native: "日本語", english: "Japanese" },
+            { code: "kk", native: "Қазақ тілі", english: "Kazakh" },
+            { code: "km", native: "ខ្មែរ", english: "Khmer" },
+            { code: "rw", native: "Ikinyarwanda", english: "Kinyarwanda" },
+            { code: "ko", native: "한국어", english: "Korean" },
+            { code: "ky", native: "Кыргызча", english: "Kyrgyz" },
+            { code: "lo", native: "ລາວ", english: "Lao" },
+            { code: "la", native: "Latina", english: "Latin" },
+            { code: "lv", native: "Latviešu", english: "Latvian" },
+            { code: "lt", native: "Lietuvių", english: "Lithuanian" },
+            { code: "lb", native: "Lëtzebuergesch", english: "Luxembourgish" },
+            { code: "mk", native: "Македонски", english: "Macedonian" },
+            { code: "mg", native: "Malagasy", english: "Malagasy" },
+            { code: "ms", native: "Bahasa Melayu", english: "Malay" },
+            { code: "mt", native: "Malti", english: "Maltese" },
+            { code: "mi", native: "Te Reo Māori", english: "Maori" },
+            { code: "mh", native: "Kajin M̧ajeļ", english: "Marshallese" },
+            { code: "mn", native: "Монгол", english: "Mongolian" },
+            { code: "na", native: "Dorerin Naoero", english: "Nauruan" },
+            { code: "ne", native: "नेपाली", english: "Nepali" },
+            { code: "no", native: "Norsk", english: "Norwegian" },
+            { code: "ny", native: "Chichewa", english: "Nyanja" },
+            { code: "ps", native: "پښتو", english: "Pashto" },
+            { code: "fa", native: "فارسی", english: "Persian" },
+            { code: "pl", native: "Polski", english: "Polish" },
+            { code: "pt", native: "Português", english: "Portuguese" },
+            { code: "ro", native: "Română", english: "Romanian" },
+            { code: "rn", native: "Ikirundi", english: "Rundi" },
+            { code: "ru", native: "Русский", english: "Russian" },
+            { code: "sm", native: "Gagana Sāmoa", english: "Samoan" },
+            { code: "sg", native: "Sängö", english: "Sango" },
+            { code: "sr", native: "Српски", english: "Serbian" },
+            { name: "Sesotho", code: "st", native: "Sesotho", english: "Sesotho" },
+            { code: "sn", native: "ChiShona", english: "Shona" },
+            { code: "si", native: "සිංහල", english: "Sinhala" },
+            { code: "sk", native: "Slovenčina", english: "Slovak" },
+            { code: "sl", native: "Slovenščina", english: "Slovenian" },
+            { code: "so", native: "Soomaali", english: "Somali" },
+            { code: "es", native: "Español", english: "Spanish" },
+            { code: "sw", native: "Kiswahili", english: "Swahili" },
+            { code: "ss", native: "SiSwati", english: "Swati" },
+            { code: "sv", native: "Svenska", english: "Swedish" },
+            { code: "tl", native: "Tagalog", english: "Tagalog" },
+            { code: "tg", native: "Тоҷикӣ", english: "Tajik" },
+            { code: "ta", native: "தமிழ்", english: "Tamil" },
+            { code: "tet", native: "Tetun", english: "Tetum" },
+            { code: "th", native: "ไทย", english: "Thai" },
+            { code: "ti", native: "ትግርኛ", english: "Tigrinya" },
+            { code: "to", native: "Lea Fakatonga", english: "Tongan" },
+            { code: "tn", native: "Setswana", english: "Tswana" },
+            { code: "tr", native: "Türkçe", english: "Turkish" },
+            { code: "tk", native: "Türkmençe", english: "Turkmen" },
+            { code: "uk", native: "Українська", english: "Ukrainian" },
+            { code: "ur", native: "اردو", english: "Urdu" },
+            { code: "uz", native: "Oʻzbek", english: "Uzbek" },
+            { code: "vi", native: "Tiếng Việt", english: "Vietnamese" },
+            { code: "zu", native: "isiZulu", english: "Zulu" }
+        ];
+
+        // TRADUÇÃO AUTOMÁTICA DE INTERFACE PARA O IDIOMA DO NAVEGADOR OU SELECIONADO
+        const TRANSLATIONS = {
+            pt: {
+                phonePlaceholder: "Digite seu número de telefone",
+                passwordPlaceholder: "Digite sua senha",
+                confirmPasswordPlaceholder: "Confirme sua senha",
+                invitePlaceholder: "Código de convite (opcional)",
+                registerBtn: "Cadastrar",
+                hasAccount: "Já tem uma conta?",
+                loginLink: "Entrar",
+                selectDdiTitle: "Selecionar código do país",
+                searchCountryPlaceholder: "Pesquisar país ou código (+...)",
+                selectLangTitle: "Selecionar idioma",
+                searchLangPlaceholder: "Pesquisar idioma...",
+                loadingText: "Carregando até 100% para o menu..."
+            },
+            en: {
+                phonePlaceholder: "Enter your phone number",
+                passwordPlaceholder: "Enter your password",
+                confirmPasswordPlaceholder: "Confirm your password",
+                invitePlaceholder: "Invite code (optional)",
+                registerBtn: "Sign Up",
+                hasAccount: "Already have an account?",
+                loginLink: "Sign In",
+                selectDdiTitle: "Select country code",
+                searchCountryPlaceholder: "Search country or code (+...)",
+                selectLangTitle: "Select language",
+                searchLangPlaceholder: "Search language...",
+                loadingText: "Loading to 100% for the menu..."
+            },
+            es: {
+                phonePlaceholder: "Ingresa tu número de teléfono",
+                passwordPlaceholder: "Ingresa tu contraseña",
+                confirmPasswordPlaceholder: "Confirma tu contraseña",
+                invitePlaceholder: "Código de invitación (opcional)",
+                registerBtn: "Registrarse",
+                hasAccount: "¿Ya tienes una cuenta?",
+                loginLink: "Iniciar sesión",
+                selectDdiTitle: "Seleccionar código de país",
+                searchCountryPlaceholder: "Buscar país o código (+...)",
+                selectLangTitle: "Seleccionar idioma",
+                searchLangPlaceholder: "Buscar idioma...",
+                loadingText: "Cargando hasta el 100% para el menú..."
+            },
+            fr: {
+                phonePlaceholder: "Entrez votre numéro de téléphone",
+                passwordPlaceholder: "Entrez votre mot de passe",
+                confirmPasswordPlaceholder: "Confirmez votre mot de passe",
+                invitePlaceholder: "Code d'invitation (optionnel)",
+                registerBtn: "S'inscrire",
+                hasAccount: "Vous avez déjà un compte ?",
+                loginLink: "Se connecter",
+                selectDdiTitle: "Sélectionner l'indicatif du pays",
+                searchCountryPlaceholder: "Rechercher un pays ou code (+...)",
+                selectLangTitle: "Sélectionner la langue",
+                searchLangPlaceholder: "Rechercher une langue...",
+                loadingText: "Chargement à 100 % vers le menu..."
+            },
+            ar: {
+                phonePlaceholder: "أدخل رقم هاتفك",
+                passwordPlaceholder: "أدخل كلمة المرور",
+                confirmPasswordPlaceholder: "أكد كلمة المرور",
+                invitePlaceholder: "رمز الدعوة (اختياري)",
+                registerBtn: "إنشاء حساب",
+                hasAccount: "هل لديك حساب بالفعل؟",
+                loginLink: "تسجيل الدخول",
+                selectDdiTitle: "اختر رمز الدولة",
+                searchCountryPlaceholder: "ابحث عن دولة أو رمز (+...)",
+                selectLangTitle: "اختر اللغة",
+                searchLangPlaceholder: "ابحث عن لغة...",
+                loadingText: "جاري التحميل حتى 100% إلى القائمة..."
+            },
+            zh: {
+                phonePlaceholder: "输入您的手机号码",
+                passwordPlaceholder: "输入您的密码",
+                confirmPasswordPlaceholder: "确认您的密码",
+                invitePlaceholder: "邀请码（选填）",
+                registerBtn: "注册",
+                hasAccount: "已有账号？",
+                loginLink: "登录",
+                selectDdiTitle: "选择国家代码",
+                searchCountryPlaceholder: "搜索国家或区号 (+...)",
+                selectLangTitle: "选择语言",
+                searchLangPlaceholder: "搜索语言...",
+                loadingText: "正在加载至 100% 进入菜单..."
+            },
+            hi: {
+                phonePlaceholder: "अपना फ़ोन नंबर दर्ज करें",
+                passwordPlaceholder: "अपना पासवर्ड दर्ज करें",
+                confirmPasswordPlaceholder: "अपने पासवर्ड की पुष्टि करें",
+                invitePlaceholder: "आमंत्रण कोड (वैकल्पिक)",
+                registerBtn: "पंजीकरण करें",
+                hasAccount: "क्या आपका पहले से खाता है?",
+                loginLink: "लॉग इन करें",
+                selectDdiTitle: "देश कोड चुनें",
+                searchCountryPlaceholder: "देश या कोड खोजें (+...)",
+                selectLangTitle: "भाषा चुनें",
+                searchLangPlaceholder: "भाषा खोजें...",
+                loadingText: "मेनू के लिए 100% तक लोड हो रहा है..."
+            },
+            ru: {
+                phonePlaceholder: "Введите номер телефона",
+                passwordPlaceholder: "Введите пароль",
+                confirmPasswordPlaceholder: "Подтвердите пароль",
+                invitePlaceholder: "Код приглашения (необязательно)",
+                registerBtn: "Регистрация",
+                hasAccount: "Уже есть аккаунт?",
+                loginLink: "Войти",
+                selectDdiTitle: "Выберите код страны",
+                searchCountryPlaceholder: "Поиск страны или кода (+...)",
+                selectLangTitle: "Выберите язык",
+                searchLangPlaceholder: "Поиск языка...",
+                loadingText: "Загрузка до 100% перед меню..."
+            },
+            ja: {
+                phonePlaceholder: "電話番号を入力してください",
+                passwordPlaceholder: "パスワードを入力してください",
+                confirmPasswordPlaceholder: "パスワードを再入力してください",
+                invitePlaceholder: "招待コード（任意）",
+                registerBtn: "登録する",
+                hasAccount: "すでにアカウントをお持ちですか？",
+                loginLink: "ログイン",
+                selectDdiTitle: "国番号を選択",
+                searchCountryPlaceholder: "国名または番号を検索 (+...)",
+                selectLangTitle: "言語を選択",
+                searchLangPlaceholder: "言語を検索...",
+                loadingText: "メニューへ 100% 読み込み中..."
+            },
+            ko: {
+                phonePlaceholder: "전화번호를 입력하세요",
+                passwordPlaceholder: "비밀번호를 입력하세요",
+                confirmPasswordPlaceholder: "비밀번호를 다시 입력하세요",
+                invitePlaceholder: "초대 코드 (선택 사항)",
+                registerBtn: "가입하기",
+                hasAccount: "이미 계정이 있으신가요?",
+                loginLink: "로그인",
+                selectDdiTitle: "국가 코드 선택",
+                searchCountryPlaceholder: "국가 또는 코드 검색 (+...)",
+                selectLangTitle: "언어 선택",
+                searchLangPlaceholder: "언어 검색...",
+                loadingText: "메뉴로 이동하기 위해 100% 로딩 중..."
+            },
+            de: {
+                phonePlaceholder: "Telefonnummer eingeben",
+                passwordPlaceholder: "Passwort eingeben",
+                confirmPasswordPlaceholder: "Passwort bestätigen",
+                invitePlaceholder: "Einladungscode (optional)",
+                registerBtn: "Registrieren",
+                hasAccount: "Bereits ein Konto?",
+                loginLink: "Anmelden",
+                selectDdiTitle: "Ländervorwahl wählen",
+                searchCountryPlaceholder: "Land oder Vorwahl suchen (+...)",
+                selectLangTitle: "Sprache wählen",
+                searchLangPlaceholder: "Sprache suchen...",
+                loadingText: "Lade auf 100 % ins Menü..."
+            },
+            it: {
+                phonePlaceholder: "Inserisci il tuo numero di telefono",
+                passwordPlaceholder: "Inserisci la password",
+                confirmPasswordPlaceholder: "Conferma la password",
+                invitePlaceholder: "Codice invito (opzionale)",
+                registerBtn: "Registrati",
+                hasAccount: "Hai già un account?",
+                loginLink: "Accedi",
+                selectDdiTitle: "Seleziona prefisso paese",
+                searchCountryPlaceholder: "Cerca paese o prefisso (+...)",
+                selectLangTitle: "Seleziona lingua",
+                searchLangPlaceholder: "Cerca lingua...",
+                loadingText: "Caricamento al 100% verso il menu..."
+            }
+        };
+
+        async function translateDynamicText(text, targetLang) {
+            if (!text || targetLang === "en") return text;
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${encodeURIComponent(targetLang)}&dt=t&q=${encodeURIComponent(text)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return data[0].map(part => part[0]).join("");
+            } catch (e) {
+                return text;
+            }
+        }
+
+        async function applyLanguage(langCode) {
+            const baseLang = (langCode || "en").toLowerCase().split("-")[0];
+            document.documentElement.lang = baseLang;
+            document.documentElement.dir = ["ar", "he", "fa", "ur", "ps", "dv"].includes(baseLang) ? "rtl" : "ltr";
+            document.getElementById("currentLangCode").textContent = baseLang.toUpperCase();
+
+            const preset = TRANSLATIONS[baseLang];
+            if (preset) {
+                document.querySelectorAll("[data-i18n]").forEach(el => {
+                    const key = el.getAttribute("data-i18n");
+                    if (preset[key]) el.textContent = preset[key];
+                });
+                document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+                    const key = el.getAttribute("data-i18n-placeholder");
+                    if (preset[key]) el.placeholder = preset[key];
+                });
+                return;
+            }
+
+            const baseDict = TRANSLATIONS.en;
+            for (const el of document.querySelectorAll("[data-i18n]")) {
+                const key = el.getAttribute("data-i18n");
+                if (baseDict[key]) {
+                    el.textContent = await translateDynamicText(baseDict[key], baseLang);
+                }
+            }
+            for (const el of document.querySelectorAll("[data-i18n-placeholder]")) {
+                const key = el.getAttribute("data-i18n-placeholder");
+                if (baseDict[key]) {
+                    el.placeholder = await translateDynamicText(baseDict[key], baseLang);
+                }
+            }
+        }
+
+        // DETECTA AUTOMATICAMENTE O IDIOMA DO NAVEGADOR AO ABRIR
+        (function detectBrowserLanguage() {
+            const browserLangs = navigator.languages && navigator.languages.length
+                ? navigator.languages
+                : [navigator.language || "en"];
+            applyLanguage(browserLangs[0]);
+        })();
+
+        // RENDERIZAÇÃO E BUSCA DE DDI
+        const ddiModal = document.getElementById("ddiModal");
+        const ddiList = document.getElementById("ddiList");
+        const ddiSearchInput = document.getElementById("ddiSearchInput");
+
+        function renderDdiList(filterText = "") {
+            const q = filterText.trim().toLowerCase();
+            const filtered = COUNTRIES_DDI.filter(item =>
+                item.name.toLowerCase().includes(q) ||
+                item.code.toLowerCase().includes(q)
+            );
+
+            ddiList.innerHTML = "";
+            filtered.forEach(item => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "picker-item";
+                btn.innerHTML = `
+                    <span class="picker-item-left">
+                        <span>${item.flag}</span>
+                        <span>${item.name}</span>
+                    </span>
+                    <span class="picker-code">${item.code}</span>
+                `;
+                btn.addEventListener("click", () => {
+                    document.getElementById("selectedDdiFlag").textContent = item.flag;
+                    document.getElementById("selectedDdiText").textContent = item.code;
+                    document.getElementById("countryCodeInput").value = item.code;
+                    ddiModal.classList.remove("active");
+                });
+                ddiList.appendChild(btn);
+            });
+        }
+
+        document.getElementById("openDdiModal").addEventListener("click", () => {
+            ddiSearchInput.value = "";
+            renderDdiList("");
+            ddiModal.classList.add("active");
+            setTimeout(() => ddiSearchInput.focus(), 60);
+        });
+
+        document.getElementById("closeDdiModal").addEventListener("click", () => {
+            ddiModal.classList.remove("active");
+        });
+
+        ddiSearchInput.addEventListener("input", (e) => {
+            renderDdiList(e.target.value);
+        });
+
+        // RENDERIZAÇÃO E BUSCA DE IDIOMAS
+        const langModal = document.getElementById("langModal");
+        const langList = document.getElementById("langList");
+        const langSearchInput = document.getElementById("langSearchInput");
+
+        function renderLangList(filterText = "") {
+            const q = filterText.trim().toLowerCase();
+            const filtered = WORLD_LANGUAGES.filter(lang =>
+                lang.native.toLowerCase().includes(q) ||
+                lang.english.toLowerCase().includes(q) ||
+                lang.code.toLowerCase().includes(q)
+            );
+
+            langList.innerHTML = "";
+            filtered.forEach(lang => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "picker-item";
+                btn.innerHTML = `
+                    <span class="picker-item-left">
+                        <span>${lang.native}</span>
+                        <span style="color: var(--text-muted); font-size: 0.78rem;">(${lang.english})</span>
+                    </span>
+                    <span class="picker-code">${lang.code.toUpperCase()}</span>
+                `;
+                btn.addEventListener("click", () => {
+                    applyLanguage(lang.code);
+                    langModal.classList.remove("active");
+                });
+                langList.appendChild(btn);
+            });
+        }
+
+        document.getElementById("openLangModal").addEventListener("click", () => {
+            langSearchInput.value = "";
+            renderLangList("");
+            langModal.classList.add("active");
+            setTimeout(() => langSearchInput.focus(), 60);
+        });
+
+        document.getElementById("closeLangModal").addEventListener("click", () => {
+            langModal.classList.remove("active");
+        });
+
+        langSearchInput.addEventListener("input", (e) => {
+            renderLangList(e.target.value);
+        });
+
+        [ddiModal, langModal].forEach(modal => {
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) modal.classList.remove("active");
+            });
+        });
+
+        // MOSTRAR / OCULTAR SENHA
+        function togglePass(id, btnEl) {
+            const input = document.getElementById(id);
+            const icon = btnEl.querySelector("i");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.replace("fa-eye", "fa-eye-slash");
+            } else {
+                input.type = "password";
+                icon.classList.replace("fa-eye-slash", "fa-eye");
+            }
+        }
+
+        // LOADING PERSONALIZADO CONTANDO ATÉ 100% AO CLICAR
+        const registerForm = document.getElementById("registerForm");
+        const loadingScreen = document.getElementById("loadingScreen");
+        const loadingPercent = document.getElementById("loadingPercent");
+        const loadingBar = document.getElementById("loadingBar");
+        let isSubmittingWithLoader = false;
+
+        registerForm.addEventListener("submit", function (e) {
+            if (isSubmittingWithLoader) return;
+            e.preventDefault();
+            isSubmittingWithLoader = true;
+
+            loadingScreen.classList.add("active");
+            let progress = 0;
+            loadingPercent.textContent = "0%";
+            loadingBar.style.width = "0%";
+
+            const timer = setInterval(() => {
+                progress += 2;
+                if (progress > 100) progress = 100;
+
+                loadingPercent.textContent = progress + "%";
+                loadingBar.style.width = progress + "%";
+
+                if (progress >= 100) {
+                    clearInterval(timer);
+                    setTimeout(() => {
+                        registerForm.submit();
+                    }, 180);
+                }
+            }, 28);
+        });
+    </script>
+</body>
+</html>
