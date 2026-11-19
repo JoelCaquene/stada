@@ -176,14 +176,14 @@
             <div class="card-info">
                 <span class="level-title">{{ level.name }}</span>
                 <div class="daily-task-info">
-                    Ganho Diário: <span class="daily-value">{{ level.daily_gain }} KZ</span>
+                    Ganho Diário: <span class="daily-value">{{ level.daily_gain }} $</span>
                 </div>
                 <div class="duration-badge">Expira em 365 Dias</div>
             </div>
 
             <div class="card-action-area">
                 <div class="deposit-price">
-                    {{ level.deposit_value }} <span class="price-unit">KZ</span>
+                    {{ level.deposit_value }} <span class="price-unit">$</span>
                 </div>
 
                 {% if level.id in user_levels %}

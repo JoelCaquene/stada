@@ -258,7 +258,7 @@
             <div class="level-info">
                 <span class="level-name">{{ level.name }}</span>
                 <div class="income-label">
-                    Diário: <span class="income-value">{{ level.daily_gain }} KZ</span>
+                    Diário: <span class="income-value">{{ level.daily_gain }} $</span>
                 </div>
                 
                 <!-- Informação de Número de Tarefas Diárias -->
@@ -273,7 +273,7 @@
             </div>
 
             <div class="level-action">
-                <div class="level-price">{{ level.deposit_value }} <small style="font-size: 0.6rem;">KZ</small></div>
+                <div class="level-price">{{ level.deposit_value }} <small style="font-size: 0.6rem;">$</small></div>
                 
                 {% if level.id in user_levels %}
                     <div class="btn-status btn-active">

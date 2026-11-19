@@ -18,8 +18,8 @@
         <div class="wallet-info">
             <span class="wallet-label">Saldo Disponível</span>
             <div class="balance-row">
-                <span class="currency">KZ</span>
-                <span class="amount" id="balance-kz">{{ user.available_balance|default:"0.00" }}</span>
+                <span class="currency">$</span>
+                <span class="amount" id="balance-$">{{ user.available_balance|default:"0.00" }}</span>
             </div>
             <div class="usdt-convert">
                 <span class="usdt-icon">≈</span>
@@ -36,27 +36,27 @@
     <div class="income-grid">
         <div class="data-card bg-blue">
             <span class="data-label">Receita de Hoje</span>
-            <span class="data-value">KZ {{ receita_hoje|default:"0.00" }}</span>
+            <span class="data-value">$ {{ receita_hoje|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-purple">
             <span class="data-label">Receita de Ontem</span>
-            <span class="data-value">KZ {{ receita_ontem|default:"0.00" }}</span>
+            <span class="data-value">$ {{ receita_ontem|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-green">
             <span class="data-label">Receita deste Mês</span>
-            <span class="data-value">KZ {{ receita_mes_atual|default:"0.00" }}</span>
+            <span class="data-value">$ {{ receita_mes_atual|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-orange">
             <span class="data-label">Mês Anterior</span>
-            <span class="data-value">KZ {{ receita_mes_anterior|default:"0.00" }}</span>
+            <span class="data-value">$ {{ receita_mes_anterior|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-dark">
             <span class="data-label">Subsídios</span>
-            <span class="data-value">KZ {{ user.subsidy_balance|default:"0.00" }}</span>
+            <span class="data-value">$ {{ user.subsidy_balance|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-cyan">
@@ -66,7 +66,7 @@
 
         <div class="data-card bg-red full-width">
             <span class="data-label">Total Sacado (Sucesso)</span>
-            <span class="data-value">KZ {{ total_sacado|default:"0.00" }}</span>
+            <span class="data-value">$ {{ total_sacado|default:"0.00" }}</span>
         </div>
     </div>
 
@@ -134,13 +134,13 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Taxa de Conversão Exemplo (1 USDT = 1000 KZ)
+        // Taxa de Conversão Exemplo (1 USDT = 1000 $)
         // Você pode buscar essa taxa de uma API ou passar via context do Django
         const exchangeRate = 1000; 
-        const kzAmount = parseFloat("{{ user.available_balance }}".replace(',', '.'));
+        const $Amount = parseFloat("{{ user.available_balance }}".replace(',', '.'));
         
-        if (!isNaN(kzAmount)) {
-            const usdtAmount = (kzAmount / exchangeRate).toFixed(2);
+        if (!isNaN($Amount)) {
+            const usdtAmount = ($Amount / exchangeRate).toFixed(2);
             document.getElementById('balance-usdt').innerText = usdtAmount;
         }
     });

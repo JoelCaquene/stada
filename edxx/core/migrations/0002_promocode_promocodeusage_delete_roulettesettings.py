@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('code', models.CharField(max_length=50, unique=True, verbose_name='Código do Cupom')),
-                ('value', models.DecimalField(decimal_places=2, max_digits=12, verbose_name='Valor do Prêmio (KZ)')),
+                ('value', models.DecimalField(decimal_places=2, max_digits=12, verbose_name='Valor do Prêmio ($)')),
                 ('is_active', models.BooleanField(default=True, verbose_name='Ativo?')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],

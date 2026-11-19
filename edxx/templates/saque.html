@@ -25,7 +25,7 @@
         <div class="balance-card-glow">
             <div class="balance-info">
                 <span class="label">SALDO DISPONÍVEL</span>
-                <h2 class="value">KZ {{ request.user.available_balance|default:"0.00" }}</h2>
+                <h2 class="value">$ {{ request.user.available_balance|default:"0.00" }}</h2>
             </div>
             <div class="balance-icon-box">
                 <i class="fas fa-wallet"></i>
@@ -41,7 +41,7 @@
                 <div class="input-section">
                     <label class="premium-label"><i class="fas fa-coins"></i> Quanto deseja levantar?</label>
                     <div class="custom-input-group">
-                        <span class="currency-tag">KZ</span>
+                        <span class="currency-tag">$</span>
                         <input type="number" name="amount" id="id_amount" step="0.01" required placeholder="0.00">
                     </div>
                 </div>
@@ -49,11 +49,11 @@
                 <div id="tax-display" class="tax-info-glass">
                     <div class="tax-line">
                         <span>Taxa Admin (10%)</span>
-                        <span id="tax-val">0.00 KZ</span>
+                        <span id="tax-val">0.00 $</span>
                     </div>
                     <div class="tax-line total">
                         <span>Líquido a Receber</span>
-                        <span id="net-val">0.00 KZ</span>
+                        <span id="net-val">0.00 $</span>
                     </div>
                 </div>
 
@@ -102,7 +102,7 @@
                             <div class="info-grid">
                                 <div class="info-item">
                                     <small>Valor</small>
-                                    <strong>KZ {{ w.amount }}</strong>
+                                    <strong>$ {{ w.amount }}</strong>
                                 </div>
                                 <div class="info-item">
                                     <small>Destino (IBAN)</small>
@@ -258,11 +258,11 @@
         if (val > 0) {
             let tax = val * 0.10;
             let net = val - tax;
-            taxVal.innerText = tax.toFixed(2) + " KZ";
-            netVal.innerText = net.toFixed(2) + " KZ";
+            taxVal.innerText = tax.toFixed(2) + " $";
+            netVal.innerText = net.toFixed(2) + " $";
         } else {
-            taxVal.innerText = "0.00 KZ";
-            netVal.innerText = "0.00 KZ";
+            taxVal.innerText = "0.00 $";
+            netVal.innerText = "0.00 $";
         }
     });
 </script>

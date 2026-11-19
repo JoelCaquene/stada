@@ -18,8 +18,8 @@
         <div class="wallet-info">
             <span class="wallet-label"><i class="fa-solid fa-microscope" style="margin-right: 6px; opacity: 0.8;"></i> Saldo Disponível</span>
             <div class="balance-row">
-                <span class="currency">KZ</span>
-                <span class="amount" id="balance-kz">{{ user.available_balance|default:"0.00" }}</span>
+                <span class="currency">$</span>
+                <span class="amount" id="balance-$">{{ user.available_balance|default:"0.00" }}</span>
             </div>
             <div class="usdt-convert">
                 <span class="usdt-icon"><i class="fa-solid fa-briefcase-medical"></i></span>
@@ -37,37 +37,37 @@
         <div class="data-card bg-medical-blue">
             <div class="card-icon"><i class="fa-solid fa-user-md"></i></div>
             <span class="data-label">Hoje</span>
-            <span class="data-value"><small>KZ</small> {{ receita_hoje|default:"0.00" }}</span>
+            <span class="data-value"><small>$</small> {{ receita_hoje|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-medical-teal">
             <div class="card-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
             <span class="data-label">Ontem</span>
-            <span class="data-value"><small>KZ</small> {{ receita_ontem|default:"0.00" }}</span>
+            <span class="data-value"><small>$</small> {{ receita_ontem|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-medical-green">
             <div class="card-icon"><i class="fa-solid fa-calendar-check"></i></div>
             <span class="data-label">Este Mês</span>
-            <span class="data-value"><small>KZ</small> {{ receita_mes_atual|default:"0.00" }}</span>
+            <span class="data-value"><small>$</small> {{ receita_mes_atual|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-medical-dark-green">
             <div class="card-icon"><i class="fa-solid fa-calendar-minus"></i></div>
             <span class="data-label">Mês Ant.</span>
-            <span class="data-value"><small>KZ</small> {{ receita_mes_anterior|default:"0.00" }}</span>
+            <span class="data-value"><small>$</small> {{ receita_mes_anterior|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-medical-cyan">
             <div class="card-icon"><i class="fa-solid fa-hand-holding-medical"></i></div>
             <span class="data-label">Subsídios</span>
-            <span class="data-value"><small>KZ</small> {{ user.subsidy_balance|default:"0.00" }}</span>
+            <span class="data-value"><small>$</small> {{ user.subsidy_balance|default:"0.00" }}</span>
         </div>
 
         <div class="data-card bg-medical-red full-width-row">
             <div class="full-row-content">
                 <span class="data-label"><i class="fa-solid fa-file-invoice-dollar" style="margin-right: 4px;"></i> Total Sacado (Sucesso)</span>
-                <span class="data-value">KZ {{ total_sacado|default:"0.00" }}</span>
+                <span class="data-value">$ {{ total_sacado|default:"0.00" }}</span>
             </div>
         </div>
     </div>
@@ -259,10 +259,10 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const exchangeRate = 1000; 
-        const kzAmount = parseFloat("{{ user.available_balance }}".replace(',', '.'));
+        const $Amount = parseFloat("{{ user.available_balance }}".replace(',', '.'));
         
-        if (!isNaN(kzAmount)) {
-            const usdtAmount = (kzAmount / exchangeRate).toFixed(2);
+        if (!isNaN($Amount)) {
+            const usdtAmount = ($Amount / exchangeRate).toFixed(2);
             document.getElementById('balance-usdt').innerText = usdtAmount;
         }
     });

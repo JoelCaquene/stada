@@ -155,7 +155,7 @@ class Task(models.Model):
 
     def __str__(self):
         status_text = 'Acerto' if self.is_correct else 'Erro - Ganho Creditado'
-        return f"Tarefa de {self.user.phone_number} - {self.earnings} KZ ({status_text})"
+        return f"Tarefa de {self.user.phone_number} - {self.earnings} $ ({status_text})"
 
 # CONTABILIZADOR DE ACERTOS E ERROS DO USUÁRIO PARA OS CARDS
 class UserTaskProgress(models.Model):
@@ -170,12 +170,12 @@ class UserTaskProgress(models.Model):
 
 class PromoCode(models.Model):
     code = models.CharField(max_length=50, unique=True, verbose_name="Código do Cupom")
-    value = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Valor do Prêmio (KZ)")
+    value = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Valor do Prêmio ($)")
     is_active = models.BooleanField(default=True, verbose_name="Ativo?")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.code} - {self.value} KZ"
+        return f"{self.code} - {self.value} $"
 
     class Meta:
         verbose_name = "Código de Sorteio"

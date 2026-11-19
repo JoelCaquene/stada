@@ -30,7 +30,7 @@ class CustomUserAdmin(admin.ModelAdmin):
             user__invited_by=obj, 
             is_approved=True
         ).aggregate(Sum('amount'))['amount__sum'] or 0.00
-        return f"{total:,.2f} KZ"
+        return f"{total:,.2f} $"
     total_investido_equipe.short_description = 'Total Investido (N1)'
 
 # --- CONFIGURAÇÕES DE DEPÓSITO (COM SOMA AUTOMÁTICA) ---
@@ -65,7 +65,7 @@ class DepositAdmin(admin.ModelAdmin):
                 user = obj.user
                 user.available_balance += obj.amount
                 user.save()
-                messages.success(request, f"Saldo de {obj.amount} KZ adicionado a {user.phone_number}!")
+                messages.success(request, f"Saldo de {obj.amount} $ adicionado a {user.phone_number}!")
         
         super().save_model(request, obj, form, change)
 

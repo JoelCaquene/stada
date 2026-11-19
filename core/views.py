@@ -168,19 +168,15 @@ def approve_deposit(request, deposit_id):
 # --- SAQUE ---
 @login_required
 def saque(request):
-    MIN_WITHDRAWAL_AMOUNT = 1000
+    MIN_WITHDRAWAL_AMOUNT = 3
     platform_settings = PlatformSettings.objects.first()
     withdrawal_instruction = platform_settings.withdrawal_instruction if platform_settings else ''
     withdrawal_records = Withdrawal.objects.filter(user=request.user).order_by('-created_at')
     
     now = timezone.localtime(timezone.now())
     today = now.date()
-    weekday = now.weekday() 
 
-    is_sunday = (weekday == 6)
-    is_business_hours = (9 <= current_hour < 17) if 'current_hour' in locals() else (9 <= now.hour < 17)
-    is_business_day = (0 <= weekday <= 5)
-    is_time_to_withdraw = is_business_hours and is_business_day and not is_sunday
+    is_time_to_withdraw = True
 
     withdrawals_today_count = Withdrawal.objects.filter(
         user=request.user, 
@@ -202,15 +198,11 @@ def saque(request):
         if form.is_valid():
             original_amount = form.cleaned_data['amount']
             
-            if is_sunday:
-                messages.error(request, 'Hoje é feriado, saque é só amanhã.')
-            elif not is_business_hours:
-                messages.error(request, 'O sistema de saque só funciona das 09:00 às 17:00.')
-            elif not can_withdraw_today:
+            if not can_withdraw_today:
                 messages.error(request, 'Você já realizou um saque hoje. Tente novamente amanhã.')
             elif original_amount < MIN_WITHDRAWAL_AMOUNT:
-                messages.error(request, f'O valor mínimo para levantamento é {MIN_WITHDRAWAL_AMOUNT} Kz.')
-            elif request.user.available_balance < original_amount:
+                messages.error(request, f'O valor mínimo para levantamento é {MIN_WITHDRAWAL_AMOUNT} $.')
+            elif request.user.available_balance <= 0 or request.user.available_balance < original_amount:
                 messages.error(request, 'Saldo insuficiente para esta operação.')
             elif not metodo:
                 messages.error(request, 'Selecione um método de levantamento.')
@@ -218,7 +210,7 @@ def saque(request):
                 taxa = original_amount * Decimal('0.10')
                 amount_with_discount = original_amount - taxa
                 
-                detalhes = f"Método: {metodo} | Taxa de 10% descontada: {taxa} KZ | "
+                detalhes = f"Método: {metodo} | Taxa de 10% descontada: {taxa} $ | "
                 if metodo == 'BANCO':
                     detalhes += f"Banco: {bank_name}, IBAN: {iban}, Titular: {holder}"
                 elif metodo == 'PIX':
@@ -237,7 +229,7 @@ def saque(request):
                 request.user.available_balance -= original_amount
                 request.user.save()
                 
-                messages.success(request, f'Pedido enviado! Taxa de 10% descontada ({taxa} KZ). Você receberá {amount_with_discount} KZ.')
+                messages.success(request, f'Pedido enviado! Taxa de 10% descontada ({taxa} $). Você receberá {amount_with_discount} $.')
                 return redirect('saque')
     else:
         form = WithdrawalForm()
@@ -247,12 +239,11 @@ def saque(request):
         'withdrawal_records': withdrawal_records,
         'form': form,
         'is_time_to_withdraw': is_time_to_withdraw,
-        'is_sunday': is_sunday,
         'MIN_WITHDRAWAL_AMOUNT': MIN_WITHDRAWAL_AMOUNT,
         'can_withdraw_today': can_withdraw_today,
     }
     return render(request, 'saque.html', context)
-    
+        
 @login_required
 def tarefa(request):
     user = request.user
@@ -269,7 +260,7 @@ def tarefa(request):
     else:
         # Configuração padrão para estagiário
         max_tasks_allowed = 1
-        task_unit_value = Decimal('450.00')
+        task_unit_value = Decimal('1.00')
 
     # 2. Tarefas já concluídas hoje por este usuário
     tasks_completed_today = Task.objects.filter(user=user, completed_at__date=today).count()
@@ -408,7 +399,7 @@ def process_task(request):
             'acertos_count': progress.total_correct,
             'erros_count': progress.total_incorrect,
             'completed_all': completed_all,
-            'message': f'Tarefa concluída! {task_earnings} KZ adicionados.'
+            'message': f'Tarefa concluída! {task_earnings} $ adicionados.'
         })
 
     except Exception as e:

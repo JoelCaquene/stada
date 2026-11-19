@@ -381,7 +381,7 @@
                         </div>
                         <div class="prize-info">
                             <span class="action">ganhou</span>
-                            <span class="value">{{ usage.prize_won|floatformat:2 }} KZ</span>
+                            <span class="value">{{ usage.prize_won|floatformat:2 }} $</span>
                         </div>
                     </div>
                     {% empty %}
@@ -396,7 +396,7 @@
                         </div>
                         <div class="prize-info">
                             <span class="action">ganhou</span>
-                            <span class="value">{{ usage.prize_won|floatformat:2 }} KZ</span>
+                            <span class="value">{{ usage.prize_won|floatformat:2 }} $</span>
                         </div>
                     </div>
                     {% endfor %}
@@ -410,7 +410,7 @@
     <div class="win-modal">
         <i class="fas fa-circle-check trophy-icon"></i>
         <h2>VOCÊ GANHOU!</h2>
-        <div class="prize-amount"><span id="prize-val">0</span> <small style="font-size: 1.2rem; font-weight:700; color:var(--medical-green)">KZ</small></div>
+        <div class="prize-amount"><span id="prize-val">0</span> <small style="font-size: 1.2rem; font-weight:700; color:var(--medical-green)">$</small></div>
         <p>O prêmio foi creditado na sua conta com sucesso.</p>
         <button onclick="location.reload()" class="btn-fechar">COLETAR</button>
     </div>

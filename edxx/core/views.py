@@ -209,7 +209,7 @@ def saque(request):
             elif not can_withdraw_today:
                 messages.error(request, 'Você já realizou um saque hoje. Tente novamente amanhã.')
             elif original_amount < MIN_WITHDRAWAL_AMOUNT:
-                messages.error(request, f'O valor mínimo para levantamento é {MIN_WITHDRAWAL_AMOUNT} Kz.')
+                messages.error(request, f'O valor mínimo para levantamento é {MIN_WITHDRAWAL_AMOUNT} $.')
             elif request.user.available_balance < original_amount:
                 messages.error(request, 'Saldo insuficiente para esta operação.')
             elif not metodo:
@@ -218,7 +218,7 @@ def saque(request):
                 taxa = original_amount * Decimal('0.10')
                 amount_with_discount = original_amount - taxa
                 
-                detalhes = f"Método: {metodo} | Taxa de 10% descontada: {taxa} KZ | "
+                detalhes = f"Método: {metodo} | Taxa de 10% descontada: {taxa} $ | "
                 if metodo == 'BANCO':
                     detalhes += f"Banco: {bank_name}, IBAN: {iban}, Titular: {holder}"
                 elif metodo == 'PIX':
@@ -237,7 +237,7 @@ def saque(request):
                 request.user.available_balance -= original_amount
                 request.user.save()
                 
-                messages.success(request, f'Pedido enviado! Taxa de 10% descontada ({taxa} KZ). Você receberá {amount_with_discount} KZ.')
+                messages.success(request, f'Pedido enviado! Taxa de 10% descontada ({taxa} $). Você receberá {amount_with_discount} $.')
                 return redirect('saque')
     else:
         form = WithdrawalForm()
@@ -352,7 +352,7 @@ def process_task(request):
 
         return JsonResponse({
             'success': True, 
-            'message': f'Tarefa concluída! {task_earnings} KZ adicionados ao seu saldo.'
+            'message': f'Tarefa concluída! {task_earnings} $ adicionados ao seu saldo.'
         })
 
     except Exception as e:
