@@ -21,27 +21,27 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-mudar-isso-em-produca
 # CONFIGURAÇÃO DOS HOSTS PERMITIDOS E CSRF
 # ======================================================================
 
-# No Render, o host costuma ser 'seu-app.onrender.com'
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+raw_hosts = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = [host.strip() for host in raw_hosts if host.strip()]
 
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
-        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+render_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+if render_hostname and render_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(render_hostname)
 
-# ADICIONADO: Seus domínios personalizados para produção (Corrigido para .pro)
-ALLOWED_HOSTS.extend([
-    'stada.pro',
-    'www.stada.pro',
-    'stada-c31p.onrender.com'
-])
+# Teu link no Render (stada.onrender.com) e domínios do projeto
+for domain in ['stada.onrender.com', 'stada.pro', 'www.stada.pro']:
+    if domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(domain)
 
-# FORÇAR REDIRECIONAMENTO PARA WWW (Isso torna o www o principal)
-if not DEBUG:
-    PREPEND_WWW = True
+# Deixa False enquanto usas stada.onrender.com para evitar redirecionamento para www.stada.onrender.com
+PREPEND_WWW = config('PREPEND_WWW', default=False, cast=bool)
 
-# Configuração de origens confiáveis para CSRF
-CSRF_TRUSTED_ORIGINS = [f"https://{host.strip()}" for host in ALLOWED_HOSTS if host.strip()]
+# Origens confiáveis para CSRF (inclui https://stada.onrender.com)
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host}"
+    for host in ALLOWED_HOSTS
+    if host not in ('127.0.0.1', 'localhost', '*')
+]
 
 # ======================================================================
 # APPS E MIDDLEWARE
@@ -53,15 +53,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',  # WhiteNoise antes do staticfiles
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    
     'core',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -95,20 +94,32 @@ WSGI_APPLICATION = 'stada.wsgi.application'
 # ======================================================================
 # DATABASE (SQLITE LOCAL / POSTGRES EM PRODUÇÃO)
 # ======================================================================
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=f'sqlite:///{BASE_DIR}/db.sqlite3'),
-        conn_max_age=600
-    )
-}
+
+DATABASE_URL = config('DATABASE_URL', default='')
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ======================================================================
 # INTERNACIONALIZAÇÃO
 # ======================================================================
+
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'Africa/Luanda'
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 LANGUAGES = [
@@ -117,21 +128,38 @@ LANGUAGES = [
     ('fr', _('Français')),
 ]
 
-# Caminho onde as pastas de tradução (locale) ficarão
 LOCALE_PATHS = [
-    os.path.join(BASE_DIR, 'locale'),
+    BASE_DIR / 'locale',
 ]
 
 # ======================================================================
-# STATIC E MEDIA FILES
+# STATIC, STORAGES E MEDIA FILES
 # ======================================================================
+
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Armazenamento otimizado para produção
+static_dir = BASE_DIR / 'static'
+STATICFILES_DIRS = [static_dir] if static_dir.exists() else []
+
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -139,6 +167,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # ======================================================================
 # SEGURANÇA EXTRA (ATIVADA APENAS EM PRODUÇÃO)
 # ======================================================================
+
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
