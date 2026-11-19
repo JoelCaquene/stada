@@ -31,12 +31,12 @@
             </div>
 
             <div class="topbar-actions">
-                <!-- 1. Download APP -->
+                <!-- Download APP -->
                 <a href="{% static 'app/stada.apk' %}" download class="top-icon-btn" id="downloadAppBtn" aria-label="Download APP">
                     <i class="fas fa-download"></i>
                 </a>
 
-                <!-- 2. Seletor de Idioma (6 idiomas: Português, Índia, Árabe, Chinês, Inglês, Espanhol) -->
+                <!-- Seletor de Idioma (6 idiomas: Português, Índia, Árabe, Chinês, Inglês, Espanhol) -->
                 <div class="top-dropdown-wrap">
                     <button type="button" class="top-icon-btn" id="topLangBtn" aria-expanded="false" aria-label="Language">
                         <i class="fas fa-globe"></i>
@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                <!-- 3. Mensagem de Boas-Vindas (fica vermelha até o primeiro clique do novo usuário) -->
+                <!-- Mensagem de Boas-Vindas (fica vermelha até o primeiro clique do novo usuário) -->
                 <button type="button" class="top-icon-btn msg-unread-alert" id="welcomeMsgBtn" aria-label="Welcome Message">
                     <i class="fas fa-envelope"></i>
                     <span class="msg-alert-dot" id="msgAlertDot"></span>
@@ -104,65 +104,74 @@
             </div>
         </div>
 
-        <!-- Card central da plataforma -->
-        <section class="central-highlight-card">
-            <div class="central-info">
-                <span class="central-tag"><i class="fas fa-bolt"></i> STADA</span>
-                <h2 class="central-title" data-i18n="centralTitle">Investimentos & Tarefas Diárias</h2>
-                <p class="central-desc" data-i18n="centralDesc">Acompanhe seus rendimentos e oportunidades em tempo real.</p>
-            </div>
-            <div class="central-badge">
-                <i class="fas fa-chart-line"></i>
-            </div>
-        </section>
-
-        <!-- Botões principais em destaque (estilo Recarregar / Sacar) -->
-        <div class="dual-cta-row">
-            <a href="{% url 'deposito' %}" class="cta-pill-btn cta-deposit">
-                <i class="fas fa-wallet"></i>
-                <span data-i18n="btnDeposit">Depósito</span>
-            </a>
-            <a href="{% url 'saque' %}" class="cta-pill-btn cta-withdraw">
-                <i class="fas fa-hand-holding-usd"></i>
-                <span data-i18n="btnWithdraw">Retiradas</span>
-            </a>
-        </div>
-
-        <!-- Grid de botões de ação mantendo rotas -->
-        <div class="menu-actions-grid">
-            <a href="{% url 'equipa' %}" class="menu-action-card">
-                <div class="action-icon-wrap icon-cyan">
-                    <i class="fas fa-user-plus"></i>
+        <!-- GRID DE ÍCONES ESTILO BLOCO 3D (4 POR LINHA, SEM QUEBRAR EM TELA PEQUENA) -->
+        <section class="quick-tiles-grid" aria-label="Quick Actions">
+            <a href="{% url 'deposito' %}" class="quick-tile-item">
+                <div class="tile-3d tile-lime">
+                    <i class="fas fa-wallet"></i>
                 </div>
-                <span class="action-label" data-i18n="btnInvite">Partilhar Convite</span>
+                <span class="tile-caption" data-i18n="btnDeposit">Depósito</span>
             </a>
 
-            <a href="{% url 'nivel' %}" class="menu-action-card">
-                <div class="action-icon-wrap icon-indigo">
-                    <i class="fas fa-briefcase"></i>
+            <a href="{% url 'saque' %}" class="quick-tile-item">
+                <div class="tile-3d tile-cyan">
+                    <i class="fas fa-credit-card"></i>
                 </div>
-                <span class="action-label" data-i18n="btnJoin">Junte-se a nós</span>
+                <span class="tile-caption" data-i18n="btnWithdraw">Retiradas</span>
             </a>
 
-            <a href="{% url 'tarefa' %}" class="menu-action-card">
-                <div class="action-icon-wrap icon-emerald">
+            <a href="{% url 'tarefa' %}" class="quick-tile-item">
+                <div class="tile-3d tile-blue">
                     <i class="fas fa-tasks"></i>
                 </div>
-                <span class="action-label" data-i18n="btnTasks">Tarefas Diárias</span>
+                <span class="tile-caption" data-i18n="btnTasks">Tarefas</span>
             </a>
 
-            <a href="{% url 'renda' %}" class="menu-action-card">
-                <div class="action-icon-wrap icon-amber">
-                    <i class="fas fa-coins"></i>
+            <a href="{% url 'equipa' %}" class="quick-tile-item">
+                <div class="tile-3d tile-purple">
+                    <i class="fas fa-users"></i>
                 </div>
-                <span class="action-label" data-i18n="btnYield">Rendimento</span>
+                <span class="tile-caption" data-i18n="btnTeam">Equipe</span>
             </a>
 
-            <a href="{% url 'perfil' %}" class="menu-action-card menu-card-wide">
-                <div class="action-icon-wrap icon-blue">
+            <a href="{% url 'renda' %}" class="quick-tile-item">
+                <div class="tile-3d tile-violet">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span class="tile-caption" data-i18n="btnYield">Rendimento</span>
+            </a>
+
+            <a href="{% url 'equipa' %}" class="quick-tile-item">
+                <div class="tile-3d tile-orange">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <span class="tile-caption" data-i18n="btnInvite">Convidar</span>
+            </a>
+
+            <a href="{% url 'nivel' %}" class="quick-tile-item">
+                <div class="tile-3d tile-teal">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <span class="tile-caption" data-i18n="btnJoin">Unir-se</span>
+            </a>
+
+            <a href="{% url 'perfil' %}" class="quick-tile-item">
+                <div class="tile-3d tile-rose">
                     <i class="fas fa-building-columns"></i>
                 </div>
-                <span class="action-label" data-i18n="btnCompany">Perfil da Companhia</span>
+                <span class="tile-caption" data-i18n="btnCompany">Companhia</span>
+            </a>
+        </section>
+
+        <!-- Botões duplos em destaque -->
+        <div class="dual-cta-row">
+            <a href="{% url 'deposito' %}" class="cta-action-card">
+                <div class="cta-card-icon"><i class="fas fa-coins"></i></div>
+                <span class="cta-card-label" data-i18n="btnDeposit">Depósito</span>
+            </a>
+            <a href="{% url 'saque' %}" class="cta-action-card">
+                <div class="cta-card-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+                <span class="cta-card-label" data-i18n="btnWithdraw">Retiradas</span>
             </a>
         </div>
 
@@ -242,8 +251,8 @@
 <style>
     :root {
         --stada-bg: #05070d;
-        --stada-card: rgba(12, 17, 29, 0.88);
-        --stada-surface: rgba(17, 24, 39, 0.84);
+        --stada-card: rgba(12, 17, 29, 0.9);
+        --stada-surface: rgba(17, 24, 39, 0.86);
         --stada-border: rgba(148, 163, 184, 0.16);
         --stada-cyan: #22d3ee;
         --stada-blue: #38bdf8;
@@ -267,7 +276,6 @@
         overflow-x: hidden;
     }
 
-    /* Esconde barra superior padrão do Google Translate quando ativa */
     .goog-te-banner-frame.skiptranslate,
     .goog-te-gadget-icon {
         display: none !important;
@@ -312,15 +320,15 @@
         max-width: 480px;
         margin: 0 auto;
         min-height: 100vh;
-        padding: 12px 14px 92px;
+        padding: 12px 12px 92px;
     }
 
-    /* Topo no estilo da imagem de referência */
+    /* Topo */
     .stada-topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 6px 2px 14px;
+        padding: 6px 2px 12px;
         position: relative;
         z-index: 40;
     }
@@ -382,7 +390,6 @@
         color: var(--stada-cyan);
     }
 
-    /* Botão de mensagem vermelho para quem se cadastra pela primeira vez */
     .top-icon-btn.msg-unread-alert {
         background: rgba(239, 68, 68, 0.22);
         border-color: #ef4444;
@@ -456,7 +463,7 @@
     .hero-banner-card {
         position: relative;
         width: 100%;
-        height: 172px;
+        height: 168px;
         border-radius: 18px;
         overflow: hidden;
         border: 1px solid var(--stada-border);
@@ -533,151 +540,163 @@
         font-weight: 500;
     }
 
-    /* Card central */
-    .central-highlight-card {
-        margin-top: 12px;
-        padding: 16px;
-        border-radius: 18px;
-        background: linear-gradient(135deg, rgba(17, 24, 39, 0.92), rgba(15, 23, 42, 0.78));
-        border: 1px solid rgba(34, 211, 238, 0.22);
+    /* GRID DE 4 BOTÕES POR LINHA (RESPONSIVO SEM QUEBRAR EM TELA PEQUENA) */
+    .quick-tiles-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px 8px;
+        margin-top: 18px;
+        padding: 4px 2px;
+    }
+
+    .quick-tile-item {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
+        text-decoration: none;
+        min-width: 0;
+        transition: transform 0.18s ease;
     }
 
-    .central-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 1px;
-        color: var(--stada-cyan);
-        text-transform: uppercase;
+    .quick-tile-item:active {
+        transform: scale(0.95);
     }
 
-    .central-title {
-        margin-top: 4px;
-        font-size: 15px;
-        font-weight: 700;
-        color: #ffffff;
-    }
-
-    .central-desc {
-        margin-top: 3px;
-        font-size: 12px;
-        color: var(--stada-muted);
-    }
-
-    .central-badge {
-        width: 46px;
-        height: 46px;
+    .tile-3d {
+        width: 48px;
+        height: 48px;
         border-radius: 14px;
-        background: rgba(34, 211, 238, 0.12);
-        border: 1px solid rgba(34, 211, 238, 0.28);
-        color: var(--stada-cyan);
         display: flex;
         align-items: center;
         justify-content: center;
+        color: #ffffff;
         font-size: 20px;
+        position: relative;
         flex-shrink: 0;
+    }
+
+    .tile-lime {
+        background: linear-gradient(180deg, #a3e635 0%, #65a30d 100%);
+        box-shadow: 0 4px 0 #3f6212, 0 8px 16px rgba(132, 204, 22, 0.25);
+    }
+
+    .tile-cyan {
+        background: linear-gradient(180deg, #22d3ee 0%, #0891b2 100%);
+        box-shadow: 0 4px 0 #155e75, 0 8px 16px rgba(34, 211, 238, 0.25);
+    }
+
+    .tile-blue {
+        background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+        box-shadow: 0 4px 0 #1e40af, 0 8px 16px rgba(59, 130, 246, 0.25);
+    }
+
+    .tile-purple {
+        background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%);
+        box-shadow: 0 4px 0 #5b21b6, 0 8px 16px rgba(139, 92, 246, 0.25);
+    }
+
+    .tile-violet {
+        background: linear-gradient(180deg, #c084fc 0%, #9333ea 100%);
+        box-shadow: 0 4px 0 #6b21a8, 0 8px 16px rgba(168, 85, 247, 0.25);
+    }
+
+    .tile-orange {
+        background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+        box-shadow: 0 4px 0 #9a3412, 0 8px 16px rgba(249, 115, 22, 0.25);
+    }
+
+    .tile-teal {
+        background: linear-gradient(180deg, #2dd4bf 0%, #0d9488 100%);
+        box-shadow: 0 4px 0 #115e59, 0 8px 16px rgba(20, 184, 166, 0.25);
+    }
+
+    .tile-rose {
+        background: linear-gradient(180deg, #fb7185 0%, #e11d48 100%);
+        box-shadow: 0 4px 0 #9f1239, 0 8px 16px rgba(244, 63, 94, 0.25);
+    }
+
+    .tile-caption {
+        margin-top: 8px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #e2e8f0;
+        text-align: center;
+        line-height: 1.2;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Garantia extra em telas muito estreitas (ex: 320px - 360px) */
+    @media (max-width: 360px) {
+        .quick-tiles-grid {
+            gap: 12px 5px;
+        }
+
+        .tile-3d {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            font-size: 17px;
+        }
+
+        .tile-caption {
+            font-size: 10px;
+        }
     }
 
     /* Botões duplos em destaque */
     .dual-cta-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
-        margin-top: 12px;
+        margin-top: 18px;
     }
 
-    .cta-pill-btn {
+    .cta-action-card {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
+        gap: 10px;
         padding: 13px 14px;
         border-radius: 14px;
-        text-decoration: none;
-        font-size: 13.5px;
-        font-weight: 700;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .cta-deposit {
-        background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 100%);
-        color: #041019;
-        box-shadow: 0 8px 22px rgba(34, 211, 238, 0.24);
-    }
-
-    .cta-withdraw {
-        background: rgba(17, 24, 39, 0.9);
-        color: #f8fafc;
-        border: 1px solid rgba(99, 102, 241, 0.4);
-    }
-
-    .cta-pill-btn:hover {
-        transform: translateY(-1px);
-    }
-
-    /* Grid de ações */
-    .menu-actions-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 12px;
-    }
-
-    .menu-action-card {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 13px 12px;
-        border-radius: 15px;
-        background: var(--stada-card);
+        background: rgba(15, 23, 42, 0.88);
         border: 1px solid var(--stada-border);
         text-decoration: none;
-        color: #f1f5f9;
+        color: #f8fafc;
+        min-width: 0;
         transition: border-color 0.2s ease, transform 0.2s ease;
     }
 
-    .menu-action-card:hover {
-        border-color: rgba(34, 211, 238, 0.35);
+    .cta-action-card:hover {
+        border-color: var(--stada-cyan);
         transform: translateY(-1px);
     }
 
-    .menu-card-wide {
-        grid-column: span 2;
-        justify-content: center;
-    }
-
-    .action-icon-wrap {
+    .cta-card-icon {
         width: 36px;
         height: 36px;
-        border-radius: 11px;
+        border-radius: 10px;
+        background: rgba(34, 211, 238, 0.14);
+        color: var(--stada-cyan);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 15px;
+        font-size: 16px;
         flex-shrink: 0;
     }
 
-    .icon-cyan { background: rgba(34, 211, 238, 0.14); color: #22d3ee; }
-    .icon-indigo { background: rgba(99, 102, 241, 0.16); color: #818cf8; }
-    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-    .icon-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-
-    .action-label {
-        font-size: 12.5px;
-        font-weight: 600;
-        line-height: 1.25;
+    .cta-card-label {
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     /* Seção de Criptomoedas estilo Binance na parte inferior */
     .crypto-market-section {
-        margin-top: 14px;
+        margin-top: 16px;
         border-radius: 18px;
         background: var(--stada-card);
         border: 1px solid var(--stada-border);
@@ -729,11 +748,13 @@
         border-radius: 12px;
         background: rgba(15, 23, 42, 0.72);
         border: 1px solid rgba(148, 163, 184, 0.1);
+        gap: 8px;
     }
 
     .crypto-pair-col {
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
 
     .crypto-symbol {
@@ -750,22 +771,23 @@
     .crypto-right-col {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+        flex-shrink: 0;
     }
 
     .crypto-price {
-        font-size: 13px;
+        font-size: 12.5px;
         font-weight: 700;
         color: #ffffff;
         font-variant-numeric: tabular-nums;
     }
 
     .crypto-change-pill {
-        min-width: 74px;
+        min-width: 72px;
         text-align: center;
         padding: 5px 8px;
         border-radius: 8px;
-        font-size: 11.5px;
+        font-size: 11px;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
     }
@@ -954,15 +976,14 @@
     const STADA_TEXTS = {
         pt: {
             tickerText: "Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.",
-            centralTitle: "Investimentos & Tarefas Diárias",
-            centralDesc: "Acompanhe seus rendimentos e oportunidades em tempo real.",
             btnDeposit: "Depósito",
             btnWithdraw: "Retiradas",
-            btnInvite: "Partilhar Convite",
-            btnJoin: "Junte-se a nós",
-            btnTasks: "Tarefas Diárias",
+            btnTasks: "Tarefas",
+            btnTeam: "Equipe",
             btnYield: "Rendimento",
-            btnCompany: "Perfil da Companhia",
+            btnInvite: "Convidar",
+            btnJoin: "Unir-se",
+            btnCompany: "Companhia",
             cryptoTitle: "Mercados",
             navHome: "Início",
             navTasks: "Tarefas",
@@ -975,15 +996,14 @@
         },
         hi: {
             tickerText: "STADA में आपका स्वागत है — निवेश करके और दैनिक कार्य पूरे करके शानदार कमाई करें।",
-            centralTitle: "निवेश और दैनिक कार्य",
-            centralDesc: "अपने रिटर्न और अवसरों को रीयल-टाइम में ट्रैक करें।",
-            btnDeposit: "जमा करें",
+            btnDeposit: "जमा",
             btnWithdraw: "निकासी",
-            btnInvite: "आमंत्रण साझा करें",
-            btnJoin: "हमसे जुड़ें",
-            btnTasks: "दैनिक कार्य",
+            btnTasks: "कार्य",
+            btnTeam: "टीम",
             btnYield: "प्रतिफल",
-            btnCompany: "कंपनी प्रोफ़ाइल",
+            btnInvite: "आमंत्रण",
+            btnJoin: "जुड़ें",
+            btnCompany: "कंपनी",
             cryptoTitle: "बाज़ार",
             navHome: "होम",
             navTasks: "कार्य",
@@ -996,15 +1016,14 @@
         },
         ar: {
             tickerText: "مرحبًا بك في STADA، منصة الاستثمار الخاصة بك حيث تحقق أرباحًا كبيرة بالاستثمار وإنجاز المهام يوميًا.",
-            centralTitle: "الاستثمار والمهام اليومية",
-            centralDesc: "تابع عوائدك والفرص المتاحة بشكل مباشر.",
             btnDeposit: "إيداع",
             btnWithdraw: "سحب",
-            btnInvite: "مشاركة الدعوة",
-            btnJoin: "انضم إلينا",
-            btnTasks: "المهام اليومية",
+            btnTasks: "المهام",
+            btnTeam: "الفريق",
             btnYield: "العوائد",
-            btnCompany: "ملف الشركة",
+            btnInvite: "دعوة",
+            btnJoin: "انضمام",
+            btnCompany: "الشركة",
             cryptoTitle: "الأسواق",
             navHome: "الرئيسية",
             navTasks: "المهام",
@@ -1017,15 +1036,14 @@
         },
         "zh-CN": {
             tickerText: "欢迎来到 STADA——通过投资与每日完成任务持续赚取丰厚收益的投资平台。",
-            centralTitle: "投资与每日任务",
-            centralDesc: "实时追踪您的收益与市场机会。",
             btnDeposit: "充值",
             btnWithdraw: "提现",
-            btnInvite: "分享邀请",
-            btnJoin: "加入我们",
-            btnTasks: "每日任务",
+            btnTasks: "任务",
+            btnTeam: "团队",
             btnYield: "收益",
-            btnCompany: "公司简介",
+            btnInvite: "邀请",
+            btnJoin: "加入",
+            btnCompany: "公司",
             cryptoTitle: "行情",
             navHome: "首页",
             navTasks: "任务",
@@ -1038,15 +1056,14 @@
         },
         en: {
             tickerText: "Welcome to STADA, your investment platform where you earn steadily by investing and completing daily tasks.",
-            centralTitle: "Investments & Daily Tasks",
-            centralDesc: "Track your returns and opportunities in real time.",
             btnDeposit: "Deposit",
             btnWithdraw: "Withdraw",
-            btnInvite: "Share Invite",
-            btnJoin: "Join Us",
-            btnTasks: "Daily Tasks",
+            btnTasks: "Tasks",
+            btnTeam: "Team",
             btnYield: "Earnings",
-            btnCompany: "Company Profile",
+            btnInvite: "Invite",
+            btnJoin: "Join",
+            btnCompany: "Company",
             cryptoTitle: "Markets",
             navHome: "Home",
             navTasks: "Tasks",
@@ -1059,15 +1076,14 @@
         },
         es: {
             tickerText: "Bienvenido a STADA, tu plataforma de inversión donde ganas mucho invirtiendo y realizando tareas a diario.",
-            centralTitle: "Inversiones y Tareas Diarias",
-            centralDesc: "Sigue tus rendimientos y oportunidades en tiempo real.",
             btnDeposit: "Depósito",
             btnWithdraw: "Retiros",
-            btnInvite: "Compartir Invitación",
-            btnJoin: "Únete a nosotros",
-            btnTasks: "Tareas Diarias",
+            btnTasks: "Tareas",
+            btnTeam: "Equipo",
             btnYield: "Rendimiento",
-            btnCompany: "Perfil de la Compañía",
+            btnInvite: "Invitar",
+            btnJoin: "Unirse",
+            btnCompany: "Compañía",
             cryptoTitle: "Mercados",
             navHome: "Inicio",
             navTasks: "Tareas",
@@ -1084,7 +1100,6 @@
     const LANG_STORAGE_KEY = "stada_menu_lang";
     const WELCOME_SEEN_KEY = "stada_first_welcome_seen";
 
-    // Mapeia idioma do navegador para um dos 6 idiomas suportados
     function detectBrowserLanguage() {
         const navLang = (navigator.language || "pt").toLowerCase();
         if (navLang.startsWith("hi")) return "hi";
@@ -1095,7 +1110,6 @@
         return "pt";
     }
 
-    // Dispara tradução automática via cookie/widget do Google Translate
     function triggerBrowserAutoTranslate(targetLang) {
         const cookieVal = "/pt/" + targetLang;
         document.cookie = "googtrans=" + cookieVal + "; path=/";
@@ -1133,7 +1147,6 @@
         }
     }
 
-    // Inicializa Google Translate widget para tradução baseada no navegador/idioma escolhido
     function googleTranslateElementInit() {
         if (window.google && window.google.translate) {
             new window.google.translate.TranslateElement(
@@ -1150,7 +1163,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        // Menu de idioma superior
         const topLangBtn = document.getElementById("topLangBtn");
         const topLangMenu = document.getElementById("topLangMenu");
 
@@ -1177,13 +1189,11 @@
         const initialLang = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
         applyMenuLanguage(initialLang, false);
 
-        // Carrega script do Google Translate em segundo plano
         const gtScript = document.createElement("script");
         gtScript.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
         gtScript.async = true;
         document.body.appendChild(gtScript);
 
-        // Mensagem de boas-vindas: vermelha para quem se cadastra pela 1ª vez até clicar
         const welcomeMsgBtn = document.getElementById("welcomeMsgBtn");
         const welcomeModal = document.getElementById("welcomeModal");
         const closeWelcomeModalBtn = document.getElementById("closeWelcomeModalBtn");
@@ -1196,7 +1206,6 @@
             welcomeMsgBtn.classList.remove("msg-unread-alert");
         }
 
-        // Slideshow dentro do pop-up: passa de 5 em 5 segundos (3 imagens)
         const modalSlides = document.querySelectorAll("#welcomeModal .modal-slide");
         const modalDots = document.querySelectorAll("#modalSlideDots .m-dot");
         let modalIdx = 0;
@@ -1242,7 +1251,6 @@
         closeWelcomeModalBtn.addEventListener("click", closeWelcomePopup);
         confirmWelcomeBtn.addEventListener("click", closeWelcomePopup);
 
-        // Banner principal (3 imagens)
         const bannerSlides = document.querySelectorAll("#bannerSlides .banner-slide");
         const bannerDots = document.querySelectorAll("#bannerIndicators .b-dot");
         let bannerIdx = 0;
@@ -1255,7 +1263,6 @@
             bannerDots[bannerIdx].classList.add("active");
         }, 5000);
 
-        // Criptomoedas em tempo real estilo Binance
         const BINANCE_COINS = [
             { symbol: "BTCUSDT", base: "BTC", name: "Bitcoin", fallbackPrice: 92450.00, fallbackPct: 2.34 },
             { symbol: "ETHUSDT", base: "ETH", name: "Ethereum", fallbackPrice: 3380.50, fallbackPct: 1.85 },
@@ -1324,7 +1331,6 @@
 
                 renderCryptoRows(mapped);
             } catch (err) {
-                // Atualização simulada suave de variação caso a rede bloqueie api.binance.com diretamente no browser
                 const mapped = BINANCE_COINS.map((c) => {
                     const prevPrice = previousPrices[c.symbol] || c.fallbackPrice;
                     const jitter = (Math.random() - 0.48) * 0.004;
