@@ -19,7 +19,7 @@ from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
 
 from .forms import RegisterForm, DepositForm, WithdrawalForm, BankDetailsForm
-from .models import PlatformSettings, CustomUser, Level, UserLevel, BankDetails, Deposit, Withdrawal, Task, PlatformBankDetails, Roulette, PromoCode, PromoCodeUsage
+from .models import PlatformSettings, CustomUser, Level, UserLevel, BankDetails, Deposit, Withdrawal, Task, PlatformBankDetails, Roulette, PromoCode, PromoCodeUsage, FinancialQuestion, UserTaskProgress
 
 # --- ADICIONE ESTA CLASSE LOGO ABAIXO DOS IMPORTS ---
 class MyPasswordChangeView(PasswordChangeView):
@@ -110,10 +110,6 @@ def user_login(request):
 def user_logout(request):
     logout(request)
     return redirect('menu')
-
-import secrets
-from django.utils import timezone
-
 
 def _generate_real_random_code():
     return f"USD-{secrets.token_hex(6).upper()}"
@@ -317,11 +313,11 @@ def approve_deposit(request, deposit_id):
             f'Depósito de ${deposit.amount} aprovado para {deposit.user.phone_number}.'
         )
     return redirect('renda')
-
+    
 # --- SAQUE ---
 @login_required
 def saque(request):
-    MIN_WITHDRAWAL_AMOUNT = 1000
+    MIN_WITHDRAWAL_AMOUNT = 3
     platform_settings = PlatformSettings.objects.first()
     withdrawal_instruction = platform_settings.withdrawal_instruction if platform_settings else ''
     withdrawal_records = Withdrawal.objects.filter(user=request.user).order_by('-created_at')
@@ -406,42 +402,56 @@ def saque(request):
     }
     return render(request, 'saque.html', context)
     
-    # --- TAREFAS (LOGICA ATUALIZADA) ---
 @login_required
 def tarefa(request):
     user = request.user
-    active_level = UserLevel.objects.filter(user=user, is_active=True).first()
-    is_estagiario = active_level is None
     today = timezone.localdate()
-    tasks_completed_today = Task.objects.filter(user=user, completed_at__date=today).count()
-    
-    # Validação de Domingo para o template
     is_sunday = (today.weekday() == 6)
 
-    # Lista de empresas enviada diretamente para o template para (resolve o erro de TemplateTag)
-    companies = [
-        {'name': 'UNITEL', 'category': 'Telecomunicações', 'icon': 'fa-phone'},
-        {'name': 'SONANGOL', 'category': 'Energia', 'icon': 'fa-gas-pump'},
-        {'name': 'BANCO BAI', 'category': 'Finanças', 'icon': 'fa-building-columns'},
-        {'name': 'TAAG', 'category': 'Aviação', 'icon': 'fa-plane'},
-        {'name': 'ZAP', 'category': 'Entretenimento', 'icon': 'fa-tv'},
-        {'name': 'CANDANDO', 'category': 'Retalho', 'icon': 'fa-cart-shopping'},
-        {'name': 'ENSA', 'category': 'Seguros', 'icon': 'fa-shield-halved'},
-        {'name': 'AFRICEL', 'category': 'Telecomunicações', 'icon': 'fa-tower-cell'},
-        {'name': 'KERO', 'category': 'Supermercado', 'icon': 'fa-basket-shopping'},
-        {'name': 'NOSSA SEGUROS', 'category': 'Seguros', 'icon': 'fa-file-contract'},
-    ]
+    # 1. Obter nível ativo do usuário ou estagiário
+    active_level = UserLevel.objects.filter(user=user, is_active=True).select_related('level').first()
     
+    # Definir quantidade de tarefas permitidas e valor por tarefa com base no nível configurado no Django
+    if active_level and hasattr(active_level, 'level') and active_level.level:
+        max_tasks_allowed = getattr(active_level.level, 'daily_tasks_count', 1) # Quantas tarefas cada nível realiza
+        task_unit_value = Decimal(str(active_level.level.task_value or active_level.level.daily_gain / max_tasks_allowed))
+    else:
+        # Configuração padrão para estagiário
+        max_tasks_allowed = 1
+        task_unit_value = Decimal('450.00')
+
+    # 2. Tarefas já concluídas hoje por este usuário
+    tasks_completed_today = Task.objects.filter(user=user, completed_at__date=today).count()
+
+    # 3. Contadores de Acertos e Erros do usuário
+    progress, _ = UserTaskProgress.objects.get_or_create(user=user)
+    acertos_count = progress.total_correct
+    erros_count = progress.total_incorrect
+
+    # 4. CORREÇÃO DE REPETIÇÃO: Exclui TODAS as perguntas que o usuário já respondeu anteriormente (histórico geral)
+    answered_question_ids = Task.objects.filter(user=user, question__isnull=False).values_list('question_id', flat=True)
+    available_questions = FinancialQuestion.objects.exclude(id__in=answered_question_ids)
+
+    if available_questions.exists():
+        # Escolhe aleatoriamente entre as perguntas que o usuário NUNCA respondeu
+        current_question = random.choice(list(available_questions))
+    else:
+        # Se já respondeu a todas do banco, pega uma aleatória geral para continuar funcionando
+        all_qs = list(FinancialQuestion.objects.all())
+        current_question = random.choice(all_qs) if all_qs else None
+
     context = {
-        'is_estagiario': is_estagiario,
         'active_level': active_level,
+        'max_tasks_allowed': max_tasks_allowed,
         'tasks_completed_today': tasks_completed_today,
-        'max_tasks': 1,
+        'acertos_count': acertos_count,
+        'erros_count': erros_count,
         'is_sunday': is_sunday,
-        'free_days_count': user.free_days_count,
-        'companies': companies,
+        'current_question': current_question,
+        'free_days_count': getattr(user, 'free_days_count', 0),
     }
     return render(request, 'tarefa.html', context)
+
 
 @login_required
 @require_POST
@@ -453,64 +463,106 @@ def process_task(request):
 
     # 1. BLOQUEIO DE DOMINGO
     if weekday == 6:
-        return JsonResponse({'success': False, 'message': 'Hoje é feriado, volte amanhã.'})
+        return JsonResponse({'success': False, 'message': 'Hoje é domingo (descanso), volte amanhã.'})
 
-    # 2. LIMITE DIÁRIO
-    if Task.objects.filter(user=user, completed_at__date=today).exists():
-        return JsonResponse({'success': False, 'message': 'Limite diário de tarefas alcançado.'})
+    # 2. OBTER NÍVEL E CONFIGURAÇÕES DO DJANGO
+    active_user_level = UserLevel.objects.filter(user=user, is_active=True).select_related('level').first()
+    
+    if active_user_level and hasattr(active_user_level, 'level') and active_user_level.level:
+        max_tasks_allowed = getattr(active_user_level.level, 'daily_tasks_count', 1)
+        task_earnings = Decimal(str(active_user_level.level.task_value or active_user_level.level.daily_gain / max_tasks_allowed))
+    else:
+        # Lógica de estagiário
+        if getattr(user, 'free_days_count', 0) >= 2:
+            return JsonResponse({
+                'success': False, 
+                'redirect_deposit': True,
+                'message': 'Seu período de estagiário terminou. Adquira um plano pago.'
+            })
+        max_tasks_allowed = 1
+        task_earnings = Decimal('450.00')
+        user.free_days_count = getattr(user, 'free_days_count', 0) + 1
+
+    # 3. VERIFICAR LIMITE DIÁRIO DE TAREFAS DO NÍVEL
+    tasks_completed_today = Task.objects.filter(user=user, completed_at__date=today).count()
+    if tasks_completed_today >= max_tasks_allowed:
+        return JsonResponse({'success': False, 'message': 'Limite diário de tarefas alcançado para o seu nível.'})
 
     try:
-        active_user_level = UserLevel.objects.filter(user=user, is_active=True).select_related('level').first()
+        import json
+        data = json.loads(request.body)
+        resposta_usuario = data.get('resposta', '').lower().strip()
+        question_id = data.get('question_id')
 
-        if active_user_level:
-            # Usuário com Plano Pago
-            task_earnings = Decimal(str(active_user_level.level.daily_gain))
+        # Buscar a pergunta correspondente se enviada
+        question = None
+        is_correct = True # Padrão caso não venha ID estrito
+        if question_id:
+            question = FinancialQuestion.objects.filter(id=question_id).first()
+            if question:
+                is_correct = (resposta_usuario == question.correct_option.lower().strip())
+
+        # Atualizar progresso de acertos e erros do usuário
+        progress, _ = UserTaskProgress.objects.get_or_create(user=user)
+        if is_correct:
+            progress.total_correct += 1
         else:
-            # LOGICA DE ESTAGIÁRIO
-            if user.free_days_count >= 2:
-                return JsonResponse({
-                    'success': False, 
-                    'message': 'Seu período de estagiário terminou. Adquira um plano pago para continuar.'
-                })
-            
-            task_earnings = Decimal('450.00') # Ganho de estagiário
-            user.free_days_count += 1
+            progress.total_incorrect += 1
+        progress.save()
 
-        # Salva a tarefa e atualiza saldo
-        Task.objects.create(user=user, earnings=task_earnings, completed_at=now) 
+        # REQUISITO: "Mesmo cliente errar deve ser considerado e gerar ganho de acordo o seu nivel"
+        Task.objects.create(
+            user=user, 
+            earnings=task_earnings, 
+            completed_at=now,
+            question=question,
+            user_answer=resposta_usuario,
+            is_correct=is_correct
+        ) 
+        
         user.available_balance += task_earnings
         user.save()
 
-        # Comissões de rede (Apenas para planos pagos)
-        p1 = user.invited_by
+        # 4. COMISSÕES DE REDE (Multi-nível / Indicação)
+        p1 = getattr(user, 'invited_by', None)
         if active_user_level and p1: 
             subsidy_a = task_earnings * Decimal('0.20')
             p1.available_balance += subsidy_a
-            p1.subsidy_balance += subsidy_a
+            if hasattr(p1, 'subsidy_balance'):
+                p1.subsidy_balance += subsidy_a
             p1.save()
 
-            p2 = p1.invited_by
+            p2 = getattr(p1, 'invited_by', None)
             if p2:
                 subsidy_b = task_earnings * Decimal('0.03')
                 p2.available_balance += subsidy_b
-                p2.subsidy_balance += subsidy_b
+                if hasattr(p2, 'subsidy_balance'):
+                    p2.subsidy_balance += subsidy_b
                 p2.save()
 
-                p3 = p2.invited_by
+                p3 = getattr(p2, 'invited_by', None)
                 if p3:
                     subsidy_c = task_earnings * Decimal('0.02')
                     p3.available_balance += subsidy_c
-                    p3.subsidy_balance += subsidy_c
+                    if hasattr(p3, 'subsidy_balance'):
+                        p3.subsidy_balance += subsidy_c
                     p3.save()
 
+        new_completed_count = Task.objects.filter(user=user, completed_at__date=today).count()
+        completed_all = new_completed_count >= max_tasks_allowed
+
         return JsonResponse({
-            'success': True, 
-            'message': f'Tarefa concluída! {task_earnings} $ adicionados ao seu saldo.'
+            'success': True,
+            'is_correct': is_correct,
+            'acertos_count': progress.total_correct,
+            'erros_count': progress.total_incorrect,
+            'completed_all': completed_all,
+            'message': f'Tarefa concluída! {task_earnings} $ adicionados.'
         })
 
     except Exception as e:
-        return JsonResponse({'success': False, 'message': f'Erro: {str(e)}'})
-        
+        return JsonResponse({'success': False, 'message': f'Erro interno: {str(e)}'})
+                
 @login_required
 def nivel(request):
     if request.method == 'POST':

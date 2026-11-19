@@ -144,7 +144,6 @@ class Withdrawal(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pendente')
     created_at = models.DateTimeField(auto_now_add=True)
 
-# --- NÍVEIS E TAREFAS ---
 class Level(models.Model):
     name = models.CharField(max_length=50, unique=True)
     deposit_value = models.DecimalField(max_digits=12, decimal_places=2)
@@ -152,7 +151,13 @@ class Level(models.Model):
     monthly_gain = models.DecimalField(max_digits=12, decimal_places=2)
     cycle_days = models.IntegerField()
     image = models.ImageField(upload_to='level_images/')
-    def __str__(self): return self.name
+    
+    # NOVOS CAMPOS: Definidos no Django para controlar tarefas diárias por nível e valor unitário
+    daily_tasks_count = models.IntegerField(default=1, help_text="Número de tarefas que este nível realiza por dia")
+    task_value = models.DecimalField(max_digits=12, decimal_places=2, default=450.00, help_text="Valor unitário de cada tarefa (a soma total diária deve bater com o daily_gain)")
+
+    def __str__(self): 
+        return self.name
 
 class UserLevel(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -160,12 +165,58 @@ class UserLevel(models.Model):
     purchase_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"{self.user.phone_number} - {self.level.name}"
+
+# BANCO DE PERGUNTAS DE FINANÇAS (Dura vários anos com centenas/milhares de questões)
+class FinancialQuestion(models.Model):
+    categoria = models.CharField(max_length=100, default="Gestão e Investimentos")
+    texto = models.TextField(help_text="Enunciado da pergunta de finanças")
+    
+    # As 4 opções (A, B, C, D)
+    opcao_a = models.CharField(max_length=255)
+    opcao_b = models.CharField(max_length=255)
+    opcao_c = models.CharField(max_length=255)
+    opcao_d = models.CharField(max_length=255)
+    
+    # A resposta correta ('a', 'b', 'c' ou 'd')
+    CORRECT_CHOICES = [
+        ('a', 'Opção A'),
+        ('b', 'Opção B'),
+        ('c', 'Opção C'),
+        ('d', 'Opção D'),
+    ]
+    correct_option = models.CharField(max_length=1, choices=CORRECT_CHOICES, default='a')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"[{self.categoria}] {self.texto[:50]}..."
+
+# REGISTRO DE TAREFAS REALIZADAS (Com suporte a erros/acertos e ganho garantido por nível)
 class Task(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     earnings = models.DecimalField(max_digits=12, decimal_places=2)
     completed_at = models.DateTimeField(auto_now_add=True)
-    # Útil para validar o dia da semana e histórico
     task_day = models.DateField(default=timezone.now)
+    
+    # Dados da questão respondida (mesmo errando, o usuário ganha de acordo com o nível)
+    question = models.ForeignKey(FinancialQuestion, on_delete=models.SET_NULL, null=True, blank=True)
+    user_answer = models.CharField(max_length=1, blank=True, null=True) # 'a', 'b', 'c' ou 'd'
+    is_correct = models.BooleanField(default=False)
+
+    def __str__(self):
+        status_text = 'Acerto' if self.is_correct else 'Erro - Ganho Creditado'
+        return f"Tarefa de {self.user.phone_number} - {self.earnings} $ ({status_text})"
+
+# CONTABILIZADOR DE ACERTOS E ERROS DO USUÁRIO PARA OS CARDS
+class UserTaskProgress(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='task_progress')
+    total_correct = models.IntegerField(default=0)
+    total_incorrect = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Progresso de {self.user.phone_number} (Acertos: {self.total_correct} | Erros: {self.total_incorrect})"
 
 # --- SISTEMA DE SORTEIO POR CÓDIGO ---
 
@@ -195,7 +246,6 @@ class PromoCodeUsage(models.Model):
         verbose_name = "Histórico de Sorteio"
         verbose_name_plural = "Histórico de Sorteios"
 
-# Se quiser manter a tabela Roulette apenas para não dar erro em outras partes do código:
 class Roulette(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     prize = models.DecimalField(max_digits=12, decimal_places=2)

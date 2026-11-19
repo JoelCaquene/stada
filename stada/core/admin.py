@@ -6,12 +6,12 @@ from .models import (
     CustomUser, PlatformSettings, Level, BankDetails, Deposit,
     Withdrawal, Task, Roulette, UserLevel, PlatformBankDetails,
     PromoCode, PromoCodeUsage
+)
 
 # --- CONFIGURAÇÕES DO USUÁRIO ---
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
-    # Adicionado 'total_convidados_n1' e 'total_investido_equipe' ao list_display
     list_display = ('phone_number', 'available_balance', 'total_convidados_n1', 'total_investido_equipe', 'free_days_count', 'is_staff', 'is_active', 'date_joined')
     search_fields = ('phone_number', 'invite_code')
     list_filter = ('is_staff', 'is_active', 'level_active')
@@ -133,7 +133,7 @@ class DepositAdmin(admin.ModelAdmin):
             ''')
         return "Nenhum Comprovativo Carregado"
     current_proof_display.short_description = 'Foto do Comprovativo'
-
+    
 # --- CONFIGURAÇÕES DE SAQUE ---
 
 @admin.register(Withdrawal)
@@ -199,23 +199,42 @@ class PlatformSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(Level)
 class LevelAdmin(admin.ModelAdmin):
-    list_display = ('name', 'deposit_value', 'daily_gain', 'monthly_gain', 'cycle_days')
+    list_display = ('name', 'deposit_value', 'daily_gain', 'monthly_gain', 'cycle_days', 'daily_tasks_count', 'task_value')
     search_fields = ('name',)
+    list_editable = ('daily_tasks_count', 'task_value', 'daily_gain')
 
 @admin.register(PlatformBankDetails)
 class PlatformBankDetailsAdmin(admin.ModelAdmin):
     list_display = ('bank_name', 'account_holder_name', 'IBAN')
 
-# --- TAREFAS E HISTÓRICO ---
+# --- TAREFAS DE FINANÇAS E HISTÓRICO ---
+
+@admin.register(FinancialQuestion)
+class FinancialQuestionAdmin(admin.ModelAdmin):
+    list_display = ('texto_curto', 'categoria', 'correct_option', 'created_at')
+    search_fields = ('texto', 'categoria')
+    list_filter = ('categoria', 'correct_option', 'created_at')
+    list_editable = ('correct_option',)
+
+    def texto_curto(self, obj):
+        return obj.texto[:60] + "..." if len(obj.texto) > 60 else obj.texto
+    texto_curto.short_description = 'Enunciado da Questão'
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('user', 'earnings', 'task_day', 'completed_at')
-    list_filter = ('task_day', 'completed_at')
+    list_display = ('user', 'earnings', 'is_correct', 'task_day', 'completed_at')
+    list_filter = ('is_correct', 'task_day', 'completed_at')
+    search_fields = ('user__phone_number',)
+
+@admin.register(UserTaskProgress)
+class UserTaskProgressAdmin(admin.ModelAdmin):
+    list_display = ('user', 'total_correct', 'total_incorrect')
+    search_fields = ('user__phone_number',)
 
 @admin.register(UserLevel)
 class UserLevelAdmin(admin.ModelAdmin):
     list_display = ('user', 'level', 'purchase_date', 'is_active')
+    list_filter = ('is_active', 'level')
 
 @admin.register(Roulette)
 class RouletteAdmin(admin.ModelAdmin):
