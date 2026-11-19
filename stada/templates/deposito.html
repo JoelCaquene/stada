@@ -1,381 +1,1662 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Recarga Oficial | stada{% endblock %}
+{% block title %}Depósito em Dólar ($) | stada{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-<div class="deposit-container">
-    {# HEADER #}
-    <div class="premium-header">
-        <a href="{% url 'menu' %}" class="btn-back-arrow"><i class="fas fa-chevron-left"></i></a>
-        <h2 class="title-glow">RECARGA OFICIAL</h2>
-        <div class="safe-badge"><i class="fas fa-shield-alt"></i> SSL</div>
+<div class="usd-deposit-wrapper" id="usdDepositPage">
+    {# TOPO COM SELETOR DE IDIOMA (ÍCONE GLOBO) #}
+    <div class="top-lang-bar">
+        <a href="{% url 'menu' %}" class="btn-back-usd" title="Voltar">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+
+        <div class="brand-usd-title">
+            <i class="fas fa-dollar-sign usd-coin-icon"></i>
+            <span data-i18n="pageTitle">DEPÓSITO USD</span>
+            <span class="ssl-pill"><i class="fas fa-shield-alt"></i> SSL</span>
+        </div>
+
+        <div class="lang-selector-box">
+            <label for="languageSelect" class="globe-btn" aria-label="Idioma">
+                <i class="fas fa-globe"></i>
+            </label>
+            <select id="languageSelect" class="lang-dropdown" onchange="changeLanguage(this.value)">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="es">Español</option>
+                <option value="hi">हिन्दी</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
     </div>
 
-    {# STEPPER #}
-    <div class="stepper-modern glass-card">
-        <div class="step-unit active" id="unit-1">
-            <div class="step-circle" id="circle-1"><i class="fas fa-coins"></i></div>
-            <span class="step-txt">Valor</span>
+    {# STEPPER DE ETAPAS #}
+    <div class="usd-stepper glass-usd-card">
+        <div class="usd-step active" id="step-ind-1">
+            <div class="usd-step-circle" id="circle-1"><i class="fas fa-coins"></i></div>
+            <span data-i18n="stepLevel">Nível ($)</span>
         </div>
-        <div class="step-connector"></div>
-        <div class="step-unit" id="unit-2">
-            <div class="step-circle" id="circle-2"><i class="fas fa-university"></i></div>
-            <span class="step-txt">Banco</span>
+        <div class="usd-step-line"></div>
+        <div class="usd-step" id="step-ind-2">
+            <div class="usd-step-circle" id="circle-2"><i class="fas fa-wallet"></i></div>
+            <span data-i18n="stepWallet">Carteira Cripto</span>
         </div>
-        <div class="step-connector"></div>
-        <div class="step-unit" id="unit-3">
-            <div class="step-circle" id="circle-3"><i class="fas fa-file-export"></i></div>
-            <span class="step-txt">Envio</span>
+        <div class="usd-step-line"></div>
+        <div class="usd-step" id="step-ind-3">
+            <div class="usd-step-circle" id="circle-3"><i class="fas fa-qrcode"></i></div>
+            <span data-i18n="stepPay">Pagamento</span>
         </div>
     </div>
 
-    {% if deposit_success %}
-        {# TELA DE SUCESSO MELHORADA #}
-        <div class="success-screen-premium glass-card fade-in">
-            <div class="message-sent-icon">
-                <div class="icon-circle-main">
-                    <i class="fas fa-paper-plane animate-send"></i>
+    {# ESTADO VINDO DO DJANGO: APROVADO, EXPIRADO OU EM ANÁLISE (30 MIN) #}
+    {% if deposit_approved %}
+        <div class="glass-usd-card status-banner approved-banner fade-in">
+            <div class="status-icon-wrap approved">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <h3 data-i18n="approvedTitle">DEPÓSITO APROVADO!</h3>
+            <p data-i18n="approvedDesc">O administrador confirmou o seu pagamento no sistema. O valor em USD foi creditado na sua carteira.</p>
+            {% if deposit_amount %}
+                <div class="amount-highlight-box">${{ deposit_amount }} USD</div>
+            {% endif %}
+            <a href="{% url 'menu' %}" class="btn-usd-primary mt-15" data-i18n="backMenu">VOLTAR AO PAINEL PRINCIPAL</a>
+        </div>
+
+    {% elif deposit_expired %}
+        <div class="glass-usd-card status-banner expired-banner fade-in">
+            <div class="status-icon-wrap expired">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h3 data-i18n="expiredTitle">TEMPO ESGOTADO (30 MIN) — FALSO / NÃO APROVADO</h3>
+            <p data-i18n="expiredDesc">Os 30 minutos terminaram sem aprovação do administrador no Django. Esta solicitação é considerada falsa/inválida e o valor NÃO foi creditado.</p>
+            <a href="{% url 'menu' %}" class="btn-usd-secondary mt-15" data-i18n="backMenu">VOLTAR AO PAINEL PRINCIPAL</a>
+        </div>
+
+    {% elif deposit_success %}
+        <div class="glass-usd-card status-banner pending-banner fade-in" id="pendingReviewBox">
+            <div class="status-icon-wrap pending">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <h3 data-i18n="pendingTitle">PAGAMENTO ENVIADO — AGUARDANDO APROVAÇÃO</h3>
+            <p data-i18n="pendingDesc">Se o administrador não aprovar antes de 00:00, o depósito será marcado como falso e NÃO será creditado.</p>
+
+            {# CONTAGEM REGRESSIVA DE 30 MINUTOS #}
+            <div class="countdown-panel" id="countdownPanel">
+                <div class="countdown-label">
+                    <i class="fas fa-stopwatch"></i>
+                    <span data-i18n="timerLabel">CONTAGEM REGRESSIVA (30:00)</span>
                 </div>
-                <div class="check-badge"><i class="fas fa-check"></i></div>
-            </div>
-            
-            <h2 class="success-title-new">SOLICITAÇÃO CONCLUÍDA!</h2>
-            <div class="divider-lilac"></div>
-            <p class="success-description">
-                Seus dados foram enviados com <strong>sucesso</strong> para nossa central de auditoria. 
-                Aguarde a validação para o crédito automático.
-            </p>
-            
-            <div class="time-box">
-                <i class="far fa-clock"></i> Tempo estimado: 5 a 30 min
+                <div class="countdown-digits" id="countdownDisplay">30:00</div>
+                <div class="countdown-sub" id="countdownStatusText" data-i18n="timerRunning">Em verificação pelo administrador...</div>
             </div>
 
-            <a href="{% url 'menu' %}" class="btn-glow-purple mt-20">VOLTAR AO PAINEL PRINCIPAL</a>
+            {% if random_code %}
+            <div class="code-summary-row">
+                <span data-i18n="codeLabel">Código Aleatório:</span>
+                <strong>{{ random_code }}</strong>
+            </div>
+            {% endif %}
+
+            <a href="{% url 'menu' %}" class="btn-usd-primary mt-15" data-i18n="backMenu">VOLTAR AO PAINEL PRINCIPAL</a>
         </div>
+
     {% else %}
-        <form id="deposit-form" method="post" enctype="multipart/form-data">
+        <form id="usdDepositForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="amount" id="id_amount">
-            <input type="hidden" name="payment_method" value="bank">
+            <input type="hidden" name="payment_method" value="crypto">
             <input type="hidden" name="selected_bank" id="id_selected_bank">
+            <input type="hidden" name="random_code" id="id_random_code" value="{{ random_code|default:'' }}">
+            <input type="hidden" name="payment_confirmed" id="id_payment_confirmed" value="0">
 
-            {# PASSO 1: SELEÇÃO DE VALOR #}
-            <div id="step-1" class="step-content">
-                <div class="glass-card">
-                    <label class="label-purple">SELECIONE O VALOR DO PLANO</label>
-                    <div class="amount-grid">
+            {# 1. VALOR DE CADA NÍVEL EDITADO NO DJANGO EM DÓLAR ($) #}
+            <div id="section-1" class="step-section fade-in">
+                <div class="glass-usd-card">
+                    <div class="section-head">
+                        <i class="fas fa-dollar-sign text-gold"></i>
+                        <span data-i18n="selectLevelAmount">1. SELECIONE O VALOR DO NÍVEL (USD)</span>
+                    </div>
+
+                    <div class="level-usd-grid">
                         {% for amount in level_deposits_list %}
-                        <div class="amount-card" data-value="{{ amount }}">
-                            <span class="currency">$</span>
-                            <span class="val-num">{{ amount }}</span>
+                        <button type="button" class="level-usd-card" data-amount="{{ amount }}">
+                            <span class="level-tag" data-i18n="levelPrefix">NÍVEL</span>
+                            <div class="usd-price">
+                                <span class="dollar-sign">$</span>
+                                <span class="price-val">{{ amount }}</span>
+                            </div>
+                            <span class="usd-badge">USD</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="manual-usd-box">
+                        <label for="manualAmountInput" data-i18n="orEnterAmount">Ou digite outro valor em USD ($):</label>
+                        <div class="usd-input-wrap">
+                            <span class="input-prefix">$</span>
+                            <input type="number" step="0.01" min="0.01" id="manualAmountInput" placeholder="0.00" class="usd-input">
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-usd-primary mt-15" id="btnToWallets" disabled>
+                        <span data-i18n="nextWallets">CONTINUAR PARA CARTEIRAS CRIPTO</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            {# 2. CARTEIRAS / CANAIS DE DEPÓSITO DE CRIPTOMOEDAS EDITADOS NO DJANGO #}
+            <div id="section-2" class="step-section fade-in" style="display: none;">
+                <div class="glass-usd-card">
+                    <div class="section-head">
+                        <i class="fas fa-wallet text-gold"></i>
+                        <span data-i18n="selectCryptoWallet">2. ESCOLHA A CARTEIRA CRIPTO</span>
+                    </div>
+
+                    <div class="selected-amount-bar">
+                        <span data-i18n="selectedValueLabel">Valor Selecionado:</span>
+                        <strong>$<span id="displaySelectedAmount">0.00</span> USD</strong>
+                    </div>
+
+                    <div class="crypto-wallets-list">
+                        {% for wallet in platform_bank_details %}
+                        <div class="crypto-wallet-card"
+                             data-wallet-id="{{ forloop.counter }}"
+                             data-wallet-name="{{ wallet.bank_name }}"
+                             data-wallet-address="{{ wallet.IBAN }}"
+                             data-wallet-holder="{{ wallet.account_holder_name }}"
+                             data-random-code="{{ wallet.random_code|default:random_code|default:'' }}">
+                            <div class="wallet-icon-box">
+                                <i class="fab fa-bitcoin"></i>
+                            </div>
+                            <div class="wallet-meta">
+                                <div class="wallet-title">{{ wallet.bank_name }}</div>
+                                {% if wallet.account_holder_name %}
+                                    <div class="wallet-network">{{ wallet.account_holder_name }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="wallet-check-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="manual-input-wrapper">
-                        <label>Ou digite outro valor:</label>
-                        <div class="input-glow-focus">
-                            <input type="number" id="manual-amount" placeholder="0.00" class="input-custom">
-                        </div>
-                    </div>
-                </div>
 
-                <div class="rules-card-modern glass-card">
-                    <div class="rules-head"><i class="fas fa-scroll"></i> TERMOS DE DEPÓSITO</div>
-                    <div class="rules-body">
-                        <p><i class="fas fa-clock"></i> Atendimento: 08:15 às 20:30 (Seg-Sáb)</p>
-                        <p><i class="fas fa-exclamation-triangle"></i> Use apenas os IBANs oficiais listados.</p>
-                        <p><i class="fas fa-ban"></i> Comprovantes falsos causam banimento imediato.</p>
+                    <div class="row-actions mt-15">
+                        <button type="button" class="btn-usd-secondary" id="btnBackToStep1">
+                            <i class="fas fa-arrow-left"></i>
+                            <span data-i18n="backBtn">Voltar</span>
+                        </button>
+                        <button type="button" class="btn-usd-primary flex-grow" id="btnToPayment" disabled>
+                            <span data-i18n="nextQrCode">GERAR QR CODE E DADOS</span>
+                            <i class="fas fa-qrcode"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <button type="button" class="btn-glow-purple" id="to-step-2" disabled>PRÓXIMO PASSO <i class="fas fa-arrow-right"></i></button>
             </div>
 
-            {# PASSO 2: DADOS BANCÁRIOS #}
-            <div id="step-2" class="step-content" style="display: none;">
-                <div class="glass-card">
-                    <h4 class="label-purple">ESCOLHA O BANCO DE DESTINO</h4>
-                    <div class="bank-list">
-                        {% for bank in platform_bank_details %}
-                        <div class="bank-item-modern" data-bank-id="{{ forloop.counter }}">
-                            <div class="bank-icon-circle"><i class="fas fa-landmark"></i></div>
-                            <span class="bank-name-txt">{{ bank.bank_name }}</span>
-                            <div class="bank-check"><i class="fas fa-check"></i></div>
-                        </div>
-                        {% endfor %}
+            {# 3. QR CODE REAL (DO CÓDIGO ALEATÓRIO DO DJANGO), CÓDIGO ALEATÓRIO + COPIAR, HASH OPCIONAL & CONTAGEM 30 MIN #}
+            <div id="section-3" class="step-section fade-in" style="display: none;">
+                <div class="glass-usd-card">
+                    <div class="section-head">
+                        <i class="fas fa-qrcode text-gold"></i>
+                        <span data-i18n="payDetailsTitle">3. QR CODE, CÓDIGO ALEATÓRIO E CONFIRMAÇÃO</span>
                     </div>
+
+                    <div class="pay-summary-strip">
+                        <div>
+                            <small data-i18n="amountToSend">Valor a Enviar</small>
+                            <div class="strip-val">$<span id="finalPayAmount">0.00</span> USD</div>
+                        </div>
+                        <div class="text-end">
+                            <small data-i18n="channelLabel">Canal / Carteira</small>
+                            <div class="strip-val" id="finalWalletName">—</div>
+                        </div>
+                    </div>
+
+                    {# ENDEREÇO / CONTA DA CARTEIRA EDITADA NO DJANGO #}
+                    <div class="info-copy-block">
+                        <label data-i18n="walletAddressLabel">Endereço / Dados da Carteira</label>
+                        <div class="copy-box">
+                            <input type="text" id="walletAddressField" readonly value="">
+                            <button type="button" class="btn-copy-action" onclick="copyFieldValue('walletAddressField', this)">
+                                <i class="far fa-copy"></i>
+                                <span data-i18n="copyBtn">Copiar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {# CÓDIGO ALEATÓRIO EDITADO NO DJANGO + OPÇÃO COPIAR #}
+                    <div class="info-copy-block">
+                        <label data-i18n="randomCodeLabel">Código Aleatório de Referência (Django)</label>
+                        <div class="copy-box highlight-copy">
+                            <input type="text" id="randomCodeField" readonly value="{{ random_code|default:'' }}">
+                            <button type="button" class="btn-copy-action" onclick="copyFieldValue('randomCodeField', this)">
+                                <i class="far fa-copy"></i>
+                                <span data-i18n="copyBtn">Copiar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {# QR CODE REAL GERADO A PARTIR DO CÓDIGO ALEATÓRIO DO DJANGO #}
+                    <div class="qr-real-box">
+                        <div class="qr-title">
+                            <i class="fas fa-qrcode"></i>
+                            <span data-i18n="qrCodeRealTitle">QR CODE DO CÓDIGO ALEATÓRIO</span>
+                        </div>
+                        <div id="realQrCodeContainer" class="qr-canvas-frame"></div>
+                        <div class="qr-code-caption" id="qrCaptionCode">{{ random_code|default:'' }}</div>
+                    </div>
+
+                    {# HASH DE TRANSAÇÃO (OPCIONAL) #}
+                    <div class="form-field-usd mt-15">
+                        <label for="txHashInput">
+                            <i class="fas fa-hashtag text-gold"></i>
+                            <span data-i18n="txHashLabel">Hash da Transação (TxID)</span>
+                            <span class="optional-tag" data-i18n="optionalTag">(Opcional)</span>
+                        </label>
+                        <input type="text" name="tx_hash" id="txHashInput" placeholder="Ex: 0x... / Hash da rede" class="usd-text-input">
+                    </div>
+
+                    {# NOME DO PAGADOR / COMPROVATIVO OPCIONAL #}
+                    <div class="form-field-usd mt-15">
+                        <label for="id_payer_name">
+                            <i class="fas fa-user-check text-gold"></i>
+                            <span data-i18n="payerNameLabel">Identificação / Nome do Pagador</span>
+                            <span class="optional-tag" data-i18n="optionalTag">(Opcional)</span>
+                        </label>
+                        <input type="text" name="payer_name" id="id_payer_name" placeholder="Ex: Nome ou ID da conta" class="usd-text-input">
+                    </div>
+
+                    <div class="form-field-usd mt-15">
+                        <label for="proofFileInput">
+                            <i class="fas fa-file-invoice-dollar text-gold"></i>
+                            <span data-i18n="proofLabel">Comprovante de Pagamento</span>
+                            <span class="optional-tag" data-i18n="optionalTag">(Opcional)</span>
+                        </label>
+                        <div class="file-drop-usd" onclick="document.getElementById('proofFileInput').click()">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <span id="proofFileName" data-i18n="chooseProof">Selecionar comprovante</span>
+                            <input type="file" name="proof_of_payment" id="proofFileInput" accept="image/*,.pdf" hidden>
+                        </div>
+                    </div>
+
+                    {# CONTAGEM REGRESSIVA DE 30 MINUTOS (INICIA AO CLICAR EM "JÁ FIZ PAGAMENTO") #}
+                    <div class="countdown-panel mt-15" id="liveTimerBox" style="display: none;">
+                        <div class="countdown-label">
+                            <i class="fas fa-clock"></i>
+                            <span data-i18n="timerLabel">CONTAGEM REGRESSIVA (30:00)</span>
+                        </div>
+                        <div class="countdown-digits" id="liveTimerDigits">30:00</div>
+                        <div class="countdown-sub" id="liveTimerMsg" data-i18n="timerActiveMsg">
+                            Aguardando aprovação do administrador. Se chegar a 00:00 sem aprovação, é falso e não será creditado.
+                        </div>
+                    </div>
+
+                    {# BOTÃO "JÁ FIZ PAGAMENTO" #}
+                    <button type="button" class="btn-paid-confirm mt-15" id="btnAlreadyPaid">
+                        <i class="fas fa-check-circle"></i>
+                        <span data-i18n="alreadyPaidBtn">JÁ FIZ PAGAMENTO</span>
+                    </button>
+
+                    <button type="submit" class="btn-usd-primary mt-10" id="btnSubmitDeposit">
+                        <i class="fas fa-paper-plane"></i>
+                        <span data-i18n="submitDepositBtn">CONFIRMAR E ENVIAR DEPÓSITO</span>
+                    </button>
                 </div>
-
-                <div id="bank-data-display" style="display: none;" class="glass-card fade-in">
-                    {% for bank in platform_bank_details %}
-                    <div id="details-{{ forloop.counter }}" class="details-box" style="display: none;">
-                        <div class="copy-item">
-                            <label>TITULAR DA CONTA</label>
-                            <p class="holder-name">{{ bank.account_holder_name }}</p>
-                        </div>
-                        <div class="copy-item">
-                            <label>IBAN PARA TRANSFERÊNCIA</label>
-                            <div class="copy-flex">
-                                <input type="text" value="{{ bank.IBAN }}" readonly id="iban-{{ forloop.counter }}" class="iban-field">
-                                <button type="button" class="btn-copy-small" onclick="copyText('iban-{{ forloop.counter }}')"><i class="far fa-copy"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    <div class="total-badge-glow">
-                        VALOR A PAGAR: <strong><span id="summary-amount">0</span> $</strong>
-                    </div>
-                </div>
-
-                <button type="button" class="btn-glow-purple mt-10" id="to-step-3" disabled>JÁ REALIZEI O PAGAMENTO <i class="fas fa-chevron-right"></i></button>
-            </div>
-
-            {# PASSO 3: COMPROVANTE MELHORADO #}
-            <div id="step-3" class="step-content" style="display: none;">
-                <div class="glass-card">
-                    <label class="label-purple">ANEXAR COMPROVATIVO OFICIAL</label>
-                    
-                    <div class="upload-zone-premium" onclick="document.getElementById('file-upload').click()">
-                        <div id="upload-idle">
-                            <div class="upload-icon-pulse">
-                                <i class="fas fa-cloud-arrow-up"></i>
-                            </div>
-                            <p class="upload-main-text">CLIQUE PARA CARREGAR</p>
-                            <p class="upload-sub-text">Selecione a imagem do seu comprovante</p>
-                        </div>
-                        
-                        <div id="upload-active" style="display: none;">
-                            <div class="upload-icon-success">
-                                <i class="fas fa-file-circle-check"></i>
-                            </div>
-                            <p class="file-name-display" id="file-name-display">arquivo.jpg</p>
-                            <p class="upload-sub-text">Toque para alterar o arquivo</p>
-                        </div>
-                        
-                        <input type="file" name="proof_of_payment" id="file-upload" hidden accept="image/*">
-                    </div>
-
-                    <div class="input-group-modern mt-20">
-                        <label class="label-purple">NOME COMPLETO NO COMPROVANTE</label>
-                        <div class="input-glow-focus">
-                            <input type="text" name="payer_name" id="id_payer_name" placeholder="Nome do depositante" class="input-custom">
-                        </div>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-confirm-final">ENVIAR AGORA <i class="fas fa-paper-plane"></i></button>
             </div>
         </form>
     {% endif %}
+
+    {# PARTE DE BAIXO: INSTRUÇÃO PASSO A PASSO DE COMO FAZER DEPÓSITO CORRETAMENTE #}
+    <div class="glass-usd-card instructions-footer-card mt-20">
+        <div class="instructions-header">
+            <i class="fas fa-circle-info text-gold"></i>
+            <h3 data-i18n="howToTitle">COMO FAZER O DEPÓSITO CORRETAMENTE (PASSO A PASSO)</h3>
+        </div>
+
+        <ol class="steps-guide-list">
+            <li>
+                <span class="guide-num"><i class="fas fa-dollar-sign"></i> 1</span>
+                <div class="guide-text">
+                    <strong data-i18n="guide1Title">Escolha o valor em Dólar ($)</strong>
+                    <p data-i18n="guide1Desc">Selecione um dos valores de nível configurados no Django em USD ou digite o valor desejado.</p>
+                </div>
+            </li>
+            <li>
+                <span class="guide-num"><i class="fas fa-wallet"></i> 2</span>
+                <div class="guide-text">
+                    <strong data-i18n="guide2Title">Selecione a carteira cripto</strong>
+                    <p data-i18n="guide2Desc">Escolha o canal/carteira de criptomoeda oficial configurado no sistema para o pagamento em dólar.</p>
+                </div>
+            </li>
+            <li>
+                <span class="guide-num"><i class="fas fa-qrcode"></i> 3</span>
+                <div class="guide-text">
+                    <strong data-i18n="guide3Title">Escaneie o QR Code e copie o código aleatório</strong>
+                    <p data-i18n="guide3Desc">O QR Code é gerado a partir do código aleatório real do Django. Copie o código/endereço e envie o valor exato em USD.</p>
+                </div>
+            </li>
+            <li>
+                <span class="guide-num"><i class="fas fa-hashtag"></i> 4</span>
+                <div class="guide-text">
+                    <strong data-i18n="guide4Title">Cole o hash (opcional) e clique em "Já fiz pagamento"</strong>
+                    <p data-i18n="guide4Desc">Se quiser, cole o hash da transação e clique em "Já fiz pagamento" para iniciar a contagem de 30 minutos.</p>
+                </div>
+            </li>
+            <li>
+                <span class="guide-num"><i class="fas fa-shield-check"></i> 5</span>
+                <div class="guide-text">
+                    <strong data-i18n="guide5Title">Aprovação no Django dentro de 30 minutos</strong>
+                    <p data-i18n="guide5Desc">Se o administrador aprovar no Django, a contagem desaparece e o saldo é creditado. Se chegar a 00:00 sem aprovação, é falso/inválido e não é creditado.</p>
+                </div>
+            </li>
+        </ol>
+    </div>
 </div>
 
 <style>
     :root {
-        --lilac-glow: #c084fc;
-        --deep-purple: #7c3aed;
-        --glass-bg: rgba(255, 255, 255, 0.07);
-        --text-color: #f8fafc;
-        --success-green: #22c55e;
+        --usd-bg-dark: #060c14;
+        --usd-bg-mid: #0d1a2d;
+        --usd-card-bg: rgba(15, 28, 48, 0.82);
+        --usd-border: rgba(250, 204, 21, 0.24);
+        --usd-gold: #facc15;
+        --usd-emerald: #10b981;
+        --usd-cyan: #38bdf8;
+        --usd-danger: #ef4444;
+        --usd-text: #f8fafc;
+        --usd-muted: #94a3b8;
     }
 
-    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: radial-gradient(circle at top, #1e1b4b, #020617); color: var(--text-color); margin: 0; overflow-x: hidden; }
+    body {
+        background:
+            radial-gradient(circle at 12% 8%, rgba(16, 185, 129, 0.18), transparent 40%),
+            radial-gradient(circle at 88% 14%, rgba(250, 204, 21, 0.16), transparent 44%),
+            radial-gradient(circle at 50% 95%, rgba(56, 189, 248, 0.12), transparent 50%),
+            linear-gradient(165deg, var(--usd-bg-dark) 0%, var(--usd-bg-mid) 55%, #050911 100%);
+        color: var(--usd-text);
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
 
-    .deposit-container { width: 100%; max-width: 450px; margin: 0 auto; padding: 15px 12px 100px; }
-    .glass-card { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid rgba(192, 132, 252, 0.2); border-radius: 24px; padding: 20px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .usd-deposit-wrapper {
+        max-width: 480px;
+        margin: 0 auto;
+        padding: 14px 12px 90px;
+    }
 
-    /* Header & Stepper */
-    .premium-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .title-glow { font-size: 1.2rem; font-weight: 900; color: var(--lilac-glow); text-shadow: 0 0 15px rgba(192, 132, 252, 0.5); margin: 0; }
-    .btn-back-arrow { color: white; width: 38px; height: 38px; background: var(--glass-bg); display: flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; border: 1px solid rgba(255,255,255,0.1); }
-    .safe-badge { font-size: 0.7rem; background: rgba(34, 197, 94, 0.15); color: #4ade80; padding: 4px 10px; border-radius: 30px; border: 1px solid rgba(34,197,94,0.3); }
-
-    .stepper-modern { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; }
-    .step-unit { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
-    .step-circle { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); transition: 0.4s; z-index: 2; }
-    .step-unit.active .step-circle { background: var(--deep-purple); border-color: var(--lilac-glow); box-shadow: 0 0 20px rgba(124, 58, 237, 0.6); color: white; }
-    .step-unit.done .step-circle { background: #22c55e; color: white; border-color: #22c55e; }
-    .step-txt { font-size: 0.65rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
-    .step-connector { flex-grow: 1; height: 2px; background: rgba(255,255,255,0.1); margin-bottom: 22px; }
-
-    /* Estilo da Zona de Upload Premium */
-    .upload-zone-premium {
-        background: rgba(0, 0, 0, 0.2);
-        border: 2px dashed rgba(192, 132, 252, 0.4);
+    .glass-usd-card {
+        background: var(--usd-card-bg);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid var(--usd-border);
         border-radius: 20px;
-        padding: 35px 20px;
-        text-align: center;
+        padding: 18px;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.48);
+    }
+
+    /* Barra Superior + Seletor de Idioma */
+    .top-lang-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .btn-back-usd {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        flex-shrink: 0;
+    }
+
+    .brand-usd-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 900;
+        font-size: 0.96rem;
+        letter-spacing: 0.5px;
+        color: var(--usd-gold);
+    }
+
+    .usd-coin-icon {
+        background: rgba(250, 204, 21, 0.18);
+        color: var(--usd-gold);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    .ssl-pill {
+        font-size: 0.65rem;
+        background: rgba(16, 185, 129, 0.16);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        padding: 2px 7px;
+        border-radius: 999px;
+    }
+
+    .lang-selector-box {
+        display: flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(250, 204, 21, 0.38);
+        border-radius: 12px;
+        padding: 4px 8px;
+        gap: 6px;
+    }
+
+    .globe-btn {
+        color: var(--usd-gold);
+        font-size: 0.95rem;
         cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 10px;
+        margin: 0;
     }
-    .upload-zone-premium:hover {
-        border-color: var(--lilac-glow);
-        background: rgba(192, 132, 252, 0.05);
+
+    .lang-dropdown {
+        background: #0b1626;
+        color: #fff;
+        border: none;
+        font-size: 0.78rem;
+        font-weight: 700;
+        outline: none;
+        cursor: pointer;
     }
-    .upload-icon-pulse {
-        font-size: 2.5rem;
-        color: var(--lilac-glow);
+
+    /* Stepper */
+    .usd-stepper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        margin-bottom: 14px;
+    }
+
+    .usd-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--usd-muted);
+    }
+
+    .usd-step-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.25s;
+    }
+
+    .usd-step.active .usd-step-circle {
+        background: linear-gradient(135deg, #eab308, #10b981);
+        color: #061018;
+        border-color: var(--usd-gold);
+    }
+
+    .usd-step.active {
+        color: #fff;
+    }
+
+    .usd-step.done .usd-step-circle {
+        background: var(--usd-emerald);
+        color: #fff;
+        border-color: var(--usd-emerald);
+    }
+
+    .usd-step-line {
+        flex: 1;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.12);
+        margin-bottom: 18px;
+        margin-inline: 6px;
+    }
+
+    .section-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--usd-gold);
+        margin-bottom: 14px;
+        letter-spacing: 0.3px;
+    }
+
+    .text-gold { color: var(--usd-gold); }
+
+    /* Grade de Níveis em Dólar ($) */
+    .level-usd-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .level-usd-card {
+        background: rgba(6, 13, 24, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 14px;
+        padding: 12px 8px;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: 0.2s;
+    }
+
+    .level-usd-card:hover {
+        border-color: var(--usd-gold);
+        transform: translateY(-2px);
+    }
+
+    .level-usd-card.selected {
+        background: linear-gradient(155deg, rgba(250, 204, 21, 0.22), rgba(16, 185, 129, 0.22));
+        border-color: var(--usd-gold);
+        box-shadow: 0 0 18px rgba(250, 204, 21, 0.22);
+    }
+
+    .level-tag {
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        color: var(--usd-muted);
+        font-weight: 700;
+    }
+
+    .usd-price {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+        font-weight: 900;
+        font-size: 1.05rem;
+        color: #fff;
+    }
+
+    .dollar-sign {
+        color: var(--usd-emerald);
+        font-size: 0.92rem;
+    }
+
+    .usd-badge {
+        font-size: 0.62rem;
+        font-weight: 800;
+        color: var(--usd-gold);
+        background: rgba(250, 204, 21, 0.12);
+        padding: 1px 6px;
+        border-radius: 6px;
+    }
+
+    .manual-usd-box {
+        margin-top: 14px;
+    }
+
+    .manual-usd-box label {
+        display: block;
+        font-size: 0.78rem;
+        color: var(--usd-muted);
+        margin-bottom: 6px;
+    }
+
+    .usd-input-wrap {
+        display: flex;
+        align-items: center;
+        background: rgba(6, 13, 24, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 12px;
+        padding: 0 12px;
+    }
+
+    .input-prefix {
+        color: var(--usd-emerald);
+        font-weight: 900;
+        font-size: 1rem;
+        margin-right: 6px;
+    }
+
+    .usd-input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: #fff;
+        padding: 11px 4px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        outline: none;
+    }
+
+    /* Carteiras Cripto */
+    .selected-amount-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        border-radius: 12px;
+        padding: 10px 14px;
         margin-bottom: 12px;
-        animation: pulseIcon 2s infinite;
+        font-size: 0.85rem;
     }
-    .upload-icon-success {
-        font-size: 2.5rem;
-        color: var(--success-green);
+
+    .selected-amount-bar strong {
+        color: #34d399;
+        font-size: 1rem;
+    }
+
+    .crypto-wallets-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .crypto-wallet-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(6, 13, 24, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .crypto-wallet-card:hover {
+        border-color: var(--usd-cyan);
+    }
+
+    .crypto-wallet-card.selected {
+        border-color: var(--usd-emerald);
+        background: rgba(16, 185, 129, 0.14);
+    }
+
+    .wallet-icon-box {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(250, 204, 21, 0.14);
+        color: var(--usd-gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .wallet-meta {
+        flex: 1;
+    }
+
+    .wallet-title {
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+
+    .wallet-network {
+        font-size: 0.74rem;
+        color: var(--usd-muted);
+    }
+
+    .wallet-check-icon {
+        color: var(--usd-emerald);
+        opacity: 0;
+        font-size: 1.1rem;
+    }
+
+    .crypto-wallet-card.selected .wallet-check-icon {
+        opacity: 1;
+    }
+
+    /* Etapa 3: Resumo, Cópia e QR Code Real */
+    .pay-summary-strip {
+        display: flex;
+        justify-content: space-between;
+        background: rgba(6, 13, 24, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 14px;
+    }
+
+    .pay-summary-strip small {
+        color: var(--usd-muted);
+        font-size: 0.7rem;
+        display: block;
+    }
+
+    .strip-val {
+        font-weight: 800;
+        font-size: 0.92rem;
+        color: var(--usd-gold);
+    }
+
+    .info-copy-block {
         margin-bottom: 12px;
     }
-    @keyframes pulseIcon {
-        0% { transform: scale(1); opacity: 0.7; }
-        50% { transform: scale(1.1); opacity: 1; text-shadow: 0 0 15px var(--lilac-glow); }
-        100% { transform: scale(1); opacity: 0.7; }
+
+    .info-copy-block label {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--usd-muted);
+        margin-bottom: 5px;
+        font-weight: 700;
     }
-    .upload-main-text { font-weight: 800; font-size: 1rem; color: #fff; margin: 0; }
-    .upload-sub-text { font-size: 0.75rem; color: #94a3b8; margin-top: 5px; }
-    .file-name-display { font-weight: 700; color: var(--success-green); font-size: 0.9rem; margin: 0; word-break: break-all; }
 
-    /* Success Screen */
-    .success-screen-premium { text-align: center; padding: 40px 20px; border: 2px solid var(--lilac-glow); }
-    .message-sent-icon { position: relative; width: 80px; height: 80px; margin: 0 auto 20px; }
-    .icon-circle-main { width: 80px; height: 80px; background: rgba(192, 132, 252, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--lilac-glow); border: 1px solid rgba(192,132,252,0.3); }
-    .check-badge { position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; background: #22c55e; border-radius: 50%; border: 3px solid #1e1b4d; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: white; }
-    .animate-send { animation: paperPlane 2s infinite; }
-    @keyframes paperPlane { 0% { transform: translate(0,0); opacity: 1; } 50% { transform: translate(15px, -15px); opacity: 0.5; } 100% { transform: translate(0,0); opacity: 1; } }
-    
-    .success-title-new { font-size: 1.3rem; font-weight: 900; color: #fff; margin-bottom: 10px; }
-    .divider-lilac { width: 50px; height: 3px; background: var(--lilac-glow); margin: 0 auto 20px; border-radius: 2px; }
-    .success-description { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; margin-bottom: 25px; }
-    .time-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; font-size: 0.8rem; color: var(--lilac-glow); display: inline-flex; align-items: center; gap: 8px; }
+    .copy-box {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(6, 13, 24, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 12px;
+        padding: 6px 8px 6px 12px;
+    }
 
-    /* Forms & Buttons */
-    .label-purple { color: var(--lilac-glow); font-size: 0.8rem; font-weight: 800; display: block; margin-bottom: 12px; letter-spacing: 0.5px; }
-    .amount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-    .amount-card { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px 5px; text-align: center; cursor: pointer; transition: 0.3s; }
-    .amount-card.active { background: var(--deep-purple); border-color: var(--lilac-glow); box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4); transform: translateY(-3px); }
-    .val-num { display: block; font-weight: 800; font-size: 0.95rem; }
-    .currency { font-size: 0.6rem; color: var(--lilac-glow); opacity: 0.8; }
+    .copy-box.highlight-copy {
+        border-color: rgba(250, 204, 21, 0.45);
+    }
 
-    .input-custom { width: 100%; background: transparent; border: none; padding: 14px; color: #fff; font-size: 1rem; outline: none; }
-    .input-glow-focus { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; transition: 0.3s; }
-    .input-glow-focus:focus-within { border-color: var(--lilac-glow); box-shadow: 0 0 15px rgba(192, 132, 252, 0.2); }
+    .copy-box input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 0.84rem;
+        font-weight: 700;
+        outline: none;
+    }
 
-    .btn-glow-purple { width: 100%; padding: 18px; border-radius: 18px; border: none; background: var(--deep-purple); color: #fff; font-weight: 800; font-size: 0.9rem; cursor: pointer; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4); transition: 0.3s; display: block; text-align: center; text-decoration: none; }
-    .btn-glow-purple:disabled { opacity: 0.4; pointer-events: none; }
-    .btn-confirm-final { width: 100%; padding: 20px; border-radius: 18px; border: none; background: #22c55e; color: #fff; font-weight: 900; font-size: 1rem; box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3); cursor: pointer; }
+    .btn-copy-action {
+        background: rgba(250, 204, 21, 0.16);
+        color: var(--usd-gold);
+        border: 1px solid rgba(250, 204, 21, 0.35);
+        border-radius: 9px;
+        padding: 6px 10px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
 
-    .bank-item-modern { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 14px; border-radius: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.3s; position: relative; }
-    .bank-item-modern.active { border-color: var(--lilac-glow); background: rgba(192, 132, 252, 0.1); }
-    .bank-icon-circle { width: 42px; height: 42px; background: var(--glass-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--lilac-glow); font-size: 1.2rem; }
+    .qr-real-box {
+        text-align: center;
+        background: rgba(6, 13, 24, 0.8);
+        border: 1px dashed rgba(250, 204, 21, 0.42);
+        border-radius: 16px;
+        padding: 14px;
+        margin-top: 12px;
+    }
 
-    .total-badge-glow { background: rgba(124, 58, 237, 0.1); border: 1px solid var(--deep-purple); padding: 12px; border-radius: 12px; text-align: center; margin-top: 15px; color: #fff; font-size: 0.9rem; }
-    .iban-field { background: transparent; border: none; color: #fff; font-weight: 700; width: 100%; }
-    .copy-flex { display: flex; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-top: 5px; }
-    .btn-copy-small { background: var(--deep-purple); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+    .qr-title {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--usd-gold);
+        margin-bottom: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
 
-    .fade-in { animation: fadeIn 0.5s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .mt-10 { margin-top: 10px; } .mt-20 { margin-top: 20px; }
+    .qr-canvas-frame {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        padding: 10px;
+        border-radius: 12px;
+        min-width: 156px;
+        min-height: 156px;
+    }
+
+    .qr-code-caption {
+        margin-top: 8px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #cbd5e1;
+        word-break: break-all;
+    }
+
+    .form-field-usd label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        margin-bottom: 6px;
+    }
+
+    .optional-tag {
+        font-size: 0.68rem;
+        color: var(--usd-muted);
+        font-weight: 600;
+    }
+
+    .usd-text-input {
+        width: 100%;
+        box-sizing: border-box;
+        background: rgba(6, 13, 24, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 12px;
+        padding: 11px 12px;
+        color: #fff;
+        font-size: 0.86rem;
+        outline: none;
+    }
+
+    .file-drop-usd {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: rgba(6, 13, 24, 0.78);
+        border: 1.5px dashed rgba(56, 189, 248, 0.45);
+        border-radius: 12px;
+        padding: 13px;
+        color: var(--usd-cyan);
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    /* Cronómetro 30 Minutos */
+    .countdown-panel {
+        background: rgba(250, 204, 21, 0.08);
+        border: 1px solid rgba(250, 204, 21, 0.35);
+        border-radius: 14px;
+        padding: 14px;
+        text-align: center;
+    }
+
+    .countdown-label {
+        font-size: 0.74rem;
+        font-weight: 800;
+        color: var(--usd-gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .countdown-digits {
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: #fff;
+        margin: 6px 0;
+    }
+
+    .countdown-digits.expired-digits {
+        color: var(--usd-danger);
+    }
+
+    .countdown-sub {
+        font-size: 0.75rem;
+        color: #cbd5e1;
+    }
+
+    /* Botões */
+    .btn-usd-primary {
+        width: 100%;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: linear-gradient(135deg, #f59e0b, #10b981);
+        color: #051018;
+        font-weight: 900;
+        font-size: 0.86rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-usd-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .btn-usd-secondary {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 14px;
+        padding: 13px 14px;
+        background: rgba(255, 255, 255, 0.07);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+    }
+
+    .btn-paid-confirm {
+        width: 100%;
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        border-radius: 14px;
+        padding: 13px 16px;
+        background: rgba(14, 165, 233, 0.18);
+        color: #7dd3fc;
+        font-weight: 800;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .row-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .flex-grow { flex: 1; }
+
+    /* Estados de Retorno */
+    .status-banner {
+        text-align: center;
+        padding: 24px 18px;
+    }
+
+    .status-icon-wrap {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        margin: 0 auto 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .status-icon-wrap.approved {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+    }
+
+    .status-icon-wrap.expired {
+        background: rgba(239, 68, 68, 0.2);
+        color: #f87171;
+    }
+
+    .status-icon-wrap.pending {
+        background: rgba(250, 204, 21, 0.2);
+        color: var(--usd-gold);
+    }
+
+    .amount-highlight-box {
+        display: inline-block;
+        background: rgba(16, 185, 129, 0.16);
+        border: 1px solid rgba(16, 185, 129, 0.45);
+        color: #34d399;
+        font-weight: 900;
+        font-size: 1.2rem;
+        padding: 8px 18px;
+        border-radius: 12px;
+        margin-top: 8px;
+    }
+
+    .code-summary-row {
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: var(--usd-muted);
+    }
+
+    /* Instruções na Parte Inferior */
+    .instructions-footer-card {
+        border-color: rgba(56, 189, 248, 0.28);
+    }
+
+    .instructions-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .instructions-header h3 {
+        margin: 0;
+        font-size: 0.86rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .steps-guide-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .steps-guide-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .guide-num {
+        min-width: 34px;
+        height: 24px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: rgba(250, 204, 21, 0.18);
+        color: var(--usd-gold);
+        font-weight: 900;
+        font-size: 0.72rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .guide-text strong {
+        display: block;
+        font-size: 0.82rem;
+        color: #f8fafc;
+    }
+
+    .guide-text p {
+        margin: 2px 0 0;
+        font-size: 0.75rem;
+        color: var(--usd-muted);
+        line-height: 1.4;
+    }
+
+    .mt-10 { margin-top: 10px; }
+    .mt-15 { margin-top: 15px; }
+    .mt-20 { margin-top: 20px; }
+    .text-end { text-align: right; }
+
+    .fade-in {
+        animation: fadeInUsd 0.3s ease;
+    }
+
+    @keyframes fadeInUsd {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const amountHidden = document.getElementById('id_amount');
-        const manualInput = document.getElementById('manual-amount');
-        const next1 = document.getElementById('to-step-2');
-        const next2 = document.getElementById('to-step-3');
+    const TRANSLATIONS = {
+        pt: {
+            pageTitle: "DEPÓSITO USD",
+            stepLevel: "Nível ($)",
+            stepWallet: "Carteira Cripto",
+            stepPay: "Pagamento",
+            selectLevelAmount: "1. SELECIONE O VALOR DO NÍVEL (USD)",
+            levelPrefix: "NÍVEL",
+            orEnterAmount: "Ou digite outro valor em USD ($):",
+            nextWallets: "CONTINUAR PARA CARTEIRAS CRIPTO",
+            selectCryptoWallet: "2. ESCOLHA A CARTEIRA CRIPTO",
+            selectedValueLabel: "Valor Selecionado:",
+            backBtn: "Voltar",
+            nextQrCode: "GERAR QR CODE E DADOS",
+            payDetailsTitle: "3. QR CODE, CÓDIGO ALEATÓRIO E CONFIRMAÇÃO",
+            amountToSend: "Valor a Enviar",
+            channelLabel: "Canal / Carteira",
+            walletAddressLabel: "Endereço / Dados da Carteira",
+            randomCodeLabel: "Código Aleatório de Referência (Django)",
+            copyBtn: "Copiar",
+            copiedBtn: "Copiado",
+            qrCodeRealTitle: "QR CODE DO CÓDIGO ALEATÓRIO",
+            txHashLabel: "Hash da Transação (TxID)",
+            payerNameLabel: "Identificação / Nome do Pagador",
+            optionalTag: "(Opcional)",
+            proofLabel: "Comprovante de Pagamento",
+            chooseProof: "Selecionar comprovante",
+            timerLabel: "CONTAGEM REGRESSIVA (30:00)",
+            timerActiveMsg: "Aguardando aprovação do administrador. Se chegar a 00:00 sem aprovação, é falso e não será creditado.",
+            alreadyPaidBtn: "JÁ FIZ PAGAMENTO",
+            submitDepositBtn: "CONFIRMAR E ENVIAR DEPÓSITO",
+            pendingTitle: "PAGAMENTO ENVIADO — AGUARDANDO APROVAÇÃO",
+            pendingDesc: "Se o administrador não aprovar antes de 00:00, o depósito será marcado como falso e NÃO será creditado.",
+            timerRunning: "Em verificação pelo administrador...",
+            timerExpiredMsg: "Tempo esgotado (00:00) sem aprovação no Django: depósito falso/inválido, valor NÃO creditado.",
+            codeLabel: "Código Aleatório:",
+            approvedTitle: "DEPÓSITO APROVADO!",
+            approvedDesc: "O administrador confirmou o seu pagamento no sistema. O valor em USD foi creditado na sua carteira.",
+            expiredTitle: "TEMPO ESGOTADO (30 MIN) — FALSO / NÃO APROVADO",
+            expiredDesc: "Os 30 minutos terminaram sem aprovação do administrador no Django. Esta solicitação é considerada falsa/inválida e o valor NÃO foi creditado.",
+            backMenu: "VOLTAR AO PAINEL PRINCIPAL",
+            howToTitle: "COMO FAZER O DEPÓSITO CORRETAMENTE (PASSO A PASSO)",
+            guide1Title: "Escolha o valor em Dólar ($)",
+            guide1Desc: "Selecione um dos valores de nível configurados no Django em USD ou digite o valor desejado.",
+            guide2Title: "Selecione a carteira cripto",
+            guide2Desc: "Escolha o canal/carteira de criptomoeda oficial configurado no sistema para o pagamento em dólar.",
+            guide3Title: "Escaneie o QR Code e copie o código aleatório",
+            guide3Desc: "O QR Code é gerado a partir do código aleatório real do Django. Copie o código/endereço e envie o valor exato em USD.",
+            guide4Title: "Cole o hash (opcional) e clique em \"Já fiz pagamento\"",
+            guide4Desc: "Se quiser, cole o hash da transação e clique em \"Já fiz pagamento\" para iniciar a contagem de 30 minutos.",
+            guide5Title: "Aprovação no Django dentro de 30 minutos",
+            guide5Desc: "Se o administrador aprovar no Django, a contagem desaparece e o saldo é creditado. Se chegar a 00:00 sem aprovação, é falso/inválido e não é creditado."
+        },
+        en: {
+            pageTitle: "USD DEPOSIT",
+            stepLevel: "Level ($)",
+            stepWallet: "Crypto Wallet",
+            stepPay: "Payment",
+            selectLevelAmount: "1. SELECT LEVEL AMOUNT (USD)",
+            levelPrefix: "LEVEL",
+            orEnterAmount: "Or enter another amount in USD ($):",
+            nextWallets: "CONTINUE TO CRYPTO WALLETS",
+            selectCryptoWallet: "2. CHOOSE CRYPTO WALLET",
+            selectedValueLabel: "Selected Amount:",
+            backBtn: "Back",
+            nextQrCode: "GENERATE QR CODE & DETAILS",
+            payDetailsTitle: "3. QR CODE, RANDOM CODE & CONFIRMATION",
+            amountToSend: "Amount to Send",
+            channelLabel: "Channel / Wallet",
+            walletAddressLabel: "Wallet Address / Details",
+            randomCodeLabel: "Random Reference Code (Django)",
+            copyBtn: "Copy",
+            copiedBtn: "Copied",
+            qrCodeRealTitle: "QR CODE FROM RANDOM CODE",
+            txHashLabel: "Transaction Hash (TxID)",
+            payerNameLabel: "Payer Name / Reference",
+            optionalTag: "(Optional)",
+            proofLabel: "Payment Proof",
+            chooseProof: "Select proof file",
+            timerLabel: "COUNTDOWN TIMER (30:00)",
+            timerActiveMsg: "Waiting for admin approval. If it reaches 00:00 without approval, it is fake and will not be credited.",
+            alreadyPaidBtn: "I ALREADY PAID",
+            submitDepositBtn: "CONFIRM & SUBMIT DEPOSIT",
+            pendingTitle: "PAYMENT SUBMITTED — AWAITING APPROVAL",
+            pendingDesc: "If admin does not approve before 00:00, the deposit will be marked fake and NOT credited.",
+            timerRunning: "Under admin review...",
+            timerExpiredMsg: "Time expired (00:00) without Django approval: fake/invalid deposit, NOT credited.",
+            codeLabel: "Random Code:",
+            approvedTitle: "DEPOSIT APPROVED!",
+            approvedDesc: "The admin confirmed your payment in the system. The USD amount has been credited to your wallet.",
+            expiredTitle: "TIME EXPIRED (30 MIN) — FAKE / NOT APPROVED",
+            expiredDesc: "The 30 minutes ended without admin approval in Django. This request is fake/invalid and NOT credited.",
+            backMenu: "BACK TO MAIN PANEL",
+            howToTitle: "HOW TO DEPOSIT PROPERLY (STEP BY STEP)",
+            guide1Title: "Choose the Dollar ($) amount",
+            guide1Desc: "Pick a system-configured level amount in USD or enter your desired amount.",
+            guide2Title: "Select the crypto wallet",
+            guide2Desc: "Choose the official cryptocurrency channel/wallet for your USD payment.",
+            guide3Title: "Scan QR Code and copy the random code",
+            guide3Desc: "The QR Code is generated from the real random code from Django. Copy it and send the exact USD amount.",
+            guide4Title: "Paste hash (optional) and click \"I Already Paid\"",
+            guide4Desc: "Optionally paste the transaction hash and click \"I Already Paid\" to start the 30-minute countdown.",
+            guide5Title: "Django approval within 30 minutes",
+            guide5Desc: "If approved in Django, the timer disappears and balance is credited. If it hits 00:00 without approval, it is fake/uncredited."
+        },
+        ar: {
+            pageTitle: "إيداع بالدولار USD",
+            stepLevel: "المستوى ($)",
+            stepWallet: "محفظة رقمية",
+            stepPay: "الدفع",
+            selectLevelAmount: "1. اختر قيمة المستوى (USD)",
+            levelPrefix: "مستوى",
+            orEnterAmount: "أو أدخل مبلغاً آخر بالدولار ($):",
+            nextWallets: "المتابعة إلى محافظ العملات الرقمية",
+            selectCryptoWallet: "2. اختر محفظة العملات الرقمية",
+            selectedValueLabel: "المبلغ المختار:",
+            backBtn: "رجوع",
+            nextQrCode: "إنشاء رمز QR والبيانات",
+            payDetailsTitle: "3. رمز QR والرمز العشوائي والتأكيد",
+            amountToSend: "المبلغ المراد إرساله",
+            channelLabel: "القناة / المحفظة",
+            walletAddressLabel: "عنوان / بيانات المحفظة",
+            randomCodeLabel: "رمز مرجعي عشوائي (Django)",
+            copyBtn: "نسخ",
+            copiedBtn: "تم النسخ",
+            qrCodeRealTitle: "رمز QR من الرمز العشوائي",
+            txHashLabel: "تجزئة المعاملة (Hash)",
+            payerNameLabel: "اسم الدافع / المرجع",
+            optionalTag: "(اختياري)",
+            proofLabel: "إثبات الدفع",
+            chooseProof: "اختر ملف الإثبات",
+            timerLabel: "العد التنازلي (30:00)",
+            timerActiveMsg: "بانتظار موافقة المسؤول. إذا وصل إلى 00:00 دون موافقة فهو مزيف ولن يُضاف الرصيد.",
+            alreadyPaidBtn: "لقد قمت بالدفع",
+            submitDepositBtn: "تأكيد وإرسال الإيداع",
+            pendingTitle: "تم إرسال الدفع — بانتظار الموافقة",
+            pendingDesc: "إذا لم يوافق المسؤول قبل 00:00 فسيُعتبر الإيداع مزيفاً ولن يُضاف الرصيد.",
+            timerRunning: "قيد المراجعة من المسؤول...",
+            timerExpiredMsg: "انتهى الوقت (00:00) دون موافقة في Django: إيداع مزيف/غير صالح ولم يُضف الرصيد.",
+            codeLabel: "الرمز العشوائي:",
+            approvedTitle: "تمت الموافقة على الإيداع!",
+            approvedDesc: "أكد المسؤول دفعتك في النظام وتمت إضافة المبلغ بالدولار إلى محفظتك.",
+            expiredTitle: "انتهى الوقت (30 دقيقة) — مزيف / غير معتمد",
+            expiredDesc: "انتهت 30 دقيقة دون موافقة المسؤول في Django. هذا الطلب مزيف/غير صالح ولم يُضف الرصيد.",
+            backMenu: "العودة إلى القائمة الرئيسية",
+            howToTitle: "كيفية الإيداع بشكل صحيح (خطوة بخطوة)",
+            guide1Title: "اختر المبلغ بالدولار ($)",
+            guide1Desc: "اختر قيمة مستوى محددة في Django بالدولار أو أدخل المبلغ المطلوب.",
+            guide2Title: "اختر محفظة العملات الرقمية",
+            guide2Desc: "اختر قناة/محفظة العملة الرقمية الرسمية للدفع بالدولار.",
+            guide3Title: "امسح رمز QR وانسخ الرمز العشوائي",
+            guide3Desc: "يتم إنشاء رمز QR من الرمز العشوائي الحقيقي في Django. انسخه وأرسل المبلغ بالدولار بدقة.",
+            guide4Title: "الصق الهاش (اختياري) واضغط \"لقد قمت بالدفع\"",
+            guide4Desc: "يمكنك لصق تجزئة المعاملة ثم الضغط على \"لقد قمت بالدفع\" لبدء عد 30 دقيقة.",
+            guide5Title: "الموافقة في Django خلال 30 دقيقة",
+            guide5Desc: "إذا وافق المسؤول في Django يختفي العداد ويُضاف الرصيد؛ وإذا وصل إلى 00:00 فهو مزيف ولا يُضاف."
+        },
+        es: {
+            pageTitle: "DEPÓSITO USD",
+            stepLevel: "Nivel ($)",
+            stepWallet: "Billetera Cripto",
+            stepPay: "Pago",
+            selectLevelAmount: "1. SELECCIONA EL MONTO DEL NIVEL (USD)",
+            levelPrefix: "NIVEL",
+            orEnterAmount: "O escribe otro monto en USD ($):",
+            nextWallets: "CONTINUAR A BILLETERAS CRIPTO",
+            selectCryptoWallet: "2. ELIGE LA BILLETERA CRIPTO",
+            selectedValueLabel: "Monto Seleccionado:",
+            backBtn: "Atrás",
+            nextQrCode: "GENERAR CÓDIGO QR Y DATOS",
+            payDetailsTitle: "3. CÓDIGO QR, CÓDIGO ALEATORIO Y CONFIRMACIÓN",
+            amountToSend: "Monto a Enviar",
+            channelLabel: "Canal / Billetera",
+            walletAddressLabel: "Dirección / Datos de Billetera",
+            randomCodeLabel: "Código Aleatorio de Referencia (Django)",
+            copyBtn: "Copiar",
+            copiedBtn: "Copiado",
+            qrCodeRealTitle: "CÓDIGO QR DEL CÓDIGO ALEATORIO",
+            txHashLabel: "Hash de Transacción (TxID)",
+            payerNameLabel: "Nombre / Referencia del Pagador",
+            optionalTag: "(Opcional)",
+            proofLabel: "Comprobante de Pago",
+            chooseProof: "Seleccionar comprobante",
+            timerLabel: "CUENTA REGRESIVA (30:00)",
+            timerActiveMsg: "Esperando aprobación del administrador. Si llega a 00:00 sin aprobación, es falso y no se acreditará.",
+            alreadyPaidBtn: "YA REALICÉ EL PAGO",
+            submitDepositBtn: "CONFIRMAR Y ENVIAR DEPÓSITO",
+            pendingTitle: "PAGO ENVIADO — ESPERANDO APROBACIÓN",
+            pendingDesc: "Si el administrador no aprueba antes de 00:00, el depósito será falso y NO se acreditará.",
+            timerRunning: "En revisión por el administrador...",
+            timerExpiredMsg: "Tiempo agotado (00:00) sin aprobación en Django: depósito falso/no válido, NO acreditado.",
+            codeLabel: "Código Aleatorio:",
+            approvedTitle: "¡DEPÓSITO APROBADO!",
+            approvedDesc: "El administrador confirmó tu pago en el sistema. El monto en USD fue acreditado a tu billetera.",
+            expiredTitle: "TIEMPO AGOTADO (30 MIN) — FALSO / NO APROBADO",
+            expiredDesc: "Terminaron los 30 minutos sin aprobación en Django. Esta solicitud es falsa/inválida y NO se acreditó.",
+            backMenu: "VOLVER AL PANEL PRINCIPAL",
+            howToTitle: "CÓMO DEPOSITAR CORRECTAMENTE (PASO A PASO)",
+            guide1Title: "Elige el monto en Dólar ($)",
+            guide1Desc: "Selecciona un monto de nivel configurado en USD o ingresa el monto deseado.",
+            guide2Title: "Selecciona la billetera cripto",
+            guide2Desc: "Elige el canal/billetera de criptomoneda oficial disponible para pagar en dólar.",
+            guide3Title: "Escanea el QR y copia el código aleatorio",
+            guide3Desc: "El QR se genera a partir del código aleatorio real de Django. Cópialo y envía el monto exacto en USD.",
+            guide4Title: "Pega el hash (opcional) y pulsa \"Ya realicé el pago\"",
+            guide4Desc: "Si deseas, pega el hash de transacción y pulsa \"Ya realicé el pago\" para iniciar los 30 minutos.",
+            guide5Title: "Aprobación en Django en 30 minutos",
+            guide5Desc: "Si el administrador aprueba en Django, el contador desaparece y se acredita. Si llega a 00:00 sin aprobar, es falso."
+        },
+        hi: {
+            pageTitle: "USD डिपॉज़िट",
+            stepLevel: "लेवल ($)",
+            stepWallet: "क्रिप्टो वॉलेट",
+            stepPay: "भुगतान",
+            selectLevelAmount: "1. लेवल राशि चुनें (USD)",
+            levelPrefix: "लेवल",
+            orEnterAmount: "या USD ($) में अन्य राशि दर्ज करें:",
+            nextWallets: "क्रिप्टो वॉलेट पर जाएं",
+            selectCryptoWallet: "2. क्रिप्टो वॉलेट चुनें",
+            selectedValueLabel: "चयनित राशि:",
+            backBtn: "वापस",
+            nextQrCode: "QR कोड और विवरण बनाएं",
+            payDetailsTitle: "3. QR कोड, रैंडम कोड और पुष्टि",
+            amountToSend: "भेजने की राशि",
+            channelLabel: "चैनल / वॉलेट",
+            walletAddressLabel: "वॉलेट पता / विवरण",
+            randomCodeLabel: "रैंडम रेफ़रेंस कोड (Django)",
+            copyBtn: "कॉपी",
+            copiedBtn: "कॉपी हुआ",
+            qrCodeRealTitle: "रैंडम कोड से बना QR कोड",
+            txHashLabel: "ट्रांज़ैक्शन हैश (TxID)",
+            payerNameLabel: "भुगतानकर्ता का नाम / संदर्भ",
+            optionalTag: "(वैकल्पिक)",
+            proofLabel: "भुगतान प्रमाण",
+            chooseProof: "प्रमाण फ़ाइल चुनें",
+            timerLabel: "काउंटडाउन टाइमर (30:00)",
+            timerActiveMsg: "एडमिन स्वीकृति की प्रतीक्षा है। बिना स्वीकृति 00:00 होने पर यह फ़र्ज़ी माना जाएगा और क्रेडिट नहीं होगा।",
+            alreadyPaidBtn: "मैंने भुगतान कर दिया है",
+            submitDepositBtn: "डिपॉज़िट की पुष्टि और भेजें",
+            pendingTitle: "भुगतान भेजा गया — स्वीकृति की प्रतीक्षा",
+            pendingDesc: "यदि एडमिन 00:00 से पहले स्वीकृत नहीं करते हैं, तो डिपॉज़िट फ़र्ज़ी माना जाएगा और क्रेडिट नहीं होगा।",
+            timerRunning: "एडमिन द्वारा जांच जारी...",
+            timerExpiredMsg: "Django स्वीकृति के बिना समय समाप्त (00:00): फ़र्ज़ी/अमान्य डिपॉज़िट, क्रेडिट नहीं हुआ।",
+            codeLabel: "रैंडम कोड:",
+            approvedTitle: "डिपॉज़िट स्वीकृत!",
+            approvedDesc: "एडमिन ने सिस्टम में आपका भुगतान पुष्ट किया है। USD राशि आपके वॉलेट में क्रेडिट कर दी गई है।",
+            expiredTitle: "समय समाप्त (30 मिनट) — फ़र्ज़ी / अस्वीकृत",
+            expiredDesc: "Django में एडमिन स्वीकृति के बिना 30 मिनट समाप्त हो गए। यह अनुरोध फ़र्ज़ी/अमान्य है और क्रेडिट नहीं हुआ।",
+            backMenu: "मुख्य पैनल पर वापस जाएं",
+            howToTitle: "सही तरीके से डिपॉज़िट कैसे करें (चरण दर चरण)",
+            guide1Title: "डॉलर ($) राशि चुनें",
+            guide1Desc: "सिस्टम में सेट लेवल राशि चुनें या अपनी इच्छित USD राशि दर्ज करें।",
+            guide2Title: "क्रिप्टो वॉलेट चुनें",
+            guide2Desc: "USD भुगतान के लिए उपलब्ध आधिकारिक क्रिप्टो वॉलेट चुनें।",
+            guide3Title: "QR कोड स्कैन करें और रैंडम कोड कॉपी करें",
+            guide3Desc: "QR कोड Django के वास्तविक रैंडम कोड से बनता है। इसे कॉपी करें और सही USD राशि भेजें।",
+            guide4Title: "हैश पेस्ट करें (वैकल्पिक) और \"मैंने भुगतान कर दिया है\" दबाएं",
+            guide4Desc: "चाहें तो ट्रांज़ैक्शन हैश डालें और 30 मिनट की उलटी गिनती शुरू करने के लिए बटन दबाएं।",
+            guide5Title: "30 मिनट के भीतर Django स्वीकृति",
+            guide5Desc: "Django में स्वीकृति मिलने पर टाइमर हट जाता है और बैलेंस जुड़ जाता है; 00:00 होने पर यह फ़र्ज़ी माना जाता है।"
+        },
+        zh: {
+            pageTitle: "美元充值 USD",
+            stepLevel: "等级 ($)",
+            stepWallet: "加密钱包",
+            stepPay: "支付",
+            selectLevelAmount: "1. 选择等级金额 (USD)",
+            levelPrefix: "等级",
+            orEnterAmount: "或输入其他美元金额 ($)：",
+            nextWallets: "前往加密钱包",
+            selectCryptoWallet: "2. 选择加密钱包",
+            selectedValueLabel: "已选金额：",
+            backBtn: "返回",
+            nextQrCode: "生成二维码与详情",
+            payDetailsTitle: "3. 二维码、随机码与确认",
+            amountToSend: "需发送金额",
+            channelLabel: "通道 / 钱包",
+            walletAddressLabel: "钱包地址 / 信息",
+            randomCodeLabel: "随机参考码 (Django)",
+            copyBtn: "复制",
+            copiedBtn: "已复制",
+            qrCodeRealTitle: "由随机码生成的二维码",
+            txHashLabel: "交易哈希 (TxID)",
+            payerNameLabel: "付款人名称 / 备注",
+            optionalTag: "（可选）",
+            proofLabel: "付款凭证",
+            chooseProof: "选择凭证文件",
+            timerLabel: "倒计时 (30:00)",
+            timerActiveMsg: "等待管理员审核。若倒计时归零仍未批准，则视为无效/虚假且不会入账。",
+            alreadyPaidBtn: "我已完成付款",
+            submitDepositBtn: "确认并提交充值",
+            pendingTitle: "已提交付款 — 等待审核",
+            pendingDesc: "若管理员未在 00:00 前批准，该充值将被标记为虚假且不会入账。",
+            timerRunning: "管理员正在审核中...",
+            timerExpiredMsg: "已超时 (00:00) 且 Django 未批准：充值无效/虚假，未入账。",
+            codeLabel: "随机码：",
+            approvedTitle: "充值已批准！",
+            approvedDesc: "管理员已在系统中确认您的付款，美元金额已计入您的钱包。",
+            expiredTitle: "已超时 (30 分钟) — 无效/虚假或未批准",
+            expiredDesc: "30 分钟内未获得 Django 管理员批准，此请求无效/虚假且不会入账。",
+            backMenu: "返回主面板",
+            howToTitle: "如何正确完成充值（分步说明）",
+            guide1Title: "选择美元 ($) 金额",
+            guide1Desc: "选择系统配置的美元等级金额，或输入您要充值的美元金额。",
+            guide2Title: "选择加密钱包",
+            guide2Desc: "选择用于美元支付的官方加密货币钱包通道。",
+            guide3Title: "扫描二维码并复制随机码",
+            guide3Desc: "二维码由 Django 真实的随机码生成。请复制随机码/地址并发送准确美元金额。",
+            guide4Title: "粘贴哈希（可选）并点击“我已完成付款”",
+            guide4Desc: "可选择填写交易哈希，点击“我已完成付款”后开始 30 分钟倒计时。",
+            guide5Title: "30 分钟内在 Django 获得批准",
+            guide5Desc: "若在 Django 中获批，倒计时消失并入账；若归零未获批，则视为无效且不入账。"
+        }
+    };
 
-        // Lógica de Seleção de Valor
-        document.querySelectorAll('.amount-card').forEach(card => {
-            card.addEventListener('click', () => {
-                document.querySelectorAll('.amount-card').forEach(c => c.classList.remove('active'));
-                card.classList.add('active');
-                manualInput.value = ""; 
-                amountHidden.value = card.dataset.value;
-                next1.disabled = false;
-            });
-        });
+    let currentLang = localStorage.getItem("usd_deposit_lang") || "pt";
 
-        manualInput.addEventListener('input', (e) => {
-            document.querySelectorAll('.amount-card').forEach(c => c.classList.remove('active'));
-            amountHidden.value = e.target.value;
-            next1.disabled = (e.target.value <= 0);
-        });
+    function changeLanguage(lang) {
+        if (!TRANSLATIONS[lang]) lang = "pt";
+        currentLang = lang;
+        localStorage.setItem("usd_deposit_lang", lang);
 
-        next1.addEventListener('click', () => {
-            document.getElementById('summary-amount').innerText = amountHidden.value;
-            goToStep(2);
-        });
-
-        // Lógica de Seleção de Banco
-        document.querySelectorAll('.bank-item-modern').forEach(item => {
-            item.addEventListener('click', () => {
-                document.querySelectorAll('.bank-item-modern').forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                const bankId = item.dataset.bankId;
-                document.getElementById('id_selected_bank').value = bankId;
-                document.getElementById('bank-data-display').style.display = 'block';
-                document.querySelectorAll('.details-box').forEach(d => d.style.display = 'none');
-                document.getElementById('details-' + bankId).style.display = 'block';
-                next2.disabled = false;
-            });
-        });
-
-        next2.addEventListener('click', () => goToStep(3));
-
-        // Controle do Stepper
-        function goToStep(step) {
-            document.querySelectorAll('.step-content').forEach(el => el.style.display = 'none');
-            document.getElementById('step-' + step).style.display = 'block';
-            if(step >= 2) {
-                document.getElementById('unit-1').classList.add('done');
-                document.getElementById('circle-1').innerHTML = '<i class="fas fa-check"></i>';
-                document.getElementById('unit-2').classList.add('active');
-            }
-            if(step >= 3) {
-                document.getElementById('unit-2').classList.add('done');
-                document.getElementById('circle-2').innerHTML = '<i class="fas fa-check"></i>';
-                document.getElementById('unit-3').classList.add('active');
-            }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        const wrapper = document.getElementById("usdDepositPage");
+        if (wrapper) {
+            wrapper.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
         }
 
-        // Lógica de Upload com Feedback Visual
-        document.getElementById('file-upload').addEventListener('change', function() {
-            const idleState = document.getElementById('upload-idle');
-            const activeState = document.getElementById('upload-active');
-            const display = document.getElementById('file-name-display');
-            const zone = document.querySelector('.upload-zone-premium');
+        const selectEl = document.getElementById("languageSelect");
+        if (selectEl && selectEl.value !== lang) {
+            selectEl.value = lang;
+        }
 
-            if (this.files && this.files[0]) {
-                idleState.style.display = 'none';
-                activeState.style.display = 'block';
-                display.innerText = this.files[0].name;
-                zone.style.borderColor = '#22c55e';
-                zone.style.background = 'rgba(34, 197, 94, 0.05)';
-            } else {
-                idleState.style.display = 'block';
-                activeState.style.display = 'none';
-                zone.style.borderColor = 'rgba(192, 132, 252, 0.4)';
-                zone.style.background = 'rgba(0, 0, 0, 0.2)';
+        const dict = TRANSLATIONS[lang];
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+            const key = el.getAttribute("data-i18n");
+            if (dict[key]) {
+                el.textContent = dict[key];
             }
         });
-    });
-
-    // Função de Copiar IBAN
-    function copyText(id) {
-        const input = document.getElementById(id);
-        input.select();
-        navigator.clipboard.writeText(input.value);
-        const btn = event.currentTarget;
-        const oldHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i>';
-        btn.style.background = '#22c55e';
-        setTimeout(() => { 
-            btn.innerHTML = oldHtml; 
-            btn.style.background = '';
-        }, 2000);
     }
+
+    function copyFieldValue(inputId, btnEl) {
+        const input = document.getElementById(inputId);
+        if (!input || !input.value) return;
+        navigator.clipboard.writeText(input.value);
+        const span = btnEl.querySelector("span");
+        const prevText = span ? span.textContent : "";
+        if (span) span.textContent = TRANSLATIONS[currentLang].copiedBtn;
+        setTimeout(() => {
+            if (span) span.textContent = prevText || TRANSLATIONS[currentLang].copyBtn;
+        }, 1600);
+    }
+
+    function renderRealQrFromRandomCode(codeText) {
+        const container = document.getElementById("realQrCodeContainer");
+        const caption = document.getElementById("qrCaptionCode");
+        if (!container) return;
+        container.innerHTML = "";
+        if (caption) caption.textContent = codeText || "—";
+        if (!codeText) return;
+        if (typeof QRCode !== "undefined") {
+            new QRCode(container, {
+                text: codeText,
+                width: 144,
+                height: 144,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+    }
+
+    let countdownInterval = null;
+    function startCountdown30Min(secondsLeft, displayEl, statusEl, onExpireCallback) {
+        if (countdownInterval) clearInterval(countdownInterval);
+        let remaining = typeof secondsLeft === "number" && secondsLeft > 0 ? secondsLeft : 30 * 60;
+
+        function tick() {
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            const formatted = String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+            if (displayEl) displayEl.textContent = formatted;
+
+            if (remaining <= 0) {
+                clearInterval(countdownInterval);
+                if (displayEl) displayEl.classList.add("expired-digits");
+                if (statusEl) statusEl.textContent = TRANSLATIONS[currentLang].timerExpiredMsg;
+                if (typeof onExpireCallback === "function") onExpireCallback();
+                return;
+            }
+            remaining -= 1;
+        }
+
+        tick();
+        countdownInterval = setInterval(tick, 1000);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        changeLanguage(currentLang);
+
+        const isApproved = {{ deposit_approved|default:False|yesno:"true,false" }};
+        const isExpired = {{ deposit_expired|default:False|yesno:"true,false" }};
+        const isPending = {{ deposit_success|default:False|yesno:"true,false" }};
+        const djangoRandomCode = "{{ random_code|default:''|escapejs }}";
+        const djangoRemainingSec = {{ remaining_seconds|default:1800 }};
+
+        if (isApproved) {
+            if (countdownInterval) clearInterval(countdownInterval);
+            return;
+        }
+
+        if (isExpired) {
+            return;
+        }
+
+        if (isPending) {
+            startCountdown30Min(
+                djangoRemainingSec,
+                document.getElementById("countdownDisplay"),
+                document.getElementById("countdownStatusText")
+            );
+            return;
+        }
+
+        const amountHidden = document.getElementById("id_amount");
+        const manualInput = document.getElementById("manualAmountInput");
+        const btnToWallets = document.getElementById("btnToWallets");
+        const btnBackToStep1 = document.getElementById("btnBackToStep1");
+        const btnToPayment = document.getElementById("btnToPayment");
+        const selectedBankHidden = document.getElementById("id_selected_bank");
+        const randomCodeHidden = document.getElementById("id_random_code");
+        const paymentConfirmedHidden = document.getElementById("id_payment_confirmed");
+        const btnAlreadyPaid = document.getElementById("btnAlreadyPaid");
+        const proofInput = document.getElementById("proofFileInput");
+        const proofNameEl = document.getElementById("proofFileName");
+
+        function setStep(stepNum) {
+            [1, 2, 3].forEach((n) => {
+                const sec = document.getElementById("section-" + n);
+                const ind = document.getElementById("step-ind-" + n);
+                if (sec) sec.style.display = n === stepNum ? "block" : "none";
+                if (ind) {
+                    ind.classList.remove("active", "done");
+                    if (n < stepNum) ind.classList.add("done");
+                    if (n === stepNum) ind.classList.add("active");
+                }
+            });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        document.querySelectorAll(".level-usd-card").forEach((card) => {
+            card.addEventListener("click", () => {
+                document.querySelectorAll(".level-usd-card").forEach((c) => c.classList.remove("selected"));
+                card.classList.add("selected");
+                if (manualInput) manualInput.value = "";
+                const val = parseFloat(card.getAttribute("data-amount"));
+                if (amountHidden) amountHidden.value = isNaN(val) ? "" : val;
+                if (btnToWallets) btnToWallets.disabled = !(val > 0);
+            });
+        });
+
+        if (manualInput) {
+            manualInput.addEventListener("input", () => {
+                document.querySelectorAll(".level-usd-card").forEach((c) => c.classList.remove("selected"));
+                const val = parseFloat(manualInput.value);
+                if (amountHidden) amountHidden.value = isNaN(val) ? "" : val;
+                if (btnToWallets) btnToWallets.disabled = !(val > 0);
+            });
+        }
+
+        if (btnToWallets) {
+            btnToWallets.addEventListener("click", () => {
+                const amt = parseFloat(amountHidden.value || "0").toFixed(2);
+                const disp = document.getElementById("displaySelectedAmount");
+                if (disp) disp.textContent = amt;
+                setStep(2);
+            });
+        }
+
+        if (btnBackToStep1) {
+            btnBackToStep1.addEventListener("click", () => setStep(1));
+        }
+
+        let activeWalletData = null;
+        document.querySelectorAll(".crypto-wallet-card").forEach((wCard) => {
+            wCard.addEventListener("click", () => {
+                document.querySelectorAll(".crypto-wallet-card").forEach((c) => c.classList.remove("selected"));
+                wCard.classList.add("selected");
+                activeWalletData = {
+                    id: wCard.getAttribute("data-wallet-id") || "",
+                    name: wCard.getAttribute("data-wallet-name") || "",
+                    address: wCard.getAttribute("data-wallet-address") || "",
+                    randomCode: wCard.getAttribute("data-random-code") || djangoRandomCode || ""
+                };
+                if (selectedBankHidden) selectedBankHidden.value = activeWalletData.id;
+                if (btnToPayment) btnToPayment.disabled = false;
+            });
+        });
+
+        if (btnToPayment) {
+            btnToPayment.addEventListener("click", () => {
+                if (!activeWalletData) return;
+                const amt = parseFloat(amountHidden.value || "0").toFixed(2);
+                const finalAmtEl = document.getElementById("finalPayAmount");
+                const finalWalletEl = document.getElementById("finalWalletName");
+                const addrField = document.getElementById("walletAddressField");
+                const randField = document.getElementById("randomCodeField");
+
+                if (finalAmtEl) finalAmtEl.textContent = amt;
+                if (finalWalletEl) finalWalletEl.textContent = activeWalletData.name;
+                if (addrField) addrField.value = activeWalletData.address;
+
+                const codeToUse = activeWalletData.randomCode || (randField ? randField.value : "");
+                if (randField) randField.value = codeToUse;
+                if (randomCodeHidden) randomCodeHidden.value = codeToUse;
+
+                renderRealQrFromRandomCode(codeToUse);
+                setStep(3);
+            });
+        }
+
+        if (proofInput) {
+            proofInput.addEventListener("change", () => {
+                if (proofInput.files && proofInput.files[0] && proofNameEl) {
+                    proofNameEl.textContent = proofInput.files[0].name;
+                }
+            });
+        }
+
+        if (btnAlreadyPaid) {
+            btnAlreadyPaid.addEventListener("click", () => {
+                if (paymentConfirmedHidden) paymentConfirmedHidden.value = "1";
+                const timerBox = document.getElementById("liveTimerBox");
+                if (timerBox) timerBox.style.display = "block";
+
+                startCountdown30Min(
+                    30 * 60,
+                    document.getElementById("liveTimerDigits"),
+                    document.getElementById("liveTimerMsg"),
+                    () => {
+                        if (paymentConfirmedHidden) paymentConfirmedHidden.value = "expired";
+                    }
+                );
+            });
+        }
+    });
 </script>
 {% endblock %}
