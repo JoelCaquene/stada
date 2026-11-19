@@ -1,245 +1,777 @@
 {% load static %}
 {% load i18n %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}">
+<html lang="{{ LANGUAGE_CODE|default:'pt' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>stada - {% trans "Login" %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+    <title>STADA — {% trans "Login" %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <style>
         :root {
-            --bg-purple: #4a00ac; 
-            --btn-gold-start: #ccab66; 
-            --btn-gold-end: #937438;
-            --btn-black: #000000;
-            --input-bg: #f3f7ff; 
-            --logo-red: #ff0000; 
+            --bg-void: #07090b;
+            --bg-elevated: #111519;
+            --bg-input: #0e1216;
+            --border-subtle: rgba(255, 255, 255, 0.14);
+            --border-focus: #38f2d2;
+            --cyan-main: #38f2d2;
+            --cyan-bright: #5ffae0;
+            --cyan-glow: rgba(56, 242, 210, 0.35);
+            --text-primary: #ffffff;
+            --text-secondary: #8c96a4;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-purple);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-void);
+            color: var(--text-primary);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 50% 12%, rgba(56, 242, 210, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 15% 88%, rgba(37, 99, 235, 0.08) 0%, transparent 45%);
+            background-attachment: fixed;
         }
 
-        .main-wrapper {
-            width: 100%;
-            max-width: 450px;
-            height: 100vh;
-            background-color: var(--bg-purple);
-            position: relative;
+        /* ================= TELA DE LOADING (1% A 100%) ================= */
+        #stada-loader {
+            position: fixed;
+            inset: 0;
+            background: #050709;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        #stada-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-brand {
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .loader-brand-name {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            color: var(--cyan-main);
+        }
+
+        .loader-percent {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 12px;
+        }
+
+        .loader-track {
+            width: 100%;
+            max-width: 240px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 99px;
             overflow: hidden;
         }
 
-        /* AJUSTE DO TOPO BRANCO */
-        .top-wave-container {
-            width: 100%;
-            background-color: #ffffff;
-            height: 32vh; /* Ajustado para dar espaço à curva */
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1;
+        .loader-fill {
+            width: 1%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan-main), #06b6d4);
+            border-radius: 99px;
+            box-shadow: 0 0 14px var(--cyan-glow);
+            transition: width 0.07s linear;
         }
 
-        /* SVG REFEITO PARA IMITAR A CURVA DA IMAGEM E A LINHA VERMELHA */
-        .wave-svg {
-            position: absolute;
-            bottom: -58px; /* Encaixe preciso */
-            left: 0;
-            width: 100%;
-            height: 80px;
-        }
-
-        .header-section .logo-text {
-            font-family: 'Noto Serif', serif; 
-            font-size: 80px; 
-            color: var(--logo-red);
-            font-weight: 700;
+        .loader-label {
+            margin-top: 12px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
             text-transform: uppercase;
-            position: relative;
-            z-index: 2;
+            color: var(--text-secondary);
         }
 
-        /* CARD DE LOGIN */
-        .login-card {
-            background: #ffffff;
-            width: 90%; 
-            border-radius: 35px; 
-            padding: 40px 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 10;
-            margin-top: 50px; /* Deslocado para baixo da curva */
-        }
-
-        .form-group { position: relative; margin-bottom: 20px; }
-
-        .form-group i.input-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #8e8e8e;
-            font-size: 1.2rem;
-        }
-
-        .auth-form input {
+        /* ================= CONTAINER PRINCIPAL ================= */
+        .app-container {
             width: 100%;
-            padding: 18px 20px 18px 60px; 
-            border: none;
-            background-color: var(--input-bg);
-            border-radius: 12px;
-            font-size: 1.1rem; 
-            outline: none;
+            max-width: 440px;
+            padding: 18px 20px 36px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
+        /* TOPO COM BOTÃO DE IDIOMA (GLOBO) */
+        .top-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .top-title-tag {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .globe-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .globe-btn:hover,
+        .globe-btn.active {
+            background: rgba(56, 242, 210, 0.14);
+            border-color: var(--cyan-main);
+            color: var(--cyan-main);
+        }
+
+        /* MENU DROPDOWN AUTOMÁTICO DE IDIOMAS */
+        .lang-dropdown {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 225px;
+            background: #13181e;
+            border: 1px solid rgba(56, 242, 210, 0.28);
+            border-radius: 16px;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .lang-dropdown.open {
+            display: flex;
+            animation: fadeDrop 0.16s ease-out;
+        }
+
+        @keyframes fadeDrop {
+            from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .lang-option {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.84rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .lang-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .lang-option.selected {
+            background: rgba(56, 242, 210, 0.14);
+            color: var(--cyan-main);
+            font-weight: 700;
+        }
+
+        .lang-option .code-badge {
+            font-size: 0.72rem;
+            opacity: 0.75;
+            font-weight: 600;
+        }
+
+        /* LOGOTIPO STADA */
+        .logo-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 6px 0 26px;
+        }
+
+        .stada-emblem {
+            width: 92px;
+            height: 92px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 0 18px rgba(56, 242, 210, 0.25));
+        }
+
+        .stada-wordmark {
+            margin-top: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        /* FORMULÁRIO DE LOGIN */
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .field-box {
+            width: 100%;
+            min-height: 54px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+
+        .field-box:focus-within {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(56, 242, 210, 0.14);
+        }
+
+        .field-icon {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            width: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+            transition: color 0.2s ease;
+        }
+
+        .field-box:focus-within .field-icon {
+            color: var(--cyan-main);
+        }
+
+        /* SELETOR DE INDICADOR DE PAÍS */
+        .country-select-wrap {
+            display: flex;
+            align-items: center;
+            padding-right: 10px;
+            margin-right: 10px;
+            border-right: 1px solid rgba(255, 255, 255, 0.14);
+            position: relative;
+        }
+
+        .country-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            padding-right: 18px;
+            cursor: pointer;
+            outline: none;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .country-select option {
+            background: #111519;
+            color: #ffffff;
+        }
+
+        .country-chevron {
+            position: absolute;
+            right: 8px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .auth-form input[type="text"],
+        .auth-form input[type="tel"],
+        .auth-form input[type="password"] {
+            flex: 1;
+            width: 100%;
+            height: 52px;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.94rem;
+            font-weight: 500;
+        }
+
+        .auth-form input::placeholder {
+            color: #6b7482;
+            font-weight: 400;
+        }
+
+        .eye-toggle {
+            background: transparent;
+            border: none;
+            color: #6b7482;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 6px;
+            margin-left: 6px;
+            transition: color 0.2s ease;
+        }
+
+        .eye-toggle:hover {
+            color: var(--text-primary);
+        }
+
+        /* OPÇÃO LEMBRAR */
         .options-row {
             display: flex;
             align-items: center;
-            margin: 20px 0 30px 5px;
-            color: #9ea4b0;
-            font-size: 0.9rem;
+            gap: 10px;
+            margin: 2px 0 4px 4px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
         }
 
         .options-row input[type="checkbox"] {
-            margin-right: 10px;
-            accent-color: var(--bg-purple); 
-            width: 18px;
-            height: 18px;
+            accent-color: var(--cyan-main);
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
         }
 
-        .btn-entrar {
+        .options-row label {
+            cursor: pointer;
+        }
+
+        /* BOTÃO PRINCIPAL ENTRAR */
+        .btn-submit {
+            margin-top: 8px;
             width: 100%;
-            padding: 18px;
+            height: 52px;
             border: none;
-            border-radius: 40px; 
-            background: linear-gradient(to bottom, var(--btn-gold-start), var(--btn-gold-end));
-            color: white;
-            font-size: 1.2rem;
-            font-weight: 600;
+            border-radius: 999px;
+            background: linear-gradient(180deg, var(--cyan-bright) 0%, var(--cyan-main) 100%);
+            color: #061311;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 0 24px rgba(56, 242, 210, 0.35), 0 8px 20px rgba(0, 0, 0, 0.45);
+            transition: transform 0.14s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
 
-        .btn-registrar {
-            width: 100%;
-            padding: 18px;
-            margin-top: 15px;
-            border-radius: 40px; 
-            background-color: var(--btn-black);
-            color: white;
-            font-size: 1.2rem;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
+        .btn-submit:hover {
+            filter: brightness(1.04);
+            box-shadow: 0 0 30px rgba(56, 242, 210, 0.5), 0 10px 24px rgba(0, 0, 0, 0.5);
         }
 
-        /* ÍCONE DO CAMINHÃO IGUAL À FOTO */
-        .btn-registrar img {
-            width: 40px;
-            margin-left: 10px;
+        .btn-submit:active {
+            transform: scale(0.985);
         }
 
-        .or-divider { text-align: center; color: #d1d1d1; margin: 15px 0; }
-
-        .support-container {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
+        /* RODAPÉ CADASTRO */
+        .footer-register {
+            margin-top: 22px;
             text-align: center;
-            text-decoration: none;
-            z-index: 20;
+            font-size: 0.88rem;
+            color: var(--text-secondary);
         }
 
-        .support-container img { width: 50px; display: block; margin: 0 auto; }
-        .support-container span { color: white; font-size: 0.8rem; }
+        .footer-register a {
+            color: var(--cyan-main);
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 4px;
+        }
 
-        .toggle-password {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #8e8e8e;
+        .footer-register a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <div class="main-wrapper">
-        <div class="top-wave-container">
-            <div class="header-section">
-                <div class="logo-text">stada</div>
-            </div>
-            <svg class="wave-svg" viewBox="0 0 500 150" preserveAspectRatio="none">
-                <path d="M0,45 C150,140 350,-40 500,45 L500,0 L0,0 Z" fill="none" stroke="#ff0000" stroke-width="3"></path>
-                <path d="M0,50 C150,150 350,-50 500,50 L500,0 L0,0 Z" fill="#ffffff"></path>
+    <!-- LOADING PROFISSIONAL (1% A 100%) -->
+    <div id="stada-loader">
+        <div class="loader-brand">
+            <svg width="46" height="46" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,6 90,28 90,72 50,94 10,72 10,28" stroke="#38f2d2" stroke-width="5" fill="rgba(56,242,210,0.08)"/>
+                <path d="M32 62L50 28L68 62H56L50 49L44 62H32Z" fill="#38f2d2"/>
+                <circle cx="50" cy="72" r="5" fill="#ffffff"/>
             </svg>
+            <span class="loader-brand-name">STADA</span>
         </div>
+        <div class="loader-percent" id="loaderPercent">1%</div>
+        <div class="loader-track">
+            <div class="loader-fill" id="loaderFill"></div>
+        </div>
+        <div class="loader-label" id="loaderLabel">STADA SYSTEM • LOADING</div>
+    </div>
 
-        <div class="login-card">
-            <form method="post" class="auth-form">
-                {% csrf_token %}
-                <div class="form-group">
-                    <i class="fa-solid fa-user input-icon"></i>
-                    {{ form.username }}
-                </div>
-                <div class="form-group">
-                    <i class="fa-solid fa-lock input-icon"></i>
-                    {{ form.password }}
-                    <i class="fa-solid fa-eye-slash toggle-password" id="togglePass"></i>
-                </div>
-                <div class="options-row">
-                    <input type="checkbox" id="remember" checked>
-                    <label for="remember">{% trans "Lembrar ID de Usuário/Senha" %}</label>
-                </div>
-                <button type="submit" class="btn-entrar">
-                    {% trans "Entrando..." %}
+    <div class="app-container">
+        <!-- CABEÇALHO COM BOTÃO DE IDIOMA NO TOPO -->
+        <header class="top-header">
+            <span class="top-title-tag" data-i18n="top_tag">{% trans "LOGIN" %}</span>
+
+            <button type="button" class="globe-btn" id="globeBtn" aria-label="Select Language">
+                <i class="fa-solid fa-globe"></i>
+            </button>
+
+            <!-- SELETOR DE IDIOMA QUE MUDA AUTOMATICAMENTE AO SELECIONAR -->
+            <div class="lang-dropdown" id="langDropdown">
+                <button type="button" class="lang-option" data-locale="pt-AO">
+                    <span>🇦🇴 Angola (PT)</span>
+                    <span class="code-badge">+244</span>
                 </button>
-                <div class="or-divider">or</div>
-                <a href="{% url 'cadastro' %}" class="btn-registrar">
-                    {% trans "Registar-se" %}
-                    <img src="https://cdn-icons-png.flaticon.com/512/2554/2554978.png" alt="truck">
-                </a>
-            </form>
+                <button type="button" class="lang-option" data-locale="pt-PT">
+                    <span>🇵🇹 Portugal (PT)</span>
+                    <span class="code-badge">+351</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="pt-BR">
+                    <span>🇧🇷 Brasil (PT)</span>
+                    <span class="code-badge">+55</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="en-CA">
+                    <span>🇨🇦 Canada (EN)</span>
+                    <span class="code-badge">+1</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="ar-EG">
+                    <span>🇪🇬 Egypt (العربية)</span>
+                    <span class="code-badge">+20</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="hi-IN">
+                    <span>🇮🇳 India (हिन्दी / EN)</span>
+                    <span class="code-badge">+91</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="en-NG">
+                    <span>🇳🇬 Nigeria (EN)</span>
+                    <span class="code-badge">+234</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="pt-MZ">
+                    <span>🇲🇿 Moçambique (PT)</span>
+                    <span class="code-badge">+258</span>
+                </button>
+                <button type="button" class="lang-option" data-locale="es-ES">
+                    <span>🇪🇸 España (ES)</span>
+                    <span class="code-badge">+34</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- LOGOTIPO STADA -->
+        <div class="logo-section">
+            <div class="stada-emblem">
+                <svg width="88" height="88" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,6 88,28 88,72 50,94 12,72 12,28" stroke="#38f2d2" stroke-width="5.5" fill="rgba(56, 242, 210, 0.06)"/>
+                    <polygon points="50,18 77,34 77,66 50,82 23,66 23,34" stroke="rgba(56, 242, 210, 0.35)" stroke-width="2" fill="none"/>
+                    <path d="M31 63L50 27L69 63H57L50 49L43 63H31Z" fill="#38f2d2"/>
+                    <rect x="46" y="68" width="8" height="6" rx="2" fill="#ffffff"/>
+                </svg>
+            </div>
+            <div class="stada-wordmark">STADA</div>
         </div>
 
-        <a href="#" class="support-container">
-            <img src="https://cdn-icons-png.flaticon.com/512/6009/6009132.png" alt="Suporte">
-            <span>{% trans "Suporte Online" %}</span>
-        </a>
+        <!-- FORMULÁRIO DE LOGIN -->
+        <form method="post" class="auth-form" id="loginForm">
+            {% csrf_token %}
+
+            <!-- INDICADOR DE PAÍS + NÚMERO (APENAS NÚMEROS) -->
+            <div class="field-box">
+                <span class="field-icon"><i class="fa-solid fa-phone"></i></span>
+                <div class="country-select-wrap">
+                    <select class="country-select" name="country_code" id="countryCodeSelect">
+                        <option value="+244" data-locale="pt-AO">+244</option>
+                        <option value="+351" data-locale="pt-PT">+351</option>
+                        <option value="+55"  data-locale="pt-BR">+55</option>
+                        <option value="+1"   data-locale="en-CA">+1</option>
+                        <option value="+20"  data-locale="ar-EG">+20</option>
+                        <option value="+91"  data-locale="hi-IN">+91</option>
+                        <option value="+234" data-locale="en-NG">+234</option>
+                        <option value="+258" data-locale="pt-MZ">+258</option>
+                        <option value="+34"  data-locale="es-ES">+34</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down country-chevron"></i>
+                </div>
+                {{ form.username }}
+            </div>
+
+            <!-- PALAVRA PASSE -->
+            <div class="field-box">
+                <span class="field-icon"><i class="fa-solid fa-lock"></i></span>
+                {{ form.password }}
+                <button type="button" class="eye-toggle" id="togglePass" aria-label="Toggle Password">
+                    <i class="fa-solid fa-eye-slash"></i>
+                </button>
+            </div>
+
+            <!-- LEMBRAR CREDENCIAIS -->
+            <div class="options-row">
+                <input type="checkbox" id="remember" checked>
+                <label for="remember" data-i18n="remember_label">{% trans "Lembrar ID de Usuário/Senha" %}</label>
+            </div>
+
+            <!-- BOTÃO ENTRAR -->
+            <button type="submit" class="btn-submit" data-i18n="btn_login">
+                {% trans "Entrar" %}
+            </button>
+        </form>
+
+        <!-- RODAPÉ CADASTRO -->
+        <div class="footer-register">
+            <span data-i18n="no_account">{% trans "Não tem uma conta?" %}</span>
+            <a href="{% url 'cadastro' %}" data-i18n="btn_register">{% trans "Registar-se" %}</a>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // 1. LOADING DE 1% A 100% ANTES DE ACESSAR / SUBMETER
+        function runStadaLoader(onComplete, stepDelay = 12) {
+            const loader = document.getElementById('stada-loader');
+            const percentEl = document.getElementById('loaderPercent');
+            const fillEl = document.getElementById('loaderFill');
+            const labelEl = document.getElementById('loaderLabel');
+
+            loader.classList.remove('hidden');
+            let count = 1;
+
+            const timer = setInterval(() => {
+                percentEl.textContent = count + '%';
+                fillEl.style.width = count + '%';
+
+                if (count < 40) {
+                    labelEl.textContent = 'STADA • AUTHENTICATING';
+                } else if (count < 80) {
+                    labelEl.textContent = 'STADA • SYNCING SESSION';
+                } else {
+                    labelEl.textContent = 'STADA • OPENING MENU';
+                }
+
+                if (count >= 100) {
+                    clearInterval(timer);
+                    setTimeout(() => {
+                        loader.classList.add('hidden');
+                        if (typeof onComplete === 'function') onComplete();
+                    }, 160);
+                }
+                count++;
+            }, stepDelay);
+        }
+
+        // 2. IDIOMAS E INDICADORES (AO, PT, BR, CA, EG, IN, NG, MZ, ES)
+        const translations = {
+            pt: {
+                top_tag: "LOGIN",
+                phone_ph: "940000000",
+                pass_ph: "••••••••••",
+                remember_label: "Lembrar ID de Usuário/Senha",
+                btn_login: "Entrar",
+                no_account: "Não tem uma conta?",
+                btn_register: "Registar-se"
+            },
+            en: {
+                top_tag: "SIGN IN",
+                phone_ph: "940000000",
+                pass_ph: "••••••••••",
+                remember_label: "Remember User ID / Password",
+                btn_login: "Sign In",
+                no_account: "Don't have an account?",
+                btn_register: "Sign Up"
+            },
+            es: {
+                top_tag: "INICIAR SESIÓN",
+                phone_ph: "940000000",
+                pass_ph: "••••••••••",
+                remember_label: "Recordar ID de Usuario/Contraseña",
+                btn_login: "Entrar",
+                no_account: "¿No tienes una cuenta?",
+                btn_register: "Registrarse"
+            },
+            ar: {
+                top_tag: "تسجيل الدخول",
+                phone_ph: "940000000",
+                pass_ph: "••••••••••",
+                remember_label: "تذكر المعرف وكلمة المرور",
+                btn_login: "دخول",
+                no_account: "ليس لديك حساب؟",
+                btn_register: "إنشاء حساب"
+            },
+            hi: {
+                top_tag: "लॉग इन",
+                phone_ph: "940000000",
+                pass_ph: "••••••••••",
+                remember_label: "यूज़र आईडी / पासवर्ड याद रखें",
+                btn_login: "लॉग इन करें",
+                no_account: "क्या आपका खाता नहीं है?",
+                btn_register: "पंजीकरण करें"
+            }
+        };
+
+        const localeToLang = {
+            "pt-AO": "pt",
+            "pt-PT": "pt",
+            "pt-BR": "pt",
+            "pt-MZ": "pt",
+            "en-CA": "en",
+            "en-NG": "en",
+            "es-ES": "es",
+            "ar-EG": "ar",
+            "hi-IN": "hi"
+        };
+
+        const globeBtn = document.getElementById('globeBtn');
+        const langDropdown = document.getElementById('langDropdown');
+        const langOptions = document.querySelectorAll('.lang-option');
+        const countrySelect = document.getElementById('countryCodeSelect');
+
+        globeBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const isOpen = langDropdown.classList.toggle('open');
+            globeBtn.classList.toggle('active', isOpen);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!langDropdown.contains(e.target) && !globeBtn.contains(e.target)) {
+                langDropdown.classList.remove('open');
+                globeBtn.classList.remove('active');
+            }
+        });
+
+        function applyLocale(locale) {
+            const langCode = localeToLang[locale] || "en";
+            const dict = translations[langCode];
             const userInp = document.querySelector('input[name="username"]');
             const passInp = document.querySelector('input[name="password"]');
-            if(userInp) userInp.placeholder = '940000000';
-            if(passInp) passInp.placeholder = '..........';
 
-            const togglePass = document.getElementById('togglePass');
-            if(togglePass && passInp) {
-                togglePass.addEventListener('click', function() {
-                    const type = passInp.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passInp.setAttribute('type', type);
-                    this.classList.toggle('fa-eye');
-                    this.classList.toggle('fa-eye-slash');
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.textContent = dict[key];
+            });
+
+            if (userInp) userInp.placeholder = dict.phone_ph;
+            if (passInp) passInp.placeholder = dict.pass_ph;
+
+            langOptions.forEach(opt => {
+                opt.classList.toggle('selected', opt.getAttribute('data-locale') === locale);
+            });
+
+            for (let i = 0; i < countrySelect.options.length; i++) {
+                if (countrySelect.options[i].getAttribute('data-locale') === locale) {
+                    countrySelect.selectedIndex = i;
+                    break;
+                }
+            }
+
+            localStorage.setItem('stada_locale', locale);
+            document.documentElement.lang = langCode;
+        }
+
+        langOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                const selectedLocale = this.getAttribute('data-locale');
+                applyLocale(selectedLocale);
+                langDropdown.classList.remove('open');
+                globeBtn.classList.remove('active');
+            });
+        });
+
+        countrySelect.addEventListener('change', function () {
+            const locale = this.options[this.selectedIndex].getAttribute('data-locale');
+            applyLocale(locale);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const userInp = document.querySelector('input[name="username"]');
+            const passInp = document.querySelector('input[name="password"]');
+
+            // Configura campo de usuário para aceitar apenas números
+            if (userInp) {
+                userInp.setAttribute('inputmode', 'numeric');
+                userInp.setAttribute('pattern', '[0-9]*');
+                userInp.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '');
+                });
+                userInp.addEventListener('keypress', function (e) {
+                    if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                    }
                 });
             }
+
+            // Mostrar / ocultar senha
+            const togglePass = document.getElementById('togglePass');
+            if (togglePass && passInp) {
+                togglePass.addEventListener('click', function () {
+                    const icon = this.querySelector('i');
+                    if (passInp.getAttribute('type') === 'password') {
+                        passInp.setAttribute('type', 'text');
+                        icon.classList.replace('fa-eye-slash', 'fa-eye');
+                    } else {
+                        passInp.setAttribute('type', 'password');
+                        icon.classList.replace('fa-eye', 'fa-eye-slash');
+                    }
+                });
+            }
+
+            const saved = localStorage.getItem('stada_locale');
+            applyLocale(saved && localeToLang[saved] ? saved : 'pt-AO');
+            runStadaLoader(null, 11);
+        });
+
+        // Submissão com loading de 1% a 100% para o menu
+        const loginForm = document.getElementById('loginForm');
+        loginForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            runStadaLoader(() => {
+                loginForm.submit();
+            }, 10);
         });
     </script>
 </body>
