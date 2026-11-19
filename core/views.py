@@ -165,7 +165,7 @@ def approve_deposit(request, deposit_id):
         messages.success(request, f'Depósito de {deposit.amount} aprovado para {deposit.user.phone_number}.')
     return redirect('renda')
 
-# --- SAQUE ---
+# -- SAQUE --
 @login_required
 def saque(request):
     MIN_WITHDRAWAL_AMOUNT = 3
@@ -243,7 +243,7 @@ def saque(request):
         'can_withdraw_today': can_withdraw_today,
     }
     return render(request, 'saque.html', context)
-        
+
 @login_required
 def tarefa(request):
     user = request.user
