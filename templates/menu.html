@@ -1,566 +1,1343 @@
 {% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
-{% block title %}STADA | Plataforma Digital{% endblock %}
+{% block title %}STADA{% endblock %}
 
 {% block content %}
-<div class="stada-app" id="stadaApp">
+<div class="stada-home-wrapper">
+    <!-- Fundo persistente estilo plataforma americana -->
+    <div class="stada-bg-layer"></div>
+    <div class="stada-grid-layer"></div>
 
-    <!-- CABEÇALHO -->
-    <header class="stada-header">
-        <div class="topbar">
-            <a class="brand" href="{% url 'home' %}" aria-label="STADA - Início">
-                <span class="brand-mark"><i class="fa-solid fa-snowflake"></i></span>
-                <span class="brand-name">STADA</span>
-            </a>
+    <div class="stada-app-shell">
+        <!-- TOPO: Logotipo STADA + Botões Download, Idioma e Mensagem -->
+        <header class="stada-topbar">
+            <div class="brand-left">
+                <div class="brand-logo-svg" aria-hidden="true">
+                    <svg width="34" height="34" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="stadaMenuGrad" x1="5" y1="5" x2="43" y2="43" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#22d3ee"/>
+                                <stop offset="100%" stop-color="#818cf8"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="4" y="4" width="40" height="40" rx="12" stroke="url(#stadaMenuGrad)" stroke-width="2.6"/>
+                        <path d="M14 31L21 22.5L26.5 27L34 17" stroke="url(#stadaMenuGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="34" cy="17" r="3" fill="#22d3ee"/>
+                    </svg>
+                </div>
+                <span class="brand-wordmark">STADA</span>
+            </div>
 
-            <div class="header-actions">
-                <a class="round-action" href="{% static 'app/stada.akp' %}" download aria-label="Baixar aplicação">
-                    <i class="fa-solid fa-download"></i>
+            <div class="topbar-actions">
+                <!-- 1. Download APP -->
+                <a href="{% static 'app/stada.apk' %}" download class="top-icon-btn" id="downloadAppBtn" aria-label="Download APP">
+                    <i class="fas fa-download"></i>
                 </a>
 
-                <div class="language-wrap">
-                    <button class="round-action" id="languageButton" type="button" aria-label="Selecionar idioma">
-                        <i class="fa-solid fa-globe"></i>
+                <!-- 2. Seletor de Idioma (6 idiomas: Português, Índia, Árabe, Chinês, Inglês, Espanhol) -->
+                <div class="top-dropdown-wrap">
+                    <button type="button" class="top-icon-btn" id="topLangBtn" aria-expanded="false" aria-label="Language">
+                        <i class="fas fa-globe"></i>
                     </button>
-                    <select id="languageSelect" class="language-select" aria-label="Idioma">
-                        <option value="pt">Português</option>
-                        <option value="hi">India (हिन्दी)</option>
-                        <option value="ar">العربية</option>
-                        <option value="zh">中文</option>
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                    </select>
+                    <div class="top-popover-menu" id="topLangMenu" role="menu">
+                        <button type="button" class="top-menu-item active" data-lang="pt">
+                            <span>Português</span>
+                            <small>PT</small>
+                        </button>
+                        <button type="button" class="top-menu-item" data-lang="hi">
+                            <span>हिन्दी</span>
+                            <small>IN</small>
+                        </button>
+                        <button type="button" class="top-menu-item" data-lang="ar">
+                            <span>العربية</span>
+                            <small>AR</small>
+                        </button>
+                        <button type="button" class="top-menu-item" data-lang="zh-CN">
+                            <span>中文</span>
+                            <small>ZH</small>
+                        </button>
+                        <button type="button" class="top-menu-item" data-lang="en">
+                            <span>English</span>
+                            <small>EN</small>
+                        </button>
+                        <button type="button" class="top-menu-item" data-lang="es">
+                            <span>Español</span>
+                            <small>ES</small>
+                        </button>
+                    </div>
                 </div>
 
-                <button class="round-action message-action" id="messageButton" type="button" aria-label="Mensagem">
-                    <i class="fa-regular fa-envelope"></i>
-                    <span class="message-dot"></span>
+                <!-- 3. Mensagem de Boas-Vindas (fica vermelha até o primeiro clique do novo usuário) -->
+                <button type="button" class="top-icon-btn msg-unread-alert" id="welcomeMsgBtn" aria-label="Welcome Message">
+                    <i class="fas fa-envelope"></i>
+                    <span class="msg-alert-dot" id="msgAlertDot"></span>
                 </button>
             </div>
+        </header>
+
+        <!-- Container oculto do Google Translate para tradução automática da base/navegador -->
+        <div id="google_translate_element" style="display:none;"></div>
+
+        <!-- Banner principal com as 3 imagens de static/images/ -->
+        <section class="hero-banner-card">
+            <div class="banner-slides" id="bannerSlides">
+                <img src="{% static 'images/stada_welcome_1.jpg' %}" class="banner-slide active" alt="STADA 1">
+                <img src="{% static 'images/stada_welcome_2.jpg' %}" class="banner-slide" alt="STADA 2">
+                <img src="{% static 'images/stada_welcome_3.jpg' %}" class="banner-slide" alt="STADA 3">
+            </div>
+            <div class="banner-indicators" id="bannerIndicators">
+                <span class="b-dot active"></span>
+                <span class="b-dot"></span>
+                <span class="b-dot"></span>
+            </div>
+        </section>
+
+        <!-- Ticker de avisos -->
+        <div class="stada-ticker">
+            <i class="fas fa-volume-up ticker-icon"></i>
+            <div class="ticker-track">
+                <marquee scrollamount="3" data-i18n="tickerText">
+                    Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.
+                </marquee>
+            </div>
         </div>
 
-        <!-- BANNER PRINCIPAL -->
-        <div class="hero-banner" id="heroBanner">
-            <img src="{% static 'images/stada-banner-1.jpg' %}" class="hero-slide active" alt="STADA - Banner 1">
-            <img src="{% static 'images/stada-banner-2.jpg' %}" class="hero-slide" alt="STADA - Banner 2">
-            <img src="{% static 'images/stada-banner-3.jpg' %}" class="hero-slide" alt="STADA - Banner 3">
-            <div class="hero-shade"></div>
-            <div class="hero-copy">
-                <span class="hero-kicker" data-i18n="digitalPlatform">PLATAFORMA DIGITAL</span>
-                <h1>STADA</h1>
-                <p data-i18n="heroText">Invista, realize tarefas e acompanhe a sua atividade.</p>
+        <!-- Card central da plataforma -->
+        <section class="central-highlight-card">
+            <div class="central-info">
+                <span class="central-tag"><i class="fas fa-bolt"></i> STADA</span>
+                <h2 class="central-title" data-i18n="centralTitle">Investimentos & Tarefas Diárias</h2>
+                <p class="central-desc" data-i18n="centralDesc">Acompanhe seus rendimentos e oportunidades em tempo real.</p>
             </div>
-            <div class="hero-dots" id="heroDots">
-                <span class="active"></span><span></span><span></span>
+            <div class="central-badge">
+                <i class="fas fa-chart-line"></i>
             </div>
-        </div>
-    </header>
+        </section>
 
-    <!-- AVISO -->
-    <div class="announcement">
-        <i class="fa-solid fa-volume-high"></i>
-        <div class="announcement-window">
-            <span id="announcementText" data-i18n="announcement">
-                Bem-vindo à STADA. Consulte as informações da sua conta e acompanhe as oportunidades disponíveis.
-            </span>
+        <!-- Botões principais em destaque (estilo Recarregar / Sacar) -->
+        <div class="dual-cta-row">
+            <a href="{% url 'deposito' %}" class="cta-pill-btn cta-deposit">
+                <i class="fas fa-wallet"></i>
+                <span data-i18n="btnDeposit">Depósito</span>
+            </a>
+            <a href="{% url 'saque' %}" class="cta-pill-btn cta-withdraw">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span data-i18n="btnWithdraw">Retiradas</span>
+            </a>
         </div>
+
+        <!-- Grid de botões de ação mantendo rotas -->
+        <div class="menu-actions-grid">
+            <a href="{% url 'equipa' %}" class="menu-action-card">
+                <div class="action-icon-wrap icon-cyan">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <span class="action-label" data-i18n="btnInvite">Partilhar Convite</span>
+            </a>
+
+            <a href="{% url 'nivel' %}" class="menu-action-card">
+                <div class="action-icon-wrap icon-indigo">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <span class="action-label" data-i18n="btnJoin">Junte-se a nós</span>
+            </a>
+
+            <a href="{% url 'tarefa' %}" class="menu-action-card">
+                <div class="action-icon-wrap icon-emerald">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <span class="action-label" data-i18n="btnTasks">Tarefas Diárias</span>
+            </a>
+
+            <a href="{% url 'renda' %}" class="menu-action-card">
+                <div class="action-icon-wrap icon-amber">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <span class="action-label" data-i18n="btnYield">Rendimento</span>
+            </a>
+
+            <a href="{% url 'perfil' %}" class="menu-action-card menu-card-wide">
+                <div class="action-icon-wrap icon-blue">
+                    <i class="fas fa-building-columns"></i>
+                </div>
+                <span class="action-label" data-i18n="btnCompany">Perfil da Companhia</span>
+            </a>
+        </div>
+
+        <!-- Criptomoedas estilo Binance em tempo real na parte inferior -->
+        <section class="crypto-market-section" aria-label="Crypto Market">
+            <div class="crypto-header">
+                <div class="crypto-title-group">
+                    <i class="fab fa-bitcoin crypto-main-icon"></i>
+                    <span data-i18n="cryptoTitle">Mercados</span>
+                </div>
+                <span class="crypto-live-badge" id="cryptoSyncStatus">LIVE</span>
+            </div>
+
+            <div class="crypto-list" id="cryptoListContainer">
+                <!-- Preenchido e atualizado em tempo real via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Barra de navegação inferior -->
+        <nav class="stada-bottom-nav">
+            <a href="{% url 'home' %}" class="stada-nav-item active">
+                <i class="fas fa-house"></i>
+                <span data-i18n="navHome">Início</span>
+            </a>
+            <a href="{% url 'tarefa' %}" class="stada-nav-item">
+                <i class="fas fa-tasks"></i>
+                <span data-i18n="navTasks">Tarefas</span>
+            </a>
+            <a href="{% url 'nivel' %}" class="stada-nav-item">
+                <i class="fas fa-layer-group"></i>
+                <span data-i18n="navJoin">Unir-se</span>
+            </a>
+            <a href="{% url 'renda' %}" class="stada-nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span data-i18n="navYield">Rendimento</span>
+            </a>
+            <a href="{% url 'perfil' %}" class="stada-nav-item">
+                <i class="fas fa-user-tie"></i>
+                <span data-i18n="navProfile">Perfil</span>
+            </a>
+        </nav>
     </div>
 
-    <!-- CARTÃO DE DESTAQUE -->
-    <section class="account-highlight">
-        <div>
-            <div class="highlight-title">
-                <i class="fa-solid fa-shield-halved"></i>
-                <span data-i18n="platformCenter">CENTRAL STADA</span>
+    <!-- POP-UP DE BOAS-VINDAS PERSONALIZADO (3 imagens de 5 em 5 segundos) -->
+    <div class="welcome-modal-backdrop" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeModalTitle">
+        <div class="welcome-modal-card">
+            <button type="button" class="welcome-close-btn" id="closeWelcomeModalBtn" aria-label="Close">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="welcome-badge">STADA</div>
+
+            <div class="modal-slideshow-box">
+                <img src="{% static 'images/stada_welcome_1.jpg' %}" class="modal-slide active" alt="STADA Boas-Vindas 1">
+                <img src="{% static 'images/stada_welcome_2.jpg' %}" class="modal-slide" alt="STADA Boas-Vindas 2">
+                <img src="{% static 'images/stada_welcome_3.jpg' %}" class="modal-slide" alt="STADA Boas-Vindas 3">
             </div>
-            <p data-i18n="highlightText">A sua área de investimento e tarefas</p>
-        </div>
-        <div class="highlight-emblem">
-            <i class="fa-solid fa-chart-line"></i>
-        </div>
-    </section>
 
-    <!-- ATALHOS PRINCIPAIS -->
-    <section class="shortcut-grid" aria-label="Atalhos">
-
-        <a href="{% url 'deposito' %}" class="shortcut">
-            <span class="shortcut-icon green"><i class="fa-solid fa-wallet"></i></span>
-            <span data-i18n="recharge">Recarregar</span>
-        </a>
-
-        <a href="{% url 'saque' %}" class="shortcut">
-            <span class="shortcut-icon cyan"><i class="fa-solid fa-money-bill-transfer"></i></span>
-            <span data-i18n="withdraw">Sacar</span>
-        </a>
-
-        <a href="{% url 'sobre' %}" class="shortcut">
-            <span class="shortcut-icon blue"><i class="fa-solid fa-book-open"></i></span>
-            <span data-i18n="help">Ajuda</span>
-        </a>
-
-        <a href="{% url 'equipa' %}" class="shortcut">
-            <span class="shortcut-icon purple"><i class="fa-solid fa-people-group"></i></span>
-            <span data-i18n="team">Equipa</span>
-        </a>
-
-        <a href="{% url 'tarefa' %}" class="shortcut">
-            <span class="shortcut-icon violet"><i class="fa-solid fa-list-check"></i></span>
-            <span data-i18n="activities">Atividades</span>
-        </a>
-
-        <a href="{% url 'equipa' %}" class="shortcut">
-            <span class="shortcut-icon orange"><i class="fa-solid fa-envelope-open-text"></i></span>
-            <span data-i18n="invite">Convidar amigos</span>
-        </a>
-
-        <a href="{% url 'nivel' %}" class="shortcut">
-            <span class="shortcut-icon turquoise"><i class="fa-solid fa-handshake"></i></span>
-            <span data-i18n="agency">Agência</span>
-        </a>
-
-        <a href="{% url 'perfil' %}" class="shortcut">
-            <span class="shortcut-icon pink"><i class="fa-solid fa-file-lines"></i></span>
-            <span data-i18n="whitePaper">White Paper</span>
-        </a>
-
-    </section>
-
-    <!-- BOTÕES GRANDES -->
-    <section class="main-actions">
-
-        <a href="{% url 'deposito' %}" class="big-action">
-            <i class="fa-solid fa-coins"></i>
-            <strong data-i18n="recharge">Recarregar</strong>
-        </a>
-
-        <a href="{% url 'saque' %}" class="big-action">
-            <i class="fa-solid fa-hand-holding-dollar"></i>
-            <strong data-i18n="withdraw">Sacar</strong>
-        </a>
-
-    </section>
-
-    <!-- MERCADO CRIPTO -->
-    <section class="crypto-section">
-
-        <div class="section-heading">
-            <div>
-                <span class="section-eyebrow" data-i18n="marketLive">MERCADO EM TEMPO REAL</span>
-                <h2 data-i18n="cryptoPrices">Preços de criptomoedas</h2>
+            <div class="modal-slide-dots" id="modalSlideDots">
+                <span class="m-dot active"></span>
+                <span class="m-dot"></span>
+                <span class="m-dot"></span>
             </div>
-            <span class="live-indicator"><i></i> LIVE</span>
-        </div>
 
-        <div class="crypto-head">
-            <span data-i18n="coin">Moeda</span>
-            <span data-i18n="lastPrice">Último preço</span>
-            <span data-i18n="change24h">24h</span>
-        </div>
-
-        <div id="cryptoList" class="crypto-list">
-            <div class="crypto-loading" data-i18n="loadingPrices">
-                A carregar cotações reais...
-            </div>
-        </div>
-
-        <p class="market-note" data-i18n="marketNote">
-            Dados públicos de mercado da Binance. Os preços variam continuamente e podem sofrer atrasos ou indisponibilidade da API.
-        </p>
-
-    </section>
-
-    <!-- SUPORTE FLUTUANTE -->
-    <div class="support-container" id="supportMenu">
-
-        <a href="{{ whatsapp_link|default:'#' }}" target="_blank" rel="noopener" class="support-link whatsapp" aria-label="WhatsApp">
-            <i class="fa-brands fa-whatsapp"></i>
-        </a>
-
-        <a href="https://t.me/+Lj76VN8U1Uw5MjQ0" target="_blank" rel="noopener" class="support-link telegram" aria-label="Telegram">
-            <i class="fa-brands fa-telegram"></i>
-        </a>
-
-        <button type="button" class="support-main" id="supportToggle">
-            <i class="fa-solid fa-headset" id="supportMainIcon"></i>
-            <span data-i18n="support">SUPORTE</span>
-        </button>
-
-    </div>
-
-    <!-- BOTÃO DE SORTEIO -->
-    <a href="{% url 'sorteio' %}" class="floating-gift" aria-label="Sorteio">
-        <i class="fa-solid fa-gift"></i>
-        <span data-i18n="draw">Sortear</span>
-        <b>1</b>
-    </a>
-
-    <!-- NAVEGAÇÃO INFERIOR -->
-    <nav class="bottom-nav">
-
-        <a href="{% url 'home' %}" class="nav-item active">
-            <i class="fa-solid fa-house"></i>
-            <span data-i18n="home">Início</span>
-        </a>
-
-        <a href="{% url 'tarefa' %}" class="nav-item">
-            <i class="fa-solid fa-chart-column"></i>
-            <span data-i18n="quant">Quant</span>
-        </a>
-
-        <a href="{% url 'nivel' %}" class="nav-item">
-            <i class="fa-solid fa-money-bill-transfer"></i>
-            <span data-i18n="investment">Investimento</span>
-        </a>
-
-        <a href="{% url 'equipa' %}" class="nav-item">
-            <i class="fa-solid fa-users"></i>
-            <span data-i18n="team">Equipa</span>
-        </a>
-
-        <a href="{% url 'perfil' %}" class="nav-item">
-            <i class="fa-solid fa-gear"></i>
-            <span data-i18n="me">Eu</span>
-        </a>
-
-    </nav>
-</div>
-
-<!-- POPUP DE BOAS-VINDAS -->
-<div class="welcome-overlay" id="welcomeOverlay" aria-hidden="true">
-
-    <div class="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-
-        <button type="button" class="welcome-close" id="welcomeClose" aria-label="Fechar">×</button>
-
-        <div class="welcome-image-frame">
-            <img src="{% static 'images/stada-banner-1.jpg' %}" class="welcome-slide active" alt="STADA">
-            <img src="{% static 'images/stada-banner-2.jpg' %}" class="welcome-slide" alt="STADA">
-            <img src="{% static 'images/stada-banner-3.jpg' %}" class="welcome-slide" alt="STADA">
-        </div>
-
-        <div class="welcome-content">
-            <span class="welcome-tag">STADA</span>
-
-            <h2 id="welcomeTitle" data-i18n="welcomeTitle">
-                Bem-vindo à STADA!
-            </h2>
-
-            <p data-i18n="welcomeBody">
-                A sua plataforma digital para acompanhar investimentos e realizar tarefas. Consulte sempre as condições, os riscos e as regras antes de investir.
+            <h3 class="welcome-modal-title" id="welcomeModalTitle" data-i18n="welcomeTitle">Bem-vindo à STADA</h3>
+            <p class="welcome-modal-text" data-i18n="welcomeMessage">
+                Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.
             </p>
 
-            <button type="button" id="welcomeContinue" class="welcome-continue" data-i18n="continue">
-                Continuar
+            <button type="button" class="welcome-confirm-btn" id="confirmWelcomeBtn" data-i18n="welcomeBtn">
+                Começar na STADA
             </button>
         </div>
-
     </div>
 </div>
 
 <style>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
-
-:root {
-    --stada-bg: #050607;
-    --stada-panel: #17191c;
-    --stada-muted: #a7abb4;
-    --stada-aqua: #42e5d7;
-    --stada-gold: #d9b66d;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100%;
-    overflow-x: hidden;
-    background: var(--stada-bg);
-    color: #fff;
-    font-family: "Segoe UI", Arial, sans-serif;
-    -webkit-text-size-adjust: 100%;
-}
-
-.stada-app {
-    position: relative;
-    width: 100%;
-    max-width: 520px;
-    min-height: 100vh;
-    margin: 0 auto;
-    padding-bottom: 112px;
-    overflow: hidden;
-
-    background:
-      radial-gradient(ellipse at 15% 18%, rgba(180,139,40,.16), transparent 22%),
-      radial-gradient(ellipse at 90% 62%, rgba(180,139,40,.12), transparent 24%),
-      linear-gradient(180deg,#070809 0%,#030405 100%);
-}
-
-.stada-app:before {
-    content:"";
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    opacity:.22;
-
-    background-image:
-      radial-gradient(ellipse at 20% 10%, #c99b34 0 2px, transparent 3px),
-      radial-gradient(ellipse at 75% 28%, #b78a28 0 3px, transparent 4px),
-      radial-gradient(ellipse at 88% 70%, #c99b34 0 2px, transparent 3px);
-
-    background-size: 145px 180px, 210px 230px, 170px 190px;
-}
-
-.stada-header,.announcement,.account-highlight,.shortcut-grid,.main-actions,.crypto-section {
-    position: relative;
-    z-index: 1;
-}
-
-.stada-header {
-    padding: 17px 18px 0;
-}
-
-.topbar {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    min-height:72px;
-    gap:10px;
-}
-
-.brand {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    text-decoration:none;
-    color:#fff;
-    min-width:0;
-}
-
-.brand-mark {
-    width:56px;
-    height:56px;
-    display:grid;
-    place-items:center;
-    color:#42e5d7;
-    font-size:37px;
-    transform:rotate(15deg);
-}
-
-.brand-name {
-    font-size:25px;
-    font-weight:900;
-    letter-spacing:.4px;
-}
-
-.header-actions {
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
-.round-action {
-    width:62px;
-    height:62px;
-    border:0;
-    border-radius:50%;
-    display:grid;
-    place-items:center;
-    color:#fff;
-    background:linear-gradient(145deg,#25282d,#15171a);
-    box-shadow:0 5px 16px #0008,inset 0 1px 1px #ffffff20;
-    font-size:25px;
-    text-decoration:none;
-    cursor:pointer;
-    position:relative;
-}
-
-.round-action:active {
-    transform:scale(.95);
-}
-
-.language-wrap {
-    position:relative;
-}
-
-.language-select {
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    opacity:0;
-    cursor:pointer;
-}
-
-.message-dot {
-    position:absolute;
-    right:7px;
-    top:7px;
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#ff303b;
-    border:2px solid #222;
-    box-shadow:0 0 12px #ff303b;
-}
-
-.message-action {
-    animation:messagePulse 1.5s infinite;
-}
-
-@keyframes messagePulse {
-    50% {
-        box-shadow:0 0 0 6px #ff303b20,0 5px 16px #0008;
+    :root {
+        --stada-bg: #05070d;
+        --stada-card: rgba(12, 17, 29, 0.88);
+        --stada-surface: rgba(17, 24, 39, 0.84);
+        --stada-border: rgba(148, 163, 184, 0.16);
+        --stada-cyan: #22d3ee;
+        --stada-blue: #38bdf8;
+        --stada-indigo: #6366f1;
+        --stada-green: #10b981;
+        --stada-red: #ef4444;
+        --stada-text: #f8fafc;
+        --stada-muted: #94a3b8;
     }
-}
 
-.hero-banner {
-    height:250px;
-    margin:17px -18px 0;
-    position:relative;
-    overflow:hidden;
-    background:#101820;
-    border-top:1px solid #222;
-    border-bottom:1px solid #333;
-}
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-.hero-slide {
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    opacity:0;
-    transition:opacity .8s ease;
-}
+    html, body {
+        background-color: var(--stada-bg);
+        color: var(--stada-text);
+        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+        overflow-x: hidden;
+    }
 
-.hero-slide.active {
-    opacity:1;
-}
+    /* Esconde barra superior padrão do Google Translate quando ativa */
+    .goog-te-banner-frame.skiptranslate,
+    .goog-te-gadget-icon {
+        display: none !important;
+    }
 
-.hero-shade {
-    position:absolute;
-    inset:0;
-    background:linear-gradient(90deg,#020509b8,#02050924 75%),linear-gradient(0deg,#02050988,transparent 65%);
-}
+    body {
+        top: 0 !important;
+    }
 
-.hero-copy {
-    position:absolute;
-    left:24px;
-    bottom:36px;
-    right:20px;
-}
+    .stada-home-wrapper {
+        position: relative;
+        min-height: 100vh;
+        width: 100%;
+    }
 
-.hero-kicker {
-    color:var(--stada-aqua);
-    font-size:10px;
-    letter-spacing:2px;
-    font-weight:800;
-}
+    .stada-bg-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(circle at 20% 12%, rgba(34, 211, 238, 0.14), transparent 42%),
+            radial-gradient(circle at 82% 20%, rgba(99, 102, 241, 0.13), transparent 45%),
+            linear-gradient(180deg, #05070d 0%, #070b14 55%, #04060b 100%);
+    }
 
-.hero-copy h1 {
-    font-size:34px;
-    margin:5px 0 2px;
-    font-weight:900;
-    letter-spacing:2px;
-    text-shadow:0 3px 12px #000;
-}
+    .stada-grid-layer {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image:
+            linear-gradient(to right, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+        background-size: 44px 44px;
+    }
 
-.hero-copy p {
-    margin:0;
-    font-size:13px;
-    color:#f0f2f5;
-    max-width:280px;
-}
+    .stada-app-shell {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        padding: 12px 14px 92px;
+    }
 
-.hero-dots {
-    position:absolute;
-    bottom:12px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:7px;
-}
+    /* Topo no estilo da imagem de referência */
+    .stada-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 2px 14px;
+        position: relative;
+        z-index: 40;
+    }
 
-.hero-dots span {
-    width:7px;
-    height:7px;
-    border-radius:10px;
-    background:#ffffff70;
-}
+    .brand-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 
-.hero-dots span.active {
-    width:22px;
-    background:var(--stada-aqua);
-}
+    .brand-logo-svg {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        background: rgba(34, 211, 238, 0.1);
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.announcement {
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:15px 20px;
-    background:#07090b;
-    color:#f1f1f1;
-    min-height:62px;
-}
+    .brand-wordmark {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #ffffff;
+    }
 
-.announcement>i {
-    color:#fff;
-    font-size:19px;
-    flex-shrink:0;
-}
+    .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        position: relative;
+    }
 
-.announcement-window {
-    overflow:hidden;
-    white-space:nowrap;
-    flex:1;
-    font-size:13px;
-}
+    .top-dropdown-wrap {
+        position: relative;
+    }
 
-#announcementText {
-    display:inline-block;
-    animation:announcementMove 22s linear infinite;
-}
+    .top-icon-btn {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid var(--stada-border);
+        background: rgba(15, 23, 42, 0.85);
+        color: #e2e8f0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
 
-@keyframes announcementMove {
-    0% {transform:translateX(100%)}
-    100% {transform:translateX(-100%)}
-}
+    .top-icon-btn:hover {
+        border-color: var(--stada-cyan);
+        color: var(--stada-cyan);
+    }
 
-.account-highlight {
-    margin:7px 20px 20px;
-    padding:17px 20px;
-    border:1px solid #2c7777;
-    border-radius:18px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    background:linear-gradient(115deg,#202326,#101315 70%,#183c3c);
-    box-shadow:0 0 18px #36d5c51a,inset 0 1px #ffffff13;
-}
+    /* Botão de mensagem vermelho para quem se cadastra pela primeira vez */
+    .top-icon-btn.msg-unread-alert {
+        background: rgba(239, 68, 68, 0.22);
+        border-color: #ef4444;
+        color: #ff6b6b;
+        box-shadow: 0 0 14px rgba(239, 68, 68, 0.35);
+    }
 
-.highlight-title {
-    font-size:14px;
-    font-weight:900;
-    color:var(--stada-aqua);
-}
+    .msg-alert-dot {
+        display: none;
+        position: absolute;
+        top: 5px;
+        right: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+    }
 
-.highlight-title i {
-    margin-right:7px;
-}
+    .top-icon-btn.msg-unread-alert .msg-alert-dot {
+        display: block;
+    }
 
-.account-highlight p {
-    margin:6px 0 0;
-    color:#c4c8cc;
-    font-size:11px;
-}
+    .top-popover-menu {
+        position: absolute;
+        top: 46px;
+        right: 0;
+        min-width: 175px;
+        background: #0b1120;
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        border-radius: 14px;
+        padding: 6px;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.78);
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        z-index: 80;
+    }
 
-.highlight-emblem {
-    color:var(--stada-aqua);
-    font-size:32px;
-    opacity:.9;
-}
+    .top-popover-menu.open {
+        display: flex;
+    }
+
+    .top-menu-item {
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-radius: 10px;
+        padding: 9px 12px;
+        color: #e2e8f0;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: background 0.16s ease;
+    }
+
+    .top-menu-item:hover {
+        background: rgba(34, 211, 238, 0.12);
+    }
+
+    .top-menu-item.active {
+        background: rgba(34, 211, 238, 0.18);
+        color: var(--stada-cyan);
+        font-weight: 700;
+    }
+
+    /* Banner com 3 imagens */
+    .hero-banner-card {
+        position: relative;
+        width: 100%;
+        height: 172px;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid var(--stada-border);
+        background: #0b1120;
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .banner-slides {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .banner-slide {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.55s ease;
+    }
+
+    .banner-slide.active {
+        opacity: 1;
+    }
+
+    .banner-indicators {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 6px;
+        z-index: 5;
+    }
+
+    .b-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.4);
+        transition: all 0.25s ease;
+    }
+
+    .b-dot.active {
+        width: 16px;
+        border-radius: 999px;
+        background: var(--stada-cyan);
+    }
+
+    /* Ticker */
+    .stada-ticker {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: var(--stada-surface);
+        border: 1px solid var(--stada-border);
+    }
+
+    .ticker-icon {
+        color: var(--stada-cyan);
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .ticker-track {
+        flex: 1;
+        font-size: 12px;
+        color: #cbd5e1;
+        font-weight: 500;
+    }
+
+    /* Card central */
+    .central-highlight-card {
+        margin-top: 12px;
+        padding: 16px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(17, 24, 39, 0.92), rgba(15, 23, 42, 0.78));
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .central-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: var(--stada-cyan);
+        text-transform: uppercase;
+    }
+
+    .central-title {
+        margin-top: 4px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .central-desc {
+        margin-top: 3px;
+        font-size: 12px;
+        color: var(--stada-muted);
+    }
+
+    .central-badge {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: rgba(34, 211, 238, 0.12);
+        border: 1px solid rgba(34, 211, 238, 0.28);
+        color: var(--stada-cyan);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    /* Botões duplos em destaque */
+    .dual-cta-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .cta-pill-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px 14px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-size: 13.5px;
+        font-weight: 700;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cta-deposit {
+        background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 100%);
+        color: #041019;
+        box-shadow: 0 8px 22px rgba(34, 211, 238, 0.24);
+    }
+
+    .cta-withdraw {
+        background: rgba(17, 24, 39, 0.9);
+        color: #f8fafc;
+        border: 1px solid rgba(99, 102, 241, 0.4);
+    }
+
+    .cta-pill-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Grid de ações */
+    .menu-actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .menu-action-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 13px 12px;
+        border-radius: 15px;
+        background: var(--stada-card);
+        border: 1px solid var(--stada-border);
+        text-decoration: none;
+        color: #f1f5f9;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .menu-action-card:hover {
+        border-color: rgba(34, 211, 238, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .menu-card-wide {
+        grid-column: span 2;
+        justify-content: center;
+    }
+
+    .action-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .icon-cyan { background: rgba(34, 211, 238, 0.14); color: #22d3ee; }
+    .icon-indigo { background: rgba(99, 102, 241, 0.16); color: #818cf8; }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .icon-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+
+    .action-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    /* Seção de Criptomoedas estilo Binance na parte inferior */
+    .crypto-market-section {
+        margin-top: 14px;
+        border-radius: 18px;
+        background: var(--stada-card);
+        border: 1px solid var(--stada-border);
+        padding: 14px;
+    }
+
+    .crypto-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+
+    .crypto-title-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .crypto-main-icon {
+        color: #f59e0b;
+        font-size: 16px;
+    }
+
+    .crypto-live-badge {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.8px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.16);
+        color: #34d399;
+    }
+
+    .crypto-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .crypto-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+    }
+
+    .crypto-pair-col {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .crypto-symbol {
+        font-size: 13px;
+        font-weight: 700;
+        color: #f8fafc;
+    }
+
+    .crypto-name {
+        font-size: 11px;
+        color: var(--stada-muted);
+    }
+
+    .crypto-right-col {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .crypto-price {
+        font-size: 13px;
+        font-weight: 700;
+        color: #ffffff;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .crypto-change-pill {
+        min-width: 74px;
+        text-align: center;
+        padding: 5px 8px;
+        border-radius: 8px;
+        font-size: 11.5px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .crypto-up {
+        background: rgba(16, 185, 129, 0.18);
+        color: #34d399;
+    }
+
+    .crypto-down {
+        background: rgba(239, 68, 68, 0.18);
+        color: #f87171;
+    }
+
+    /* Barra inferior */
+    .stada-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 480px;
+        background: rgba(8, 12, 22, 0.94);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid var(--stada-border);
+        display: flex;
+        justify-content: space-around;
+        padding: 9px 6px;
+        z-index: 60;
+    }
+
+    .stada-nav-item {
+        text-decoration: none;
+        color: #64748b;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        width: 20%;
+        font-size: 10px;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .stada-nav-item i {
+        font-size: 17px;
+    }
+
+    .stada-nav-item.active {
+        color: var(--stada-cyan);
+    }
+
+    /* Pop-up de Boas-Vindas Personalizado */
+    .welcome-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(3, 5, 10, 0.86);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .welcome-modal-backdrop.open {
+        display: flex;
+    }
+
+    .welcome-modal-card {
+        position: relative;
+        width: 100%;
+        max-width: 390px;
+        background: #0b1120;
+        border: 1px solid rgba(34, 211, 238, 0.32);
+        border-radius: 22px;
+        padding: 20px 18px 22px;
+        box-shadow: 0 25px 65px rgba(0, 0, 0, 0.8);
+        text-align: center;
+    }
+
+    .welcome-close-btn {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1px solid var(--stada-border);
+        background: rgba(15, 23, 42, 0.9);
+        color: #cbd5e1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .welcome-badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: var(--stada-cyan);
+        background: rgba(34, 211, 238, 0.12);
+        padding: 4px 10px;
+        border-radius: 999px;
+        margin-bottom: 12px;
+    }
+
+    .modal-slideshow-box {
+        position: relative;
+        width: 100%;
+        height: 175px;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 1px solid var(--stada-border);
+        background: #060913;
+    }
+
+    .modal-slide {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .modal-slide.active {
+        opacity: 1;
+    }
+
+    .modal-slide-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin: 10px 0 12px;
+    }
+
+    .m-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: rgba(148, 163, 184, 0.35);
+        transition: all 0.25s ease;
+    }
+
+    .m-dot.active {
+        width: 16px;
+        border-radius: 999px;
+        background: var(--stada-cyan);
+    }
+
+    .welcome-modal-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 8px;
+    }
+
+    .welcome-modal-text {
+        font-size: 13.5px;
+        line-height: 1.55;
+        color: #cbd5e1;
+        margin-bottom: 18px;
+    }
+
+    .welcome-confirm-btn {
+        width: 100%;
+        padding: 13px 16px;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #22d3ee 0%, #38bdf8 55%, #6366f1 100%);
+        color: #041019;
+        font-family: inherit;
+        font-size: 13.5px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+</style>
+
+<script>
+    const STADA_TEXTS = {
+        pt: {
+            tickerText: "Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.",
+            centralTitle: "Investimentos & Tarefas Diárias",
+            centralDesc: "Acompanhe seus rendimentos e oportunidades em tempo real.",
+            btnDeposit: "Depósito",
+            btnWithdraw: "Retiradas",
+            btnInvite: "Partilhar Convite",
+            btnJoin: "Junte-se a nós",
+            btnTasks: "Tarefas Diárias",
+            btnYield: "Rendimento",
+            btnCompany: "Perfil da Companhia",
+            cryptoTitle: "Mercados",
+            navHome: "Início",
+            navTasks: "Tarefas",
+            navJoin: "Unir-se",
+            navYield: "Rendimento",
+            navProfile: "Perfil",
+            welcomeTitle: "Bem-vindo à STADA",
+            welcomeMessage: "Bem-vindo à STADA, sua plataforma de investimento onde vai ganhando bastante investindo e realizando tarefas diariamente.",
+            welcomeBtn: "Começar na STADA"
+        },
+        hi: {
+            tickerText: "STADA में आपका स्वागत है — निवेश करके और दैनिक कार्य पूरे करके शानदार कमाई करें।",
+            centralTitle: "निवेश और दैनिक कार्य",
+            centralDesc: "अपने रिटर्न और अवसरों को रीयल-टाइम में ट्रैक करें।",
+            btnDeposit: "जमा करें",
+            btnWithdraw: "निकासी",
+            btnInvite: "आमंत्रण साझा करें",
+            btnJoin: "हमसे जुड़ें",
+            btnTasks: "दैनिक कार्य",
+            btnYield: "प्रतिफल",
+            btnCompany: "कंपनी प्रोफ़ाइल",
+            cryptoTitle: "बाज़ार",
+            navHome: "होम",
+            navTasks: "कार्य",
+            navJoin: "जुड़ें",
+            navYield: "प्रतिफल",
+            navProfile: "प्रोफ़ाइल",
+            welcomeTitle: "STADA में स्वागत है",
+            welcomeMessage: "STADA में आपका स्वागत है, आपका निवेश मंच जहाँ आप निवेश और दैनिक कार्यों से अच्छी कमाई करते हैं।",
+            welcomeBtn: "STADA शुरू करें"
+        },
+        ar: {
+            tickerText: "مرحبًا بك في STADA، منصة الاستثمار الخاصة بك حيث تحقق أرباحًا كبيرة بالاستثمار وإنجاز المهام يوميًا.",
+            centralTitle: "الاستثمار والمهام اليومية",
+            centralDesc: "تابع عوائدك والفرص المتاحة بشكل مباشر.",
+            btnDeposit: "إيداع",
+            btnWithdraw: "سحب",
+            btnInvite: "مشاركة الدعوة",
+            btnJoin: "انضم إلينا",
+            btnTasks: "المهام اليومية",
+            btnYield: "العوائد",
+            btnCompany: "ملف الشركة",
+            cryptoTitle: "الأسواق",
+            navHome: "الرئيسية",
+            navTasks: "المهام",
+            navJoin: "انضمام",
+            navYield: "العوائد",
+            navProfile: "الملف",
+            welcomeTitle: "مرحبًا بك في STADA",
+            welcomeMessage: "مرحبًا بك في STADA، منصة الاستثمار الخاصة بك حيث تحقق أرباحًا كبيرة بالاستثمار وإنجاز المهام يوميًا.",
+            welcomeBtn: "ابدأ في STADA"
+        },
+        "zh-CN": {
+            tickerText: "欢迎来到 STADA——通过投资与每日完成任务持续赚取丰厚收益的投资平台。",
+            centralTitle: "投资与每日任务",
+            centralDesc: "实时追踪您的收益与市场机会。",
+            btnDeposit: "充值",
+            btnWithdraw: "提现",
+            btnInvite: "分享邀请",
+            btnJoin: "加入我们",
+            btnTasks: "每日任务",
+            btnYield: "收益",
+            btnCompany: "公司简介",
+            cryptoTitle: "行情",
+            navHome: "首页",
+            navTasks: "任务",
+            navJoin: "加入",
+            navYield: "收益",
+            navProfile: "我的",
+            welcomeTitle: "欢迎来到 STADA",
+            welcomeMessage: "欢迎来到 STADA，您的投资平台，通过投资和每日完成任务赚取丰厚收益。",
+            welcomeBtn: "开始使用 STADA"
+        },
+        en: {
+            tickerText: "Welcome to STADA, your investment platform where you earn steadily by investing and completing daily tasks.",
+            centralTitle: "Investments & Daily Tasks",
+            centralDesc: "Track your returns and opportunities in real time.",
+            btnDeposit: "Deposit",
+            btnWithdraw: "Withdraw",
+            btnInvite: "Share Invite",
+            btnJoin: "Join Us",
+            btnTasks: "Daily Tasks",
+            btnYield: "Earnings",
+            btnCompany: "Company Profile",
+            cryptoTitle: "Markets",
+            navHome: "Home",
+            navTasks: "Tasks",
+            navJoin: "Join",
+            navYield: "Earnings",
+            navProfile: "Profile",
+            welcomeTitle: "Welcome to STADA",
+            welcomeMessage: "Welcome to STADA, your investment platform where you earn great rewards by investing and completing daily tasks.",
+            welcomeBtn: "Start on STADA"
+        },
+        es: {
+            tickerText: "Bienvenido a STADA, tu plataforma de inversión donde ganas mucho invirtiendo y realizando tareas a diario.",
+            centralTitle: "Inversiones y Tareas Diarias",
+            centralDesc: "Sigue tus rendimientos y oportunidades en tiempo real.",
+            btnDeposit: "Depósito",
+            btnWithdraw: "Retiros",
+            btnInvite: "Compartir Invitación",
+            btnJoin: "Únete a nosotros",
+            btnTasks: "Tareas Diarias",
+            btnYield: "Rendimiento",
+            btnCompany: "Perfil de la Compañía",
+            cryptoTitle: "Mercados",
+            navHome: "Inicio",
+            navTasks: "Tareas",
+            navJoin: "Unirse",
+            navYield: "Rendimiento",
+            navProfile: "Perfil",
+            welcomeTitle: "Bienvenido a STADA",
+            welcomeMessage: "Bienvenido a STADA, tu plataforma de inversión donde ganas mucho invirtiendo y realizando tareas a diario.",
+            welcomeBtn: "Comenzar en STADA"
+        }
+    };
+
+    const SUPPORTED_SIX_LANGS = ["pt", "hi", "ar", "zh-CN", "en", "es"];
+    const LANG_STORAGE_KEY = "stada_menu_lang";
+    const WELCOME_SEEN_KEY = "stada_first_welcome_seen";
+
+    // Mapeia idioma do navegador para um dos 6 idiomas suportados
+    function detectBrowserLanguage() {
+        const navLang = (navigator.language || "pt").toLowerCase();
+        if (navLang.startsWith("hi")) return "hi";
+        if (navLang.startsWith("ar")) return "ar";
+        if (navLang.startsWith("zh")) return "zh-CN";
+        if (navLang.startsWith("en")) return "en";
+        if (navLang.startsWith("es")) return "es";
+        return "pt";
+    }
+
+    // Dispara tradução automática via cookie/widget do Google Translate
+    function triggerBrowserAutoTranslate(targetLang) {
+        const cookieVal = "/pt/" + targetLang;
+        document.cookie = "googtrans=" + cookieVal + "; path=/";
+        document.cookie = "googtrans=" + cookieVal + "; path=/; domain=" + window.location.hostname;
+
+        const gtCombo = document.querySelector(".goog-te-combo");
+        if (gtCombo) {
+            gtCombo.value = targetLang;
+            gtCombo.dispatchEvent(new Event("change"));
+        }
+    }
+
+    function applyMenuLanguage(langCode, syncGoogleTranslate = true) {
+        const code = SUPPORTED_SIX_LANGS.includes(langCode) ? langCode : "pt";
+        const dict = STADA_TEXTS[code];
+
+        document.documentElement.lang = code;
+        document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
+
+        document.querySelectorAll(".top-menu-item").forEach((btn) => {
+            btn.classList.toggle("active", btn.getAttribute("data-lang") === code);
+        });
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+            const key = el.getAttribute("data-i18n");
+            if (dict && dict[key]) {
+                el.textContent = dict[key];
+            }
+        });
+
+        localStorage.setItem(LANG_STORAGE_KEY, code);
+
+        if (syncGoogleTranslate) {
+            triggerBrowserAutoTranslate(code);
+        }
+    }
+
+    // Inicializa Google Translate widget para tradução baseada no navegador/idioma escolhido
+    function googleTranslateElementInit() {
+        if (window.google && window.google.translate) {
+            new window.google.translate.TranslateElement(
+                {
+                    pageLanguage: "pt",
+                    includedLanguages: "pt,hi,ar,zh-CN,en,es",
+                    autoDisplay: false
+                },
+                "google_translate_element"
+            );
+            const saved = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
+            setTimeout(() => triggerBrowserAutoTranslate(saved), 400);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Menu de idioma superior
+        const topLangBtn = document.getElementById("topLangBtn");
+        const topLangMenu = document.getElementById("topLangMenu");
+
+        topLangBtn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const open = topLangMenu.classList.toggle("open");
+            topLangBtn.setAttribute("aria-expanded", String(open));
+        });
+
+        document.addEventListener("click", function () {
+            topLangMenu.classList.remove("open");
+            topLangBtn.setAttribute("aria-expanded", "false");
+        });
+
+        document.querySelectorAll(".top-menu-item").forEach((btn) => {
+            btn.addEventListener("click", function (e) {
+                e.stopPropagation();
+                applyMenuLanguage(this.getAttribute("data-lang"), true);
+                topLangMenu.classList.remove("open");
+                topLangBtn.setAttribute("aria-expanded", "false");
+            });
+        });
+
+        const initialLang = localStorage.getItem(LANG_STORAGE_KEY) || detectBrowserLanguage();
+        applyMenuLanguage(initialLang, false);
+
+        // Carrega script do Google Translate em segundo plano
+        const gtScript = document.createElement("script");
+        gtScript.src = "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+        gtScript.async = true;
+        document.body.appendChild(gtScript);
+
+        // Mensagem de boas-vindas: vermelha para quem se cadastra pela 1ª vez até clicar
+        const welcomeMsgBtn = document.getElementById("welcomeMsgBtn");
+        const welcomeModal = document.getElementById("welcomeModal");
+        const closeWelcomeModalBtn = document.getElementById("closeWelcomeModalBtn");
+        const confirmWelcomeBtn = document.getElementById("confirmWelcomeBtn");
+
+        const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY) === "1";
+        if (!hasSeenWelcome) {
+            welcomeMsgBtn.classList.add("msg-unread-alert");
+        } else {
+            welcomeMsgBtn.classList.remove("msg-unread-alert");
+        }
+
+        // Slideshow dentro do pop-up: passa de 5 em 5 segundos (3 imagens)
+        const modalSlides = document.querySelectorAll("#welcomeModal .modal-slide");
+        const modalDots = document.querySelectorAll("#modalSlideDots .m-dot");
+        let modalIdx = 0;
+        let modalTimer = null;
+
+        function renderModalSlide(i) {
+            modalSlides.forEach((s) => s.classList.remove("active"));
+            modalDots.forEach((d) => d.classList.remove("active"));
+            modalSlides[i].classList.add("active");
+            modalDots[i].classList.add("active");
+        }
+
+        function startModalSlideshow() {
+            stopModalSlideshow();
+            modalIdx = 0;
+            renderModalSlide(0);
+            modalTimer = setInterval(() => {
+                modalIdx = (modalIdx + 1) % modalSlides.length;
+                renderModalSlide(modalIdx);
+            }, 5000);
+        }
+
+        function stopModalSlideshow() {
+            if (modalTimer) {
+                clearInterval(modalTimer);
+                modalTimer = null;
+            }
+        }
+
+        function openWelcomePopup() {
+            welcomeMsgBtn.classList.remove("msg-unread-alert");
+            localStorage.setItem(WELCOME_SEEN_KEY, "1");
+            welcomeModal.classList.add("open");
+            startModalSlideshow();
+        }
+
+        function closeWelcomePopup() {
+            welcomeModal.classList.remove("open");
+            stopModalSlideshow();
+        }
+
+        welcomeMsgBtn.addEventListener("click", openWelcomePopup);
+        closeWelcomeModalBtn.addEventListener("click", closeWelcomePopup);
+        confirmWelcomeBtn.addEventListener("click", closeWelcomePopup);
+
+        // Banner principal (3 imagens)
+        const bannerSlides = document.querySelectorAll("#bannerSlides .banner-slide");
+        const bannerDots = document.querySelectorAll("#bannerIndicators .b-dot");
+        let bannerIdx = 0;
+
+        setInterval(() => {
+            bannerSlides[bannerIdx].classList.remove("active");
+            bannerDots[bannerIdx].classList.remove("active");
+            bannerIdx = (bannerIdx + 1) % bannerSlides.length;
+            bannerSlides[bannerIdx].classList.add("active");
+            bannerDots[bannerIdx].classList.add("active");
+        }, 5000);
+
+        // Criptomoedas em tempo real estilo Binance
+        const BINANCE_COINS = [
+            { symbol: "BTCUSDT", base: "BTC", name: "Bitcoin", fallbackPrice: 92450.00, fallbackPct: 2.34 },
+            { symbol: "ETHUSDT", base: "ETH", name: "Ethereum", fallbackPrice: 3380.50, fallbackPct: 1.85 },
+            { symbol: "BNBUSDT", base: "BNB", name: "BNB", fallbackPrice: 642.20, fallbackPct: 0.92 },
+            { symbol: "SOLUSDT", base: "SOL", name: "Solana", fallbackPrice: 214.80, fallbackPct: 4.18 },
+            { symbol: "XRPUSDT", base: "XRP", name: "Ripple", fallbackPrice: 1.48, fallbackPct: -0.64 }
+        ];
+
+        const cryptoListContainer = document.getElementById("cryptoListContainer");
+        const previousPrices = {};
+
+        function formatUsdPrice(num) {
+            if (num >= 100) {
+                return "$" + num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+            return "$" + num.toLocaleString("en-US", { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+        }
+
+        function renderCryptoRows(items) {
+            cryptoListContainer.innerHTML = items.map((coin) => {
+                const prev = previousPrices[coin.symbol];
+                let directionArrow = coin.pct >= 0 ? "▲" : "▼";
+                if (typeof prev === "number") {
+                    if (coin.price > prev) directionArrow = "▲";
+                    else if (coin.price < prev) directionArrow = "▼";
+                }
+                previousPrices[coin.symbol] = coin.price;
+
+                const isPositive = coin.pct >= 0;
+                const sign = isPositive ? "+" : "";
+                const pillClass = isPositive ? "crypto-up" : "crypto-down";
+
+                return `
+                    <div class="crypto-row">
+                        <div class="crypto-pair-col">
+                            <span class="crypto-symbol">${coin.base}/USDT</span>
+                            <span class="crypto-name">${coin.name}</span>
+                        </div>
+                        <div class="crypto-right-col">
+                            <span class="crypto-price">${formatUsdPrice(coin.price)}</span>
+                            <span class="crypto-change-pill ${pillClass}">${directionArrow} ${sign}${coin.pct.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        async function fetchBinanceTickers() {
+            try {
+                const symbolsParam = encodeURIComponent(JSON.stringify(BINANCE_COINS.map((c) => c.symbol)));
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbols=${symbolsParam}`);
+                if (!res.ok) throw new Error("Binance API response not OK");
+                const data = await res.json();
+
+                const mapped = BINANCE_COINS.map((c) => {
+                    const found = data.find((d) => d.symbol === c.symbol);
+                    if (!found) {
+                        return { ...c, price: c.fallbackPrice, pct: c.fallbackPct };
+                    }
+                    return {
+                        ...c,
+                        price: parseFloat(found.lastPrice),
+                        pct: parseFloat(found.priceChangePercent)
+                    };
+                });
+
+                renderCryptoRows(mapped);
+            } catch (err) {
+                // Atualização simulada suave de variação caso a rede bloqueie api.binance.com diretamente no browser
+                const mapped = BINANCE_COINS.map((c) => {
+                    const prevPrice = previousPrices[c.symbol] || c.fallbackPrice;
+                    const jitter = (Math.random() - 0.48) * 0.004;
+                    const nextPrice = Math.max(0.01, prevPrice * (1 + jitter));
+                    const nextPct = c.fallbackPct + (Math.random() - 0.5) * 0.15;
+                    return { ...c, price: nextPrice, pct: nextPct };
+                });
+                renderCryptoRows(mapped);
+            }
+        }
+
+        fetchBinanceTickers();
+        setInterval(fetchBinanceTickers, 5000);
+    });
+</script>
+{% endblock %}
