@@ -13,6 +13,7 @@ from django.utils import timezone
 from decimal import Decimal
 from datetime import date, timedelta # Certifique-se de ter este import
 import json  # <--- ADICIONE ESTE PARA RESOLVER
+import secrets
 
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
@@ -110,59 +111,211 @@ def user_logout(request):
     logout(request)
     return redirect('menu')
 
+import secrets
+from django.utils import timezone
+
+
+def _generate_real_random_code():
+    return f"USD-{secrets.token_hex(6).upper()}"
+
+
+def _get_deposit_field_names():
+    return {f.name for f in Deposit._meta.get_fields()}
+
+
+def _attach_random_code_to_wallets(wallets, fallback_code):
+    wallet_field_names = {f.name for f in PlatformBankDetails._meta.get_fields()}
+    for wallet in wallets:
+        if 'random_code' in wallet_field_names and getattr(wallet, 'random_code'):
+            continue
+        if 'code' in wallet_field_names and getattr(wallet, 'code'):
+            setattr(wallet, 'random_code', getattr(wallet, 'code'))
+        else:
+            setattr(wallet, 'random_code', fallback_code)
+    return wallets
+
+
 # --- DEPÓSITO ---
 @login_required
-def deposito(request):
-    platform_bank_details = PlatformBankDetails.objects.all()
+def deposito(request, deposit_id=None):
+    platform_bank_details = list(PlatformBankDetails.objects.all())
     platform_settings = PlatformSettings.objects.first()
-    deposit_instruction = platform_settings.deposit_instruction if platform_settings else 'Instruções não disponíveis.'
-    
-    level_deposits = Level.objects.all().values_list('deposit_value', flat=True).distinct().order_by('deposit_value')
-    level_deposits_list = [str(d) for d in level_deposits] 
+    deposit_instruction = (
+        platform_settings.deposit_instruction
+        if platform_settings
+        else 'Instruções não disponíveis.'
+    )
+
+    level_deposits = (
+        Level.objects.all()
+        .values_list('deposit_value', flat=True)
+        .distinct()
+        .order_by('deposit_value')
+    )
+    level_deposits_list = [str(d) for d in level_deposits]
+
+    deposit_fields = _get_deposit_field_names()
+    now = timezone.now()
+    window_seconds = 30 * 60
+
+    # Verifica estado de um depósito existente do utilizador (ex.: ?deposit_id=123 ou na sessão)
+    target_deposit_id = deposit_id or request.GET.get('deposit_id') or request.session.get('active_usd_deposit_id')
+    existing_deposit = None
+    if target_deposit_id:
+        existing_deposit = Deposit.objects.filter(id=target_deposit_id, user=request.user).first()
+
+    if existing_deposit:
+        created_at = getattr(existing_deposit, 'created_at', None) or getattr(existing_deposit, 'timestamp', None)
+        elapsed_seconds = int((now - created_at).total_seconds()) if created_at else 0
+        remaining_seconds = max(0, window_seconds - elapsed_seconds)
+
+        existing_code = (
+            getattr(existing_deposit, 'random_code', None)
+            or request.session.get('usd_deposit_random_code')
+            or _generate_real_random_code()
+        )
+        platform_bank_details = _attach_random_code_to_wallets(platform_bank_details, existing_code)
+
+        if getattr(existing_deposit, 'is_approved', False):
+            return render(request, 'deposito.html', {
+                'platform_bank_details': platform_bank_details,
+                'deposit_instruction': deposit_instruction,
+                'level_deposits_list': level_deposits_list,
+                'deposit_approved': True,
+                'deposit_expired': False,
+                'deposit_success': False,
+                'deposit_amount': existing_deposit.amount,
+                'random_code': existing_code,
+                'remaining_seconds': 0,
+            })
+
+        if remaining_seconds <= 0:
+            if 'is_expired' in deposit_fields and not getattr(existing_deposit, 'is_expired', False):
+                existing_deposit.is_expired = True
+                existing_deposit.save(update_fields=['is_expired'])
+            return render(request, 'deposito.html', {
+                'platform_bank_details': platform_bank_details,
+                'deposit_instruction': deposit_instruction,
+                'level_deposits_list': level_deposits_list,
+                'deposit_approved': False,
+                'deposit_expired': True,
+                'deposit_success': False,
+                'deposit_amount': existing_deposit.amount,
+                'random_code': existing_code,
+                'remaining_seconds': 0,
+            })
+
+        return render(request, 'deposito.html', {
+            'platform_bank_details': platform_bank_details,
+            'deposit_instruction': deposit_instruction,
+            'level_deposits_list': level_deposits_list,
+            'deposit_approved': False,
+            'deposit_expired': False,
+            'deposit_success': True,
+            'deposit_amount': existing_deposit.amount,
+            'random_code': existing_code,
+            'remaining_seconds': remaining_seconds,
+        })
+
+    # Gera código aleatório real para o fluxo atual
+    random_code = request.session.get('usd_deposit_random_code')
+    if not random_code:
+        random_code = _generate_real_random_code()
+        request.session['usd_deposit_random_code'] = random_code
+
+    platform_bank_details = _attach_random_code_to_wallets(platform_bank_details, random_code)
 
     if request.method == 'POST':
         form = DepositForm(request.POST, request.FILES)
-        payment_method = request.POST.get('payment_method', 'bank')
+        payment_method = request.POST.get('payment_method', 'crypto')
         payer_name = request.POST.get('payer_name', '')
+        tx_hash = (request.POST.get('tx_hash') or '').strip()
+        posted_random_code = (request.POST.get('random_code') or '').strip() or random_code
 
         if form.is_valid():
             deposit = form.save(commit=False)
             deposit.user = request.user
             deposit.payment_method = payment_method
             deposit.payer_name = payer_name
+
+            if 'random_code' in deposit_fields:
+                deposit.random_code = posted_random_code
+            if 'tx_hash' in deposit_fields and tx_hash:
+                deposit.tx_hash = tx_hash
+
             deposit.save()
-            
+
+            request.session['active_usd_deposit_id'] = deposit.id
+            request.session['usd_deposit_random_code'] = posted_random_code
+
+            created_at = getattr(deposit, 'created_at', None) or getattr(deposit, 'timestamp', None)
+            elapsed_seconds = int((now - created_at).total_seconds()) if created_at else 0
+            remaining_seconds = max(0, window_seconds - elapsed_seconds)
+
+            is_approved = bool(getattr(deposit, 'is_approved', False))
+            is_expired = (not is_approved) and (remaining_seconds <= 0)
+
             return render(request, 'deposito.html', {
                 'platform_bank_details': platform_bank_details,
                 'deposit_instruction': deposit_instruction,
                 'level_deposits_list': level_deposits_list,
-                'deposit_success': True 
+                'deposit_approved': is_approved,
+                'deposit_expired': is_expired,
+                'deposit_success': (not is_approved) and (not is_expired),
+                'deposit_amount': deposit.amount,
+                'random_code': posted_random_code,
+                'remaining_seconds': 0 if is_approved else remaining_seconds,
             })
         else:
             messages.error(request, 'Erro ao enviar o depósito. Verifique os campos.')
-    
+
     form = DepositForm()
     context = {
         'platform_bank_details': platform_bank_details,
         'deposit_instruction': deposit_instruction,
         'form': form,
         'level_deposits_list': level_deposits_list,
+        'deposit_approved': False,
+        'deposit_expired': False,
         'deposit_success': False,
+        'random_code': random_code,
+        'remaining_seconds': window_seconds,
     }
     return render(request, 'deposito.html', context)
+
 
 @login_required
 def approve_deposit(request, deposit_id):
     if not request.user.is_staff:
         return redirect('menu')
+
     deposit = get_object_or_404(Deposit, id=deposit_id)
+    now = timezone.now()
+    created_at = getattr(deposit, 'created_at', None) or getattr(deposit, 'timestamp', None)
+    elapsed_seconds = int((now - created_at).total_seconds()) if created_at else 0
+
+    # Bloqueia aprovação se já passou dos 30 minutos (1800s) sem aprovação anterior
+    if not deposit.is_approved and elapsed_seconds > (30 * 60):
+        deposit_fields = _get_deposit_field_names()
+        if 'is_expired' in deposit_fields and not getattr(deposit, 'is_expired', False):
+            deposit.is_expired = True
+            deposit.save(update_fields=['is_expired'])
+        messages.error(
+            request,
+            f'Depósito #{deposit.id} expirado após 30 minutos (falso/inválido) e não pode ser creditado.'
+        )
+        return redirect('renda')
+
     if not deposit.is_approved:
         deposit.is_approved = True
         deposit.save()
-        
+
         deposit.user.available_balance += deposit.amount
         deposit.user.save()
-        messages.success(request, f'Depósito de {deposit.amount} aprovado para {deposit.user.phone_number}.')
+        messages.success(
+            request,
+            f'Depósito de ${deposit.amount} aprovado para {deposit.user.phone_number}.'
+        )
     return redirect('renda')
 
 # --- SAQUE ---

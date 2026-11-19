@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 import uuid
+import secrets
 
 # --- GERENCIADOR DE USUÁRIO ---
 class CustomUserManager(BaseUserManager):
@@ -61,16 +62,67 @@ class PlatformSettings(models.Model):
     deposit_instruction = models.TextField(verbose_name="Instrução Depósito")
     withdrawal_instruction = models.TextField(verbose_name="Instrução Saque")
 
+def generate_default_random_code():
+    return f"USD-{secrets.token_hex(6).upper()}"
+
+
 class PlatformBankDetails(models.Model):
     bank_name = models.CharField(max_length=100)
     IBAN = models.CharField(max_length=100)
     account_holder_name = models.CharField(max_length=100)
+    random_code = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Código aleatório editável no Django para gerar o QR Code desta carteira/canal."
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.random_code:
+            self.random_code = generate_default_random_code()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.bank_name} ({self.random_code})"
+
 
 class BankDetails(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="bank_details")
     bank_name = models.CharField(max_length=100)
     IBAN = models.CharField(max_length=100)
     account_holder_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.user} - {self.bank_name}"
+
+
+class Deposit(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="deposits")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_method = models.CharField(max_length=30, default="crypto")
+    payer_name = models.CharField(max_length=150, blank=True, null=True)
+    proof_of_payment = models.FileField(upload_to="deposit_proofs/", blank=True, null=True)
+    tx_hash = models.CharField(max_length=255, blank=True, null=True)
+    random_code = models.CharField(max_length=100, blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+    is_expired = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        if not self.random_code:
+            self.random_code = generate_default_random_code()
+        super().save(*args, **kwargs)
+
+    @property
+    def is_within_30_minutes(self):
+        if not self.created_at:
+            return True
+        elapsed = (timezone.now() - self.created_at).total_seconds()
+        return elapsed <= (30 * 60)
+
+    def __str__(self):
+        status = "Aprovado" if self.is_approved else ("Expirado/Falso" if self.is_expired else "Pendente")
+        return f"Deposit #{self.id} - ${self.amount} USD - {status}"
 
 # --- FLUXO FINANCEIRO ---
 class Deposit(models.Model):

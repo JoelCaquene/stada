@@ -1,11 +1,11 @@
 from django.contrib import admin, messages
-from django.utils.safestring import mark_safe 
+from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.db.models import Sum
 from .models import (
-    CustomUser, PlatformSettings, Level, BankDetails, Deposit, 
+    CustomUser, PlatformSettings, Level, BankDetails, Deposit,
     Withdrawal, Task, Roulette, UserLevel, PlatformBankDetails,
     PromoCode, PromoCodeUsage
-)
 
 # --- CONFIGURAÇÕES DO USUÁRIO ---
 
@@ -33,40 +33,88 @@ class CustomUserAdmin(admin.ModelAdmin):
         return f"{total:,.2f} $"
     total_investido_equipe.short_description = 'Total Investido (N1)'
 
-# --- CONFIGURAÇÕES DE DEPÓSITO (COM SOMA AUTOMÁTICA) ---
+@admin.register(PlatformBankDetails)
+class PlatformBankDetailsAdmin(admin.ModelAdmin):
+    list_display = ('bank_name', 'account_holder_name', 'IBAN', 'random_code')
+    search_fields = ('bank_name', 'account_holder_name', 'IBAN', 'random_code')
+    fields = ('bank_name', 'account_holder_name', 'IBAN', 'random_code')
 
+
+# --- CONFIGURAÇÕES DE DEPÓSITO (COM SOMA AUTOMÁTICA E VALIDAÇÃO DE 30 MINUTOS) ---
 @admin.register(Deposit)
 class DepositAdmin(admin.ModelAdmin):
-    list_display = ('user', 'amount', 'payment_method', 'payer_name', 'is_approved', 'created_at', 'proof_link') 
-    search_fields = ('user__phone_number', 'payer_name')
-    list_filter = ('is_approved', 'payment_method', 'created_at')
-    
-    readonly_fields = ('current_proof_display', 'created_at')
+    list_display = (
+        'user',
+        'amount_usd',
+        'payment_method',
+        'random_code',
+        'tx_hash',
+        'is_approved',
+        'is_expired',
+        'tempo_30_min',
+        'created_at',
+        'proof_link',
+    )
+    search_fields = ('user__phone_number', 'payer_name', 'random_code', 'tx_hash')
+    list_filter = ('is_approved', 'is_expired', 'payment_method', 'created_at')
+
+    readonly_fields = ('current_proof_display', 'created_at', 'tempo_30_min')
     fieldsets = (
-        ('Informações do Usuário', {
-            'fields': ('user', 'amount', 'payment_method', 'payer_name')
+        ('Informações do Usuário e Pagamento ($)', {
+            'fields': ('user', 'amount', 'payment_method', 'payer_name', 'random_code', 'tx_hash')
         }),
-        ('Status e Aprovação', {
-            'fields': ('is_approved', 'created_at')
+        ('Status e Aprovação (Prazo de 30 Minutos)', {
+            'fields': ('is_approved', 'is_expired', 'tempo_30_min', 'created_at')
         }),
         ('Visualização do Comprovativo', {
             'fields': ('current_proof_display',),
         }),
     )
 
+    def amount_usd(self, obj):
+        return f"${obj.amount} USD"
+    amount_usd.short_description = 'Valor ($)'
+
+    def tempo_30_min(self, obj):
+        if obj.is_approved:
+            return mark_safe('<span style="color: #16a34a; font-weight: bold;">Aprovado (Contagem encerrada)</span>')
+        if not obj.created_at:
+            return "—"
+        elapsed = int((timezone.now() - obj.created_at).total_seconds())
+        remaining = (30 * 60) - elapsed
+        if remaining <= 0 or getattr(obj, 'is_expired', False):
+            return mark_safe('<span style="color: #dc2626; font-weight: bold;">Expirado / Falso (00:00)</span>')
+        mins, secs = divmod(remaining, 60)
+        return mark_safe(f'<span style="color: #d97706; font-weight: bold;">Restam {mins:02d}:{secs:02d}</span>')
+    tempo_30_min.short_description = 'Prazo 30 Min'
+
     def save_model(self, request, obj, form, change):
         """
-        Lógica para somar o saldo automaticamente ao aprovar
+        Lógica para somar o saldo automaticamente ao aprovar dentro de 30 minutos.
+        Se passar dos 30 minutos sem aprovação prévia, marca como expirado/falso e não credita.
         """
-        if change: # Se o registro está sendo editado
+        if change:
             old_obj = Deposit.objects.get(pk=obj.pk)
-            # Se mudou de NÃO aprovado para APROVADO agora
             if not old_obj.is_approved and obj.is_approved:
+                elapsed = int((timezone.now() - obj.created_at).total_seconds()) if obj.created_at else 0
+                if elapsed > (30 * 60):
+                    obj.is_approved = False
+                    if hasattr(obj, 'is_expired'):
+                        obj.is_expired = True
+                    super().save_model(request, obj, form, change)
+                    messages.error(
+                        request,
+                        f"Tempo de 30 minutos esgotado para o depósito #{obj.id}. Marcado como falso/expirado e NÃO creditado."
+                    )
+                    return
+
+                if hasattr(obj, 'is_expired'):
+                    obj.is_expired = False
                 user = obj.user
                 user.available_balance += obj.amount
                 user.save()
-                messages.success(request, f"Saldo de {obj.amount} $ adicionado a {user.phone_number}!")
-        
+                messages.success(request, f"Saldo de ${obj.amount} USD adicionado a {user.phone_number}!")
+
         super().save_model(request, obj, form, change)
 
     def proof_link(self, obj):
